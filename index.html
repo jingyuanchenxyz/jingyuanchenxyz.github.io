@@ -28,10 +28,14 @@
             box-sizing: border-box;
         }
         
-        body {
-            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: var(--primary-color);
+        /* Fixed grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-color: var(--background-color);
             background-image: 
                 linear-gradient(var(--grid-color) 1px, transparent 1px),
@@ -43,11 +47,33 @@
                 var(--grid-size) var(--grid-size),
                 calc(var(--grid-size)/4) calc(var(--grid-size)/4),
                 calc(var(--grid-size)/4) calc(var(--grid-size)/4);
+            z-index: -2;
+            pointer-events: none;
+        }
+        
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: transparent;
             padding: 0;
             margin: 0;
             font-size: 16px;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            position: relative;
+            min-height: 100vh;
+        }
+        
+        /* Mathematical objects canvas */
+        #math-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
         }
         
         /* Layout */
@@ -62,6 +88,8 @@
         header {
             padding: 100px 0 40px;
             text-align: center;
+            position: relative;
+            z-index: 10;
         }
         
         /* Typography */
@@ -159,6 +187,8 @@
             padding: 4rem 0;
             color: var(--secondary-color);
             font-size: 0.9rem;
+            position: relative;
+            z-index: 10;
         }
         
         /* Navigation */
@@ -210,19 +240,6 @@
             width: 100%;
             left: 0;
             background: var(--accent-color);
-        }
-        
-        /* Always light mode */
-        
-        /* Mathematical objects canvas */
-        #math-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
         }
         
         /* Professor links */
@@ -343,8 +360,7 @@
         <section id="education" class="section">
             <h2>Education</h2>
             
-
-<p>I will graduate from Berkeley summer 2025. I will be pursuing my PhD at UIUC under Professor <a href="https://matthewturk.github.io/">Matthew Turk</a> (School of Information Sciences & Department of Astronomy).</p>
+            <p>I will graduate from Berkeley summer 2025. I will be pursuing my PhD at UIUC under Professor <a href="https://matthewturk.github.io/">Matthew Turk</a> (School of Information Sciences & Department of Astronomy).</p>
 
             <h3>University of California, Berkeley | 2022 - 2025</h3>
             <p>College of Letters & Science: B.A. (Hons) Mathematics</p>
