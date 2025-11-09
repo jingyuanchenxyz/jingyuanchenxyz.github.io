@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaTeX Matrix Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f7f2;
+            background-image: 
+                linear-gradient(rgba(70, 130, 180, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(70, 130, 180, 0.08) 1px, transparent 1px),
+                linear-gradient(rgba(70, 130, 180, 0.08) 0.5px, transparent 0.5px),
+                linear-gradient(90deg, rgba(70, 130, 180, 0.08) 0.5px, transparent 0.5px);
+            background-size: 20px 20px, 20px 20px, 5px 5px, 5px 5px;
+            min-height: 100vh;
+            padding: 48px 24px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 1.7;
+        }
+
+        .section {
+            background: #fff;
+            padding: 32px;
+            margin-bottom: 24px;
+            border-radius: 2px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(70, 130, 180, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.07);
+            border: 1px solid rgba(70, 130, 180, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #c43544;
+            margin-bottom: 24px;
+            letter-spacing: -0.01em;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .control-label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #111;
+            margin-bottom: 12px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 4px;
+            background: rgba(70, 130, 180, 0.2);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #c43544;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #c43544;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .button {
+            padding: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid rgba(70, 130, 180, 0.2);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fff;
+            color: #111;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.07);
+        }
+
+        .button.active {
+            background: #c43544;
+            color: #fff;
+            border: 1px solid #c43544;
+        }
+
+        .matrix-grid {
+            display: inline-grid;
+            gap: 8px;
+        }
+
+        .matrix-input {
+            width: 100%;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(70, 130, 180, 0.2);
+            border-radius: 2px;
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .matrix-input:focus {
+            border-color: #c43544;
+        }
+
+        .code-section {
+            background: #111;
+            border-radius: 2px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .code-title {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .copy-button {
+            padding: 10px 20px;
+            background: #c43544;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .copy-button:hover {
+            background: #a82d3a;
+        }
+
+        .code-block {
+            background: #1a1a1a;
+            border-radius: 2px;
+            padding: 16px;
+            overflow-x: auto;
+            max-height: 200px;
+        }
+
+        .code {
+            color: #4ec9b0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .preview-box {
+            background: #fff;
+            border: 1px solid rgba(70, 130, 180, 0.1);
+            border-radius: 2px;
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 150px;
+        }
+
+        .matrix-preview {
+            display: inline-flex;
+            align-items: stretch;
+            gap: 8px;
+        }
+
+        .matrix-content {
+            display: grid;
+            gap: 8px;
+            padding: 8px 0;
+        }
+
+        .matrix-cell {
+            text-align: center;
+            color: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tip {
+            background: rgba(70, 130, 180, 0.08);
+            padding: 16px;
+            border-radius: 2px;
+            font-size: 0.85rem;
+            color: #555;
+            line-height: 1.6;
+            margin-top: 24px;
+        }
+
+        .tip code {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+            .section {
+                padding: 24px;
+            }
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">LaTeX Matrix Generator</h1>
+            <p class="subtitle">Create matrices visually and generate LaTeX code instantly</p>
+        </div>
+
+        <div id="root"></div>
+    </div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        function Bracket({ type, side, height }) {
+            const width = 12;
+            const strokeWidth = 2;
+
+            const renderBracket = () => {
+                switch (type) {
+                    case 'bmatrix':
+                        return side === 'left' ? (
+                            <path
+                                d={`M ${width} 0 L ${strokeWidth} 0 L ${strokeWidth} ${height} L ${width} ${height}`}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={strokeWidth}
+                                strokeLinecap="square"
+                            />
+                        ) : (
+                            <path
+                                d={`M 0 0 L ${width - strokeWidth} 0 L ${width - strokeWidth} ${height} L 0 ${height}`}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={strokeWidth}
+                                strokeLinecap="square"
+                            />
+                        );
+
+                    case 'pmatrix':
+                        return side === 'left' ? (
+                            <path
+                                d={`M ${width} 0 Q ${strokeWidth} ${height / 2} ${width} ${height}`}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={strokeWidth}
+                                strokeLinecap="round"
+                            />
+                        ) : (
+                            <path
+                                d={`M 0 0 Q ${width - strokeWidth} ${height / 2} 0 ${height}`}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={strokeWidth}
+                                strokeLinecap="round"
+                            />
+                        );
+
+                    case 'vmatrix':
+                        return (
+                            <line
+                                x1={side === 'left' ? width - strokeWidth : strokeWidth}
+                                y1={0}
+                                x2={side === 'left' ? width - strokeWidth : strokeWidth}
+                                y2={height}
+                                stroke="currentColor"
+                                strokeWidth={strokeWidth}
+                            />
+                        );
+
+                    case 'Bmatrix':
+                        const midY = height / 2;
+                        return side === 'left' ? (
+                            <path
+                                d={`M ${width} 0 Q ${strokeWidth} ${midY / 2} ${width / 2} ${midY} Q ${strokeWidth} ${midY + midY / 2} ${width} ${height}`}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={strokeWidth}
+                                strokeLinecap="round"
+                            />
+                        ) : (
+                            <path
+                                d={`M 0 0 Q ${width - strokeWidth} ${midY / 2} ${width / 2} ${midY} Q ${width - strokeWidth} ${midY + midY / 2} 0 ${height}`}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={strokeWidth}
+                                strokeLinecap="round"
+                            />
+                        );
+
+                    case 'Vmatrix':
+                        return (
+                            <>
+                                <line
+                                    x1={side === 'left' ? width - strokeWidth - 3 : strokeWidth}
+                                    y1={0}
+                                    x2={side === 'left' ? width - strokeWidth - 3 : strokeWidth}
+                                    y2={height}
+                                    stroke="currentColor"
+                                    strokeWidth={strokeWidth}
+                                />
+                                <line
+                                    x1={side === 'left' ? width - strokeWidth + 2 : strokeWidth + 5}
+                                    y1={0}
+                                    x2={side === 'left' ? width - strokeWidth + 2 : strokeWidth + 5}
+                                    y2={height}
+                                    stroke="currentColor"
+                                    strokeWidth={strokeWidth}
+                                />
+                            </>
+                        );
+
+                    default:
+                        return null;
+                }
+            };
+
+            if (type === 'matrix') return null;
+
+            return (
+                <svg width={width} height={height} style={{ minWidth: width, color: '#111' }}>
+                    {renderBracket()}
+                </svg>
+            );
+        }
+
+        function MatrixPreview({ values, rows, cols, matrixType }) {
+            const matrixRef = useRef(null);
+            const [matrixHeight, setMatrixHeight] = useState(100);
+
+            useEffect(() => {
+                if (matrixRef.current) {
+                    setMatrixHeight(matrixRef.current.offsetHeight);
+                }
+            }, [values, rows, cols]);
+
+            return (
+                <div className="matrix-preview">
+                    <Bracket type={matrixType} side="left" height={matrixHeight} />
+                    <div
+                        ref={matrixRef}
+                        className="matrix-content"
+                        style={{ gridTemplateColumns: `repeat(${cols}, minmax(40px, 1fr))` }}
+                    >
+                        {values.map((row, i) =>
+                            row.map((cell, j) => (
+                                <div key={`${i}-${j}`} className="matrix-cell">
+                                    {cell || '0'}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                    <Bracket type={matrixType} side="right" height={matrixHeight} />
+                </div>
+            );
+        }
+
+        function MatrixLatexGenerator() {
+            const [rows, setRows] = useState(3);
+            const [cols, setCols] = useState(3);
+            const [matrixType, setMatrixType] = useState('bmatrix');
+            const [values, setValues] = useState(
+                Array(3).fill(null).map(() => Array(3).fill(''))
+            );
+            const [copied, setCopied] = useState(false);
+
+            const updateMatrixSize = (newRows, newCols) => {
+                const newValues = Array(newRows).fill(null).map((_, i) =>
+                    Array(newCols).fill(null).map((_, j) =>
+                        (i < rows && j < cols) ? values[i][j] : ''
+                    )
+                );
+                setRows(newRows);
+                setCols(newCols);
+                setValues(newValues);
+            };
+
+            const handleCellChange = (i, j, value) => {
+                const newValues = values.map(row => [...row]);
+                newValues[i][j] = value;
+                setValues(newValues);
+            };
+
+            const generateLatex = () => {
+                const matrixContent = values
+                    .map(row => row.map(cell => cell || '0').join(' & '))
+                    .join(' \\\\\n  ');
+                return `\\begin{${matrixType}}\n  ${matrixContent}\n\\end{${matrixType}}`;
+            };
+
+            const copyToClipboard = () => {
+                navigator.clipboard.writeText(generateLatex());
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            };
+
+            const matrixTypes = [
+                { value: 'bmatrix', label: '[ ] Brackets' },
+                { value: 'pmatrix', label: '( ) Parentheses' },
+                { value: 'vmatrix', label: '| | Determinant' },
+                { value: 'Bmatrix', label: '{ } Braces' },
+                { value: 'Vmatrix', label: '|| || Double bars' },
+                { value: 'matrix', label: 'No brackets' },
+            ];
+
+            return (
+                <>
+                    <div className="section">
+                        <h2 className="section-title">Matrix Size</h2>
+                        <div className="controls-grid">
+                            <div>
+                                <label className="control-label">Rows: {rows}</label>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="10"
+                                    value={rows}
+                                    onChange={(e) => updateMatrixSize(parseInt(e.target.value), cols)}
+                                    className="slider"
+                                />
+                            </div>
+                            <div>
+                                <label className="control-label">Columns: {cols}</label>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="10"
+                                    value={cols}
+                                    onChange={(e) => updateMatrixSize(rows, parseInt(e.target.value))}
+                                    className="slider"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">Matrix Type</h2>
+                        <div className="button-grid">
+                            {matrixTypes.map((type) => (
+                                <button
+                                    key={type.value}
+                                    onClick={() => setMatrixType(type.value)}
+                                    className={`button ${matrixType === type.value ? 'active' : ''}`}
+                                >
+                                    {type.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">Edit Values</h2>
+                        <div style={{ overflowX: 'auto' }}>
+                            <div
+                                className="matrix-grid"
+                                style={{ gridTemplateColumns: `repeat(${cols}, minmax(60px, 1fr))` }}
+                            >
+                                {values.map((row, i) =>
+                                    row.map((cell, j) => (
+                                        <input
+                                            key={`${i}-${j}`}
+                                            type="text"
+                                            value={cell}
+                                            onChange={(e) => handleCellChange(i, j, e.target.value)}
+                                            className="matrix-input"
+                                            placeholder="0"
+                                        />
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <div className="code-section">
+                            <div className="code-header">
+                                <h3 className="code-title">LaTeX Code</h3>
+                                <button onClick={copyToClipboard} className="copy-button">
+                                    <span>{copied ? '✓' : '📋'}</span>
+                                    <span>{copied ? 'Copied!' : 'Copy'}</span>
+                                </button>
+                            </div>
+                            <div className="code-block">
+                                <pre className="code">{generateLatex()}</pre>
+                            </div>
+                        </div>
+
+                        <h3 className="section-title">Visual Preview</h3>
+                        <div className="preview-box">
+                            <MatrixPreview
+                                values={values}
+                                rows={rows}
+                                cols={cols}
+                                matrixType={matrixType}
+                            />
+                        </div>
+
+                        <div className="tip">
+                            <strong>Tip:</strong> Include <code>\usepackage{'{'amsmath{'}'}</code> in your LaTeX document preamble to use these matrix environments.
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<MatrixLatexGenerator />);
+    </script>
+</body>
+</html>
