@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LaTeX Matrix Generator</title>
+    <title>Lazy LaTeX Matrix Formatter</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -288,313 +288,311 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1 class="title">LaTeX Matrix Generator</h1>
-            <p class="subtitle">Create matrices visually and generate LaTeX code instantly</p>
+            <h1 class="title">LaTeX Matrix Formatter</h1>
+            <p class="subtitle">Making Matrices a bit easier to LaTeX. Built with Claude</p>
         </div>
 
-        <div id="root"></div>
+        <!-- Matrix Size Controls -->
+        <div class="section">
+            <h2 class="section-title">Matrix Size</h2>
+            <div class="controls-grid">
+                <div>
+                    <label class="control-label">Rows: <span id="rows-value">3</span></label>
+                    <input type="range" min="1" max="10" value="3" class="slider" id="rows-slider">
+                </div>
+                <div>
+                    <label class="control-label">Columns: <span id="cols-value">3</span></label>
+                    <input type="range" min="1" max="10" value="3" class="slider" id="cols-slider">
+                </div>
+            </div>
+        </div>
+
+        <!-- Matrix Type Selection -->
+        <div class="section">
+            <h2 class="section-title">Matrix Type</h2>
+            <div class="button-grid" id="matrix-type-buttons">
+                <button class="button active" data-type="bmatrix">[ ] Brackets</button>
+                <button class="button" data-type="pmatrix">( ) Parentheses</button>
+                <button class="button" data-type="vmatrix">| | Determinant</button>
+                <button class="button" data-type="Bmatrix">{ } Braces</button>
+                <button class="button" data-type="Vmatrix">|| || Double bars</button>
+                <button class="button" data-type="matrix">No brackets</button>
+            </div>
+        </div>
+
+        <!-- Matrix Value Editor -->
+        <div class="section">
+            <h2 class="section-title">Edit Values</h2>
+            <div style="overflow-x: auto;">
+                <div class="matrix-grid" id="matrix-editor"></div>
+            </div>
+        </div>
+
+        <!-- LaTeX Code Output -->
+        <div class="section">
+            <div class="code-section">
+                <div class="code-header">
+                    <h3 class="code-title">LaTeX Code</h3>
+                    <button id="copy-button" class="copy-button">
+                        <span id="copy-icon">📋</span>
+                        <span id="copy-text">Copy</span>
+                    </button>
+                </div>
+                <div class="code-block">
+                    <pre class="code" id="latex-output"></pre>
+                </div>
+            </div>
+
+            <h3 class="section-title">Visual Preview</h3>
+            <div class="preview-box" id="preview-container"></div>
+
+            <div class="tip">
+                <strong>Note:</strong> You'll need to include <code>\usepackage{amsmath}</code> in your LaTeX document preamble to use these matrix environments.
+            </div>
+        </div>
     </div>
 
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script>
+        // State
+        let rows = 3;
+        let cols = 3;
+        let matrixType = 'bmatrix';
+        let values = Array(3).fill(null).map(() => Array(3).fill(''));
 
-    <script type="text/babel">
-        const { useState, useRef, useEffect } = React;
+        // Elements
+        const rowsSlider = document.getElementById('rows-slider');
+        const colsSlider = document.getElementById('cols-slider');
+        const rowsValue = document.getElementById('rows-value');
+        const colsValue = document.getElementById('cols-value');
+        const matrixEditor = document.getElementById('matrix-editor');
+        const latexOutput = document.getElementById('latex-output');
+        const copyButton = document.getElementById('copy-button');
+        const previewContainer = document.getElementById('preview-container');
+        const typeButtons = document.getElementById('matrix-type-buttons');
 
-        function Bracket({ type, side, height }) {
+        // Update matrix size
+        function updateMatrixSize(newRows, newCols) {
+            const newValues = Array(newRows).fill(null).map((_, i) =>
+                Array(newCols).fill(null).map((_, j) =>
+                    (i < rows && j < cols) ? values[i][j] : ''
+                )
+            );
+            rows = newRows;
+            cols = newCols;
+            values = newValues;
+            renderMatrix();
+            updateLatex();
+            updatePreview();
+        }
+
+        // Render matrix editor
+        function renderMatrix() {
+            matrixEditor.style.gridTemplateColumns = `repeat(${cols}, minmax(60px, 1fr))`;
+            matrixEditor.innerHTML = '';
+            
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'matrix-input';
+                    input.placeholder = '0';
+                    input.value = values[i][j];
+                    input.dataset.row = i;
+                    input.dataset.col = j;
+                    input.addEventListener('input', handleCellChange);
+                    matrixEditor.appendChild(input);
+                }
+            }
+        }
+
+        // Handle cell value change
+        function handleCellChange(e) {
+            const i = parseInt(e.target.dataset.row);
+            const j = parseInt(e.target.dataset.col);
+            values[i][j] = e.target.value;
+            updateLatex();
+            updatePreview();
+        }
+
+        // Generate LaTeX
+        function generateLatex() {
+            const matrixContent = values
+                .map(row => row.map(cell => cell || '0').join(' & '))
+                .join(' \\\\\n  ');
+            return `\\begin{${matrixType}}\n  ${matrixContent}\n\\end{${matrixType}}`;
+        }
+
+        // Update LaTeX output
+        function updateLatex() {
+            latexOutput.textContent = generateLatex();
+        }
+
+        // Create SVG bracket
+        function createBracket(type, side, height) {
+            if (type === 'matrix') return '';
+            
             const width = 12;
             const strokeWidth = 2;
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            svg.style.minWidth = width + 'px';
+            svg.style.color = '#111';
 
-            const renderBracket = () => {
-                switch (type) {
-                    case 'bmatrix':
-                        return side === 'left' ? (
-                            <path
-                                d={`M ${width} 0 L ${strokeWidth} 0 L ${strokeWidth} ${height} L ${width} ${height}`}
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={strokeWidth}
-                                strokeLinecap="square"
-                            />
-                        ) : (
-                            <path
-                                d={`M 0 0 L ${width - strokeWidth} 0 L ${width - strokeWidth} ${height} L 0 ${height}`}
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={strokeWidth}
-                                strokeLinecap="square"
-                            />
-                        );
+            let path;
+            switch (type) {
+                case 'bmatrix':
+                    path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    if (side === 'left') {
+                        path.setAttribute('d', `M ${width} 0 L ${strokeWidth} 0 L ${strokeWidth} ${height} L ${width} ${height}`);
+                    } else {
+                        path.setAttribute('d', `M 0 0 L ${width - strokeWidth} 0 L ${width - strokeWidth} ${height} L 0 ${height}`);
+                    }
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', 'currentColor');
+                    path.setAttribute('stroke-width', strokeWidth);
+                    path.setAttribute('stroke-linecap', 'square');
+                    svg.appendChild(path);
+                    break;
 
-                    case 'pmatrix':
-                        return side === 'left' ? (
-                            <path
-                                d={`M ${width} 0 Q ${strokeWidth} ${height / 2} ${width} ${height}`}
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={strokeWidth}
-                                strokeLinecap="round"
-                            />
-                        ) : (
-                            <path
-                                d={`M 0 0 Q ${width - strokeWidth} ${height / 2} 0 ${height}`}
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={strokeWidth}
-                                strokeLinecap="round"
-                            />
-                        );
+                case 'pmatrix':
+                    path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    if (side === 'left') {
+                        path.setAttribute('d', `M ${width} 0 Q ${strokeWidth} ${height / 2} ${width} ${height}`);
+                    } else {
+                        path.setAttribute('d', `M 0 0 Q ${width - strokeWidth} ${height / 2} 0 ${height}`);
+                    }
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', 'currentColor');
+                    path.setAttribute('stroke-width', strokeWidth);
+                    path.setAttribute('stroke-linecap', 'round');
+                    svg.appendChild(path);
+                    break;
 
-                    case 'vmatrix':
-                        return (
-                            <line
-                                x1={side === 'left' ? width - strokeWidth : strokeWidth}
-                                y1={0}
-                                x2={side === 'left' ? width - strokeWidth : strokeWidth}
-                                y2={height}
-                                stroke="currentColor"
-                                strokeWidth={strokeWidth}
-                            />
-                        );
+                case 'vmatrix':
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', side === 'left' ? width - strokeWidth : strokeWidth);
+                    line.setAttribute('y1', 0);
+                    line.setAttribute('x2', side === 'left' ? width - strokeWidth : strokeWidth);
+                    line.setAttribute('y2', height);
+                    line.setAttribute('stroke', 'currentColor');
+                    line.setAttribute('stroke-width', strokeWidth);
+                    svg.appendChild(line);
+                    break;
 
-                    case 'Bmatrix':
-                        const midY = height / 2;
-                        return side === 'left' ? (
-                            <path
-                                d={`M ${width} 0 Q ${strokeWidth} ${midY / 2} ${width / 2} ${midY} Q ${strokeWidth} ${midY + midY / 2} ${width} ${height}`}
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={strokeWidth}
-                                strokeLinecap="round"
-                            />
-                        ) : (
-                            <path
-                                d={`M 0 0 Q ${width - strokeWidth} ${midY / 2} ${width / 2} ${midY} Q ${width - strokeWidth} ${midY + midY / 2} 0 ${height}`}
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={strokeWidth}
-                                strokeLinecap="round"
-                            />
-                        );
+                case 'Bmatrix':
+                    path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const midY = height / 2;
+                    if (side === 'left') {
+                        path.setAttribute('d', `M ${width} 0 Q ${strokeWidth} ${midY / 2} ${width / 2} ${midY} Q ${strokeWidth} ${midY + midY / 2} ${width} ${height}`);
+                    } else {
+                        path.setAttribute('d', `M 0 0 Q ${width - strokeWidth} ${midY / 2} ${width / 2} ${midY} Q ${width - strokeWidth} ${midY + midY / 2} 0 ${height}`);
+                    }
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', 'currentColor');
+                    path.setAttribute('stroke-width', strokeWidth);
+                    path.setAttribute('stroke-linecap', 'round');
+                    svg.appendChild(path);
+                    break;
 
-                    case 'Vmatrix':
-                        return (
-                            <>
-                                <line
-                                    x1={side === 'left' ? width - strokeWidth - 3 : strokeWidth}
-                                    y1={0}
-                                    x2={side === 'left' ? width - strokeWidth - 3 : strokeWidth}
-                                    y2={height}
-                                    stroke="currentColor"
-                                    strokeWidth={strokeWidth}
-                                />
-                                <line
-                                    x1={side === 'left' ? width - strokeWidth + 2 : strokeWidth + 5}
-                                    y1={0}
-                                    x2={side === 'left' ? width - strokeWidth + 2 : strokeWidth + 5}
-                                    y2={height}
-                                    stroke="currentColor"
-                                    strokeWidth={strokeWidth}
-                                />
-                            </>
-                        );
+                case 'Vmatrix':
+                    const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line1.setAttribute('x1', side === 'left' ? width - strokeWidth - 3 : strokeWidth);
+                    line1.setAttribute('y1', 0);
+                    line1.setAttribute('x2', side === 'left' ? width - strokeWidth - 3 : strokeWidth);
+                    line1.setAttribute('y2', height);
+                    line1.setAttribute('stroke', 'currentColor');
+                    line1.setAttribute('stroke-width', strokeWidth);
+                    svg.appendChild(line1);
 
-                    default:
-                        return null;
+                    const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line2.setAttribute('x1', side === 'left' ? width - strokeWidth + 2 : strokeWidth + 5);
+                    line2.setAttribute('y1', 0);
+                    line2.setAttribute('x2', side === 'left' ? width - strokeWidth + 2 : strokeWidth + 5);
+                    line2.setAttribute('y2', height);
+                    line2.setAttribute('stroke', 'currentColor');
+                    line2.setAttribute('stroke-width', strokeWidth);
+                    svg.appendChild(line2);
+                    break;
+            }
+
+            return svg;
+        }
+
+        // Update preview
+        function updatePreview() {
+            previewContainer.innerHTML = '';
+            const preview = document.createElement('div');
+            preview.className = 'matrix-preview';
+
+            // Create matrix content
+            const content = document.createElement('div');
+            content.className = 'matrix-content';
+            content.style.gridTemplateColumns = `repeat(${cols}, minmax(40px, 1fr))`;
+
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'matrix-cell';
+                    cell.textContent = values[i][j] || '0';
+                    content.appendChild(cell);
                 }
-            };
+            }
 
-            if (type === 'matrix') return null;
-
-            return (
-                <svg width={width} height={height} style={{ minWidth: width, color: '#111' }}>
-                    {renderBracket()}
-                </svg>
-            );
+            // Calculate height after content is added
+            previewContainer.appendChild(preview);
+            preview.appendChild(content);
+            
+            // Wait for DOM update
+            setTimeout(() => {
+                const height = content.offsetHeight;
+                
+                // Add brackets
+                const leftBracket = createBracket(matrixType, 'left', height);
+                const rightBracket = createBracket(matrixType, 'right', height);
+                
+                if (leftBracket) preview.insertBefore(leftBracket, content);
+                if (rightBracket) preview.appendChild(rightBracket);
+            }, 0);
         }
 
-        function MatrixPreview({ values, rows, cols, matrixType }) {
-            const matrixRef = useRef(null);
-            const [matrixHeight, setMatrixHeight] = useState(100);
+        // Event listeners
+        rowsSlider.addEventListener('input', (e) => {
+            rowsValue.textContent = e.target.value;
+            updateMatrixSize(parseInt(e.target.value), cols);
+        });
 
-            useEffect(() => {
-                if (matrixRef.current) {
-                    setMatrixHeight(matrixRef.current.offsetHeight);
-                }
-            }, [values, rows, cols]);
+        colsSlider.addEventListener('input', (e) => {
+            colsValue.textContent = e.target.value;
+            updateMatrixSize(rows, parseInt(e.target.value));
+        });
 
-            return (
-                <div className="matrix-preview">
-                    <Bracket type={matrixType} side="left" height={matrixHeight} />
-                    <div
-                        ref={matrixRef}
-                        className="matrix-content"
-                        style={{ gridTemplateColumns: `repeat(${cols}, minmax(40px, 1fr))` }}
-                    >
-                        {values.map((row, i) =>
-                            row.map((cell, j) => (
-                                <div key={`${i}-${j}`} className="matrix-cell">
-                                    {cell || '0'}
-                                </div>
-                            ))
-                        )}
-                    </div>
-                    <Bracket type={matrixType} side="right" height={matrixHeight} />
-                </div>
-            );
-        }
+        typeButtons.addEventListener('click', (e) => {
+            if (e.target.classList.contains('button')) {
+                document.querySelectorAll('#matrix-type-buttons .button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                e.target.classList.add('active');
+                matrixType = e.target.dataset.type;
+                updateLatex();
+                updatePreview();
+            }
+        });
 
-        function MatrixLatexGenerator() {
-            const [rows, setRows] = useState(3);
-            const [cols, setCols] = useState(3);
-            const [matrixType, setMatrixType] = useState('bmatrix');
-            const [values, setValues] = useState(
-                Array(3).fill(null).map(() => Array(3).fill(''))
-            );
-            const [copied, setCopied] = useState(false);
+        copyButton.addEventListener('click', () => {
+            navigator.clipboard.writeText(generateLatex());
+            document.getElementById('copy-icon').textContent = '✓';
+            document.getElementById('copy-text').textContent = 'Copied!';
+            setTimeout(() => {
+                document.getElementById('copy-icon').textContent = '📋';
+                document.getElementById('copy-text').textContent = 'Copy';
+            }, 2000);
+        });
 
-            const updateMatrixSize = (newRows, newCols) => {
-                const newValues = Array(newRows).fill(null).map((_, i) =>
-                    Array(newCols).fill(null).map((_, j) =>
-                        (i < rows && j < cols) ? values[i][j] : ''
-                    )
-                );
-                setRows(newRows);
-                setCols(newCols);
-                setValues(newValues);
-            };
-
-            const handleCellChange = (i, j, value) => {
-                const newValues = values.map(row => [...row]);
-                newValues[i][j] = value;
-                setValues(newValues);
-            };
-
-            const generateLatex = () => {
-                const matrixContent = values
-                    .map(row => row.map(cell => cell || '0').join(' & '))
-                    .join(' \\\\\n  ');
-                return `\\begin{${matrixType}}\n  ${matrixContent}\n\\end{${matrixType}}`;
-            };
-
-            const copyToClipboard = () => {
-                navigator.clipboard.writeText(generateLatex());
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-            };
-
-            const matrixTypes = [
-                { value: 'bmatrix', label: '[ ] Brackets' },
-                { value: 'pmatrix', label: '( ) Parentheses' },
-                { value: 'vmatrix', label: '| | Determinant' },
-                { value: 'Bmatrix', label: '{ } Braces' },
-                { value: 'Vmatrix', label: '|| || Double bars' },
-                { value: 'matrix', label: 'No brackets' },
-            ];
-
-            return (
-                <>
-                    <div className="section">
-                        <h2 className="section-title">Matrix Size</h2>
-                        <div className="controls-grid">
-                            <div>
-                                <label className="control-label">Rows: {rows}</label>
-                                <input
-                                    type="range"
-                                    min="1"
-                                    max="10"
-                                    value={rows}
-                                    onChange={(e) => updateMatrixSize(parseInt(e.target.value), cols)}
-                                    className="slider"
-                                />
-                            </div>
-                            <div>
-                                <label className="control-label">Columns: {cols}</label>
-                                <input
-                                    type="range"
-                                    min="1"
-                                    max="10"
-                                    value={cols}
-                                    onChange={(e) => updateMatrixSize(rows, parseInt(e.target.value))}
-                                    className="slider"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="section">
-                        <h2 className="section-title">Matrix Type</h2>
-                        <div className="button-grid">
-                            {matrixTypes.map((type) => (
-                                <button
-                                    key={type.value}
-                                    onClick={() => setMatrixType(type.value)}
-                                    className={`button ${matrixType === type.value ? 'active' : ''}`}
-                                >
-                                    {type.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="section">
-                        <h2 className="section-title">Edit Values</h2>
-                        <div style={{ overflowX: 'auto' }}>
-                            <div
-                                className="matrix-grid"
-                                style={{ gridTemplateColumns: `repeat(${cols}, minmax(60px, 1fr))` }}
-                            >
-                                {values.map((row, i) =>
-                                    row.map((cell, j) => (
-                                        <input
-                                            key={`${i}-${j}`}
-                                            type="text"
-                                            value={cell}
-                                            onChange={(e) => handleCellChange(i, j, e.target.value)}
-                                            className="matrix-input"
-                                            placeholder="0"
-                                        />
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="section">
-                        <div className="code-section">
-                            <div className="code-header">
-                                <h3 className="code-title">LaTeX Code</h3>
-                                <button onClick={copyToClipboard} className="copy-button">
-                                    <span>{copied ? '✓' : '📋'}</span>
-                                    <span>{copied ? 'Copied!' : 'Copy'}</span>
-                                </button>
-                            </div>
-                            <div className="code-block">
-                                <pre className="code">{generateLatex()}</pre>
-                            </div>
-                        </div>
-
-                        <h3 className="section-title">Visual Preview</h3>
-                        <div className="preview-box">
-                            <MatrixPreview
-                                values={values}
-                                rows={rows}
-                                cols={cols}
-                                matrixType={matrixType}
-                            />
-                        </div>
-
-                        <div className="tip">
-                            <strong>Tip:</strong> Include <code>\usepackage{'{'amsmath{'}'}</code> in your LaTeX document preamble to use these matrix environments.
-                        </div>
-                    </div>
-                </>
-            );
-        }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<MatrixLatexGenerator />);
+        // Initialize
+        renderMatrix();
+        updateLatex();
+        updatePreview();
     </script>
 </body>
 </html>
