@@ -87,9 +87,52 @@
         
         header {
             padding: 100px 0 40px;
-            text-align: center;
             position: relative;
             z-index: 10;
+        }
+        
+        .header-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            min-height: 400px;
+        }
+        
+        .header-image {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .header-image img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            object-fit: cover;
+        }
+        
+        .header-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 1rem;
+        }
+        
+        .header-info h1 {
+            text-align: left;
+        }
+        
+        .header-info .contact {
+            text-align: left;
+            margin-top: 1rem;
+        }
+        
+        .header-info .contact a {
+            display: block;
+            margin: 0.5rem 0;
         }
         
         /* Typography */
@@ -261,6 +304,34 @@
                 padding: 80px 0 20px;
             }
             
+            .header-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                min-height: auto;
+            }
+            
+            .header-image img {
+                max-width: 300px;
+            }
+            
+            .header-info {
+                padding-left: 0;
+                text-align: center;
+            }
+            
+            .header-info h1 {
+                text-align: center;
+            }
+            
+            .header-info .contact {
+                text-align: center;
+            }
+            
+            .header-info .contact a {
+                display: inline;
+                margin: 0 10px;
+            }
+            
             h1 {
                 font-size: 2rem;
             }
@@ -303,10 +374,19 @@
 
     <header>
         <div class="container">
-            <h1>Jingyuan Chen</h1>
-            <div class="contact">
-                <a> jc190[at]uiuc[dot]edu</a>
-                <a href="https://linkedin.com/in/jingyuanchenn" target="_blank">LinkedIn: @jingyuanchenn</a>
+            <div class="header-content">
+                <div class="header-image">
+                    <a href="https://lh3.googleusercontent.com/pw/AP1GczMPaZwUnxXPFgQg-5VZkZW2Zh1bLWo9CjfSI7HD1Cdrn3zGyOTzF6hEjDWhDInABjKp0CooCGN23x7YOvl_uqKd1XhUjmWWY8BVknz0xjw3QyqcJtuP=w2400?source=screenshot.guru" target="_blank">
+                        <img src="https://lh3.googleusercontent.com/pw/AP1GczMPaZwUnxXPFgQg-5VZkZW2Zh1bLWo9CjfSI7HD1Cdrn3zGyOTzF6hEjDWhDInABjKp0CooCGN23x7YOvl_uqKd1XhUjmWWY8BVknz0xjw3QyqcJtuP=w600-h315-p-k" alt="Jingyuan Chen">
+                    </a>
+                </div>
+                <div class="header-info">
+                    <h1>Jingyuan Chen</h1>
+                    <div class="contact">
+                        <a>jc190[at]uiuc[dot]edu</a>
+                        <a href="https://linkedin.com/in/jingyuanchenn" target="_blank">LinkedIn: @jingyuanchenn</a>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
