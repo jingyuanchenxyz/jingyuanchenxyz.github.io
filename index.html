@@ -83,12 +83,21 @@
             padding: 0 24px;
             position: relative;
             z-index: 10;
+            width: 100%;
+        }
+        
+        main {
+            position: relative;
+            z-index: 10;
         }
         
         header {
-            padding: 100px 0 40px;
+            padding: 80px 0 20px;
             position: relative;
             z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
         }
         
         .header-content {
@@ -107,11 +116,12 @@
         
         .header-image img {
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
             height: auto;
+            max-height: 600px;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            object-fit: cover;
+            object-fit: contain;
         }
         
         .header-info {
@@ -146,20 +156,20 @@
         h2 {
             font-size: 1.75rem;
             font-weight: 600;
-            margin: 2rem 0 1.5rem;
+            margin: 0 0 1.5rem 0;
             letter-spacing: -0.01em;
             color: var(--accent-color);
         }
         
         h3 {
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             font-weight: 600;
-            margin: 1.25rem 0 0.75rem;
+            margin: 1.5rem 0 0.5rem 0;
             letter-spacing: -0.01em;
         }
         
         p {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
             font-size: 1rem;
             line-height: 1.7;
             color: var(--secondary-color);
@@ -177,28 +187,45 @@
         
         /* Components */
         .intro {
-            margin: 2rem 0;
+            margin: 0;
             font-size: 1.1rem;
-            max-width: 680px;
-            margin: 0 auto 3rem;
-            text-align: center;
             line-height: 1.8;
+            max-width: 750px;
+        }
+        
+        .intro p {
+            font-size: 1.1rem;
         }
         
         .section {
             background: var(--section-bg);
-            padding: 2rem;
-            margin-bottom: 2rem;
+            padding: 0;
+            margin-bottom: 0;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             transition: var(--transition);
             border: 1px solid rgba(70, 130, 180, 0.1);
             position: relative;
             z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section .container {
+            padding: 6rem 3rem;
+            flex: 1;
+        }
+        
+        .section.hidden {
+            display: none;
+        }
+        
+        header.hidden {
+            display: none;
         }
         
         .section:hover {
-            transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(0,0,0,0.07);
             border: 1px solid rgba(70, 130, 180, 0.2);
         }
@@ -216,6 +243,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1.25rem;
+            margin-top: 1rem;
         }
         
         .course {
@@ -223,6 +251,7 @@
             background: rgba(255, 255, 255, 0.7);
             border-radius: var(--border-radius);
             border: 1px solid rgba(70, 130, 180, 0.1);
+            font-size: 0.95rem;
         }
         
         footer {
@@ -232,6 +261,14 @@
             font-size: 0.9rem;
             position: relative;
             z-index: 10;
+            min-height: 20vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        footer.hidden {
+            display: none;
         }
         
         /* Navigation */
@@ -267,6 +304,10 @@
             position: relative;
         }
         
+        nav a.active {
+            color: var(--accent-color);
+        }
+        
         nav a:after {
             content: '';
             position: absolute;
@@ -277,6 +318,11 @@
             right: 0;
             background: var(--accent-color);
             transition: width 0.25s ease;
+        }
+        
+        nav a.active:after {
+            width: 100%;
+            left: 0;
         }
         
         nav a:hover:after {
@@ -302,6 +348,7 @@
         @media (max-width: 768px) {
             header {
                 padding: 80px 0 20px;
+                min-height: auto;
             }
             
             .header-content {
@@ -312,6 +359,7 @@
             
             .header-image img {
                 max-width: 300px;
+                max-height: 400px;
             }
             
             .header-info {
@@ -337,7 +385,16 @@
             }
             
             .section {
-                padding: 1.5rem;
+                padding: 0;
+                min-height: auto;
+            }
+            
+            .section .container {
+                padding: 4rem 1.5rem;
+            }
+            
+            .intro {
+                text-align: left;
             }
             
             .courses-grid {
@@ -351,6 +408,10 @@
             nav li {
                 margin: 0 0.5rem;
             }
+            
+            footer {
+                min-height: auto;
+            }
         }
     </style>
 </head>
@@ -360,14 +421,13 @@
         <div class="container">
             <ul>
                 <li><a href="#about">About</a></li>
-                <li><a href="#current-work">Current Work</a></li>
+                <li><a href="#Teaching">Teaching</a></li>
                 <li><a href="#research">Research</a></li>
                 <li><a href="#previous">Previous</a></li>
                 <li><a href="#education">Education</a></li>
                 <li><a href="latexworkshop.html">LaTeX Tutorial</a></li>
                 <li><a href="matrix.html">Lazy Matrix Formatter</a></li>
                 <li><a href="https://publish.illinois.edu/jingyuanchen/">Blog</a></li>
-
             </ul>
         </div>
     </nav>
@@ -376,142 +436,197 @@
         <div class="container">
             <div class="header-content">
                 <div class="header-image">
-                    <a href="https://lh3.googleusercontent.com/pw/AP1GczMPaZwUnxXPFgQg-5VZkZW2Zh1bLWo9CjfSI7HD1Cdrn3zGyOTzF6hEjDWhDInABjKp0CooCGN23x7YOvl_uqKd1XhUjmWWY8BVknz0xjw3QyqcJtuP=w2400?source=screenshot.guru" target="_blank">
-                        <img src="https://lh3.googleusercontent.com/pw/AP1GczMPaZwUnxXPFgQg-5VZkZW2Zh1bLWo9CjfSI7HD1Cdrn3zGyOTzF6hEjDWhDInABjKp0CooCGN23x7YOvl_uqKd1XhUjmWWY8BVknz0xjw3QyqcJtuP=w600-h315-p-k" alt="Jingyuan Chen">
+                    <a href="https://lh3.googleusercontent.com/pw/AP1GczMvkWnAgigqnUz4BlHM7Gj6UlupdOvCgdO01PCA5pMAwJasGsmZYnvV62axkudcNgZaxBzm_ziTkN022Xjam17UbE_2-zBhhnob6Eidn1ka3mbCzpCR=w2400?source=screenshot.guru" target="_blank">
+                        <img src="https://lh3.googleusercontent.com/pw/AP1GczMvkWnAgigqnUz4BlHM7Gj6UlupdOvCgdO01PCA5pMAwJasGsmZYnvV62axkudcNgZaxBzm_ziTkN022Xjam17UbE_2-zBhhnob6Eidn1ka3mbCzpCR=w2400?source=screenshot.guru" alt="Jingyuan Chen">
                     </a>
                 </div>
                 <div class="header-info">
                     <h1>Jingyuan Chen</h1>
+                    <b>Ph.D. Student</b>
+                    <b>University of Illinois Urbana-Champaign</b>
+                    <p>Research Space 5080, 614 E Daniel Street</p>
                     <div class="contact">
                         <a>jc190[at]uiuc[dot]edu</a>
                         <a href="https://linkedin.com/in/jingyuanchenn" target="_blank">LinkedIn: @jingyuanchenn</a>
+                    </div>
+                    <div class="header-degrees">
+                        <h4>Education</h4>
+                        <ul>
+                            <li>MS Applied Mathematics: Algorithms & Optimization - UIUC 2025 - 2026</li>
+                            <li>Mathematics AB - UC Berkeley 2022 - 2025</li>
+                            <li>Statistics AB - UC Berkeley 2022 - 2025</li>
+                        </ul>
+                        <h4>Research Interests</h4>
+                        <div class="header-interests">
+                            Network Clustering • Network Flows • Information Retrieval • Automated Deduction • Graphons • Random Graphs • High-Dimensional Statistics • Random Matrix Theory • Spectral Methods for Statistics • Statistical Education
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="container">
+    <main>
         <section id="about" class="section">
-            <div class="intro">
-                <p>I am a mathematics and statistics student studying the theory and applications of large random combinatorial structures. Currently, I am interested in graphical models for problems in financial risk, behavioral decision making and neural networks.</p>
-                <p>I am currently TA'ing <a href="https://siebelschool.illinois.edu/academics/courses/is445">IS 445 Data Viz</a> with Professor Turk</p>
-                <p>Also helping run the <a href="https://intercollegiatemathtournament.org/"> Intercollegiate Math Tournament </a> (registration open!!).
-                <p>For those thinking about majoring in Statistics at Berkeley I have a <a href="https://publish.illinois.edu/jingyuanchen/berkeley-stat-advice/">guide</a>.</p>
+            <div class="container">
+                <div class="intro">
+                    <b>About</b>
+                    <p>I am currently focused on large random combinatorial structures, clustering and flows algorithms on complex networks. I also have interests in financial risk, information retrival problems in automated deduction, and statistical education.</p>
+                    <p>I am currently a graduate student instructor for <a href="https://siebelschool.illinois.edu/academics/courses/is445">IS 445 Data Viz</a> taught by my adviser Professor <a href="https://matthewturk.github.io/">Matt Turk</a>.</p>
+                    <p>I am one of the test organizers for the <a href="https://intercollegiatemathtournament.org/"> Intercollegiate Math Tournament</a> (registration open!).</p>
+                    <p>For those thinking about majoring in Statistics at Berkeley I have a <a href="https://publish.illinois.edu/jingyuanchen/berkeley-stat-advice/">guide</a>.</p>
+                    <b>Friends & Mentors</b>
+<p>
+  <a href="https://www.stat.berkeley.edu/~evans/">Professor Steve Evans,</a>
+  <a href="https://andrewpbray.github.io/">Professor Andrew Bray,</a>
+  <a href="https://math.hmc.edu/arvm/">Professor Andrés R. Vindas Meléndez,</a>
+  <a href="https://econ.berkeley.edu/profile/lisa-goldberg">Professor Lisa Goldberg,</a>
+  <a href="https://matthewturk.github.io/">Professor Matthew Turk,</a>
+  <a href="https://math.berkeley.edu/people/faculty/khalilah-beal">Professor Khalilah Beal-Uribe,</a>
+  <a href="https://profiles.ucalgary.ca/peter-daniel-zvengrowski">Professor Emeritus Peter Zvengrowski,</a>
+  <a href="https://github.com/winstonyin">Dr. Winston Yin,</a>
+  <a href="https://aaynameow.blogspot.com/">Aayna,</a>
+  <a href="https://m4n4h1l.github.io/fieldnotes/index.html#about">Manahil,</a>
+  <a href="https://arnavcs.github.io/">Arnav,</a>
+  <a href="https://yilinxia.com/">Yilin,</a>
+  <a href="https://yimingclarali.com/">Yiming,</a>
+  <a href="https://luongcindy.github.io/index.html">Cindy</a>
+</p>
 
+<img src="https://lh3.googleusercontent.com/pw/AP1GczMZflgOF16oGC_6OJ44VL8-t9aIgG-vks5478BnwCajic-tLMN3DJ9ny7DkfTBtpJg--gj3vANfQOuaH8KJ7D0axt5GaWdkKdXTv9LAP-MeE3hHutMG=w2400" alt="Somewhere UAE" class="profile-photo" style="max-width: 100%; width: 100%; height: auto; display: block; margin: 20px auto 0;">
+<p style="text-align: right;">Al Madam, Sharjah</p>
+
+                </div>
             </div>
         </section>
 
         <section id="Teaching" class="section">
-            <h2>Teaching Assistantships / Course Staff</h2>
-            <h3>IS 445: Data Visualization Teaching Assistant (Fall 2025)</h3>            
-            <h3>MATH 113: Abstract Algebra Reader (Summer 2025)</h3>
-            <h3>MATH 105: Multivariate Real Analysis & Measure Theory Reader (Spring 2025)</h3>
-            <h3>STAT 2: Introduction to Statistics Study Center Group Tutor (Spring 2025) </h3>
-            <h3>MATH 53: Multivariate and Vector Calculus Study Center Group Tutor (Summer 2024) </h3>
-            <h3>STAT 20: Introduction to Statistics and Probability Study Center Group Tutor (Spring 2024) </h3>
-            <h3>STAT 2: Introduction to Statistics Study Center Group Tutor (Spring 2024) </h3>
-            <h3>DATA C8: Foundations of Data Science Academic Intern (Fall 2023) </h3>
+            <div class="container">
+                <h2>Teaching Assistantships / Course Staff</h2>
+                <h3>IS 445: Data Visualization Teaching Assistant (Fall 2025)</h3>            
+                <h3>MATH 113: Abstract Algebra Reader (Summer 2025)</h3>
+                <h3>MATH 105: Multivariate Real Analysis & Measure Theory Reader (Spring 2025)</h3>
+                <h3>STAT 2: Introduction to Statistics Study Center Group Tutor (Spring 2025)</h3>
+                <h3>MATH 53: Multivariate and Vector Calculus Study Center Group Tutor (Summer 2024)</h3>
+                <h3>STAT 20: Introduction to Statistics and Probability Study Center Group Tutor (Spring 2024)</h3>
+                <h3>STAT 2: Introduction to Statistics Study Center Group Tutor (Spring 2024)</h3>
+                <h3>DATA C8: Foundations of Data Science Academic Intern (Fall 2023)</h3>
 
-            <h2>Course Development</h2>
-            <h3>Department of Mathematics Student Researcher IV (Spring 2025)</h3>
-            <p>Developing Linear Algebra Education Tools for MATH 56: Linear Algebra, Prototype (<a href="https://linalg-app.vercel.app/"> here </a>). Funded by the "Interactive Tools for Learning Linear Algebra" Instructional Technology and Innovation <a href = "https://ue.berkeley.edu/projects-initiatives/course-development/instructional-tech-innovation/funded-projects"> Grant </a>.</p>
-            <h3>Department of Physics Course Developer (Spring 2024 - 2025)</h3>
-            <p>Developer for Nobel laureate in Physics Saul Perlmutter's L&S 22: Sense & Sensibility & Science course's data science lab on <a href = "https://github.com/sensesensibilityscience/datascience/blob/master/2024/bad_science/bad_science_insurance_experiment.ipynb" > bad science </a>.</p>
-            <h3>DSUS Modules Developer (Fall 2023)</h3>
-            <p>Developed ECON 148: Data Science for Economists' <a href = "https://www.econ148.org/sp25/"> Prophet forecasting lab </a> and converted IEOR 120: Engineering Economics' homeworks into autogradable notebooks.</p>
+                <h2>Course Development</h2>
+                <h3>Department of Mathematics Student Researcher IV (Spring 2025)</h3>
+                <p>Developing Linear Algebra Education Tools for MATH 56: Linear Algebra, Prototype (<a href="https://linalg-app.vercel.app/">here</a>). Funded by the "Interactive Tools for Learning Linear Algebra" Instructional Technology and Innovation <a href="https://ue.berkeley.edu/projects-initiatives/course-development/instructional-tech-innovation/funded-projects">Grant</a>.</p>
+                
+                <h3>Department of Physics Course Developer (Spring 2024 - 2025)</h3>
+                <p>Developer for Nobel laureate in Physics Saul Perlmutter's L&S 22: Sense & Sensibility & Science course's data science lab on <a href="https://github.com/sensesensibilityscience/datascience/blob/master/2024/bad_science/bad_science_insurance_experiment.ipynb">bad science</a>.</p>
+                
+                <h3>DSUS Modules Developer (Fall 2023)</h3>
+                <p>Developed ECON 148: Data Science for Economists' <a href="https://www.econ148.org/sp25/">Prophet forecasting lab</a> and converted IEOR 120: Engineering Economics' homeworks into autogradable notebooks.</p>
+            </div>
         </section>
 
-
         <section id="research" class="section">
-            <h2>Ongoing Research @ Berkeley</h2>
-            <h3>College of Letters & Science: <a href="https://research.berkeley.edu/surf-fellows/jingyuan-chen/"> Research Fellow</a></h3>
-            <p>Researching sparse graphons with Professor Steven Evans</p>
-            
-            <h3>Co-author</h3>
-            <p>Co-authoring a paper on Risk Networks of Reinsurance with <a href = "https://www.olab.berkeley.edu/graduate-students-1/elena-stacy-f7ch8" > Elaine Shen </a> Ph.D. Candidate at Berkeley Economics and <a href = "https://tomrutter42.github.io/" > Thomas Rutter </a>  Ph.D. Candidate at Stanford Economics.</p>
-            
-            <h3>Researcher at UC Berkeley <a href="https://cdar.berkeley.edu/">Consortium for Data Analytics in Risk</a> </h3>
-            <p>Investigating high-dimensional covariance estimation and factor counting under Professor <a href = "https://econ.berkeley.edu/profile/lisa-goldberg" > Lisa R Goldberg </a>.</p>
-            
-            <h3>Past Research Assistantships</h3>
-            <p>RA for Professor <a href = "https://diagdavenport.com/" > Diag Davenport </a> at the Goldman School of Public Policy. Mathematically formalizing empirical work on the pivotal voter effect.</p>
-            <p>RA for Professor <a href = "https://luisacef.github.io/research/" > Luisa Cefala </a> & <a href = "https://afras-sial.github.io/" > Afras Sial </a> Ph.D. Candidate at Berkeley Economics. Creating simulations and statistical estimations on earned wage accessed technology.</p>
-            <p>RA for Professor <a href="https://sites.google.com/view/ofereldar"> Ofer Eldar </a> at Berkeley Law. Automating the extraction of net operating loss numbers from unstructured 10-K files.</p>
+            <div class="container">
+                <h2>Current Research</h2>
+                
+                <h3>UC Berkeley College of Letters & Science: <a href="https://research.berkeley.edu/surf-fellows/jingyuan-chen/">Research Fellow</a></h3>
+                <p>Researching sparse graphons previously advised by Professor Steven Evans (Math/Stat, Berkeley). Currently collaborating with Ph.D. candidate Siddhi Kanta Mishra (IEMS, UCF), and Professor Jialie "Jerry" Shen (CS, SGUL) on applications of graphons towards information flow problems in neural networks.</p>
+                
+                <h3>Co-author</h3>
+                <p>Co-authoring a paper on Risk Networks of Reinsurance with <a href="https://www.olab.berkeley.edu/graduate-students-1/elena-stacy-f7ch8">Elaine Shen</a> Ph.D. Candidate at Berkeley Economics and <a href="https://tomrutter42.github.io/">Thomas Rutter</a> Ph.D. Candidate at Stanford Economics.</p>
+                
+                <h3>Researcher at UC Berkeley <a href="https://cdar.berkeley.edu/">Consortium for Data Analytics in Risk</a></h3>
+                <p>Investigating high-dimensional covariance estimation and factor counting under Professor <a href="https://econ.berkeley.edu/profile/lisa-goldberg">Lisa R Goldberg</a>.</p>
+                
+                <h3>Past Research Assistantships</h3>
+                <p>RA for Professor <a href="https://diagdavenport.com/">Diag Davenport</a> at the Goldman School of Public Policy. Mathematically formalizing empirical work on the pivotal voter effect.</p>
+                <p>RA for Professor <a href="https://luisacef.github.io/research/">Luisa Cefala</a> & <a href="https://afras-sial.github.io/">Afras Sial</a> Ph.D. Candidate at Berkeley Economics. Creating simulations and statistical estimations on earned wage accessed technology.</p>
+                <p>RA for Professor <a href="https://sites.google.com/view/ofereldar">Ofer Eldar</a> at Berkeley Law. Automating the extraction of net operating loss numbers from unstructured 10-K files.</p>
+            </div>
         </section>
 
         <section id="previous" class="section">
-            <h2>Previous Work</h2>
-            <h3> <a href = "https://math.berkeley.edu/~musa/former_officers#:~:text=2014%2D2016-,Jingyuan%20Chen,-Former%20Professional%20Chair"> Officer </a> at Berkeley's Mathematics Undergraduate Student Association</h3>
-            <h3> <a href = "https://www.instagram.com/p/DLi2zxep26H/?img_index=1"> Summer Camp Instructor </a> at Berkeley's department of Industrial Engineering and Operations Research.
-            <h3>Intern Statistician at Gilead Sciences</h3>
-            <h3>Summer Analyst ING Group N.V. Corporate Banking</h3>
-            <h3>Marketing & Recruitment Director at Berkeley Math Tournament</h3>
-            <h3> <a href = "https://crowdfund.berkeley.edu/project/38919" > Finance Lead </a> & Avionics Engineer at Space Technologies and Rocketry @ Berkeley</h3>
+            <div class="container">
+                <h2>Previous Work</h2>
+                
+                <h3><a href="https://math.berkeley.edu/~musa/former_officers#:~:text=2014%2D2016-,Jingyuan%20Chen,-Former%20Professional%20Chair">Officer</a> at Berkeley's Mathematics Undergraduate Student Association</h3>
+                
+                <h3><a href="https://www.instagram.com/p/DLi2zxep26H/?img_index=1">Summer Camp Instructor</a> at Berkeley's department of Industrial Engineering and Operations Research</h3>
+                
+                <h3>Intern Statistician at Gilead Sciences</h3>
+                
+                <h3>Summer Analyst ING Group N.V. Corporate Banking</h3>
+                
+                <h3>Marketing & Recruitment Director at Berkeley Math Tournament</h3>
+                
+                <h3><a href="https://crowdfund.berkeley.edu/project/38919">Finance Lead</a> & Avionics Engineer at Space Technologies and Rocketry @ Berkeley</h3>
+            </div>
         </section>
 
         <section id="education" class="section">
-            <h2>Education</h2>
-            
-            <p>I am currently a PhD student at UIUC under Professor <a href="https://matthewturk.github.io/">Matthew Turk</a></p>
-
-            <h3>University of California, Berkeley | 2022 - 2025</h3>
-            <p>College of Letters & Science: Mathematics A.B. w/ Honours</p>
-            <p>College of Computing, Data Science, and Society: Statistics A.B. w/ Honours</p>
-            
-            <h3>Selected Coursework</h3>
-            <p>Here's some selected coursework I've taken throughout the years.</p>
-           <h3>Graduate Division Coursework (Illinois):</h3>
-            <div class="courses-grid">
-                <div class="course">MATH 595: Representation-theoretic Methods in Quantum Information Theory <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=77852" class="professor-link">Ph.D.</a></div>
-                <div class="course">STAT 578: Spectral Methods, Network Analysis & Nonconvex Optimization - Joshua Agterberg <a href="https://jagterberg.github.io/" class="professor-link">Ph.D.</a></div>
-                <div class="course">CS 576: Computer-aided Methods for Formal Deduction - Felix Leditzky <a href="https://felixleditzky.info/" class="professor-link">Ph.D.</a></div>
+            <div class="container">
+                <h2>Education</h2>
                 
+                <p>I am currently a PhD student at UIUC under Professor <a href="https://matthewturk.github.io/">Matthew Turk</a>.</p>
+                <h3>University of Illinois Urbana-Champaign | 2025 - 2030</h3>
+                <p>School of Information Sciences: PhD Information Sciences, Statistics Minor</p>
+                <p>College of Liberal Arts & Sciences: MS Applied Mathematics: Algorithms & Optimization </p>
+                <h3>University of California, Berkeley | 2022 - 2025</h3>
+                <p>College of Letters & Science: Mathematics AB Honours</p>
+                <p>College of Computing, Data Science & Society: Statistics AB Honours</p>
+                
+                <h3>Selected Coursework</h3>
+                <p>Here's some selected coursework I've taken throughout the years.</p>
+                
+                <h3>Graduate Division Coursework (Illinois):</h3>
+                <div class="courses-grid">
+                    <div class="course">MATH 595: Representation-theoretic Methods in Quantum Information Theory <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=77852" class="professor-link">Ph.D.</a></div>
+                    <div class="course">STAT 578: Spectral Methods, Network Analysis & Nonconvex Optimization - Joshua Agterberg <a href="https://jagterberg.github.io/" class="professor-link">Ph.D.</a></div>
+                    <div class="course">CS 576: Computer-aided Methods for Formal Deduction - Felix Leditzky <a href="https://felixleditzky.info/" class="professor-link">Ph.D.</a></div>
+                </div>
+                
+                <h3>Graduate Division Coursework (Berkeley):</h3>
+                <div class="courses-grid">
+                    <div class="course">ECON 217: Risk - Lisa R Goldberg <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=36755" class="professor-link">Ph.D.</a></div>
+                    <div class="course">STAT 244: High Powered Statistical Computing in Julia - Chris Paciorek <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=77852" class="professor-link">Ph.D.</a></div>
+                    <div class="course">STAT C205A: Measure Theoretic Probability - Steven N Evans <a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=32852" class="professor-link">Ph.D.</a></div>
+                    <div class="course">STAT 210A: Theoretical Statistics - Will Fithian <a href="https://www.mathgenealogy.org/id.php?id=269069" class="professor-link">Ph.D.</a></div>
+                    <div class="course">MATH 250A: Groups, Rings and Fields - Richard Borcherds <a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=32941" class="professor-link">Ph.D.</a></div>
+                    <div class="course">MATH C223: Eigenvalues of Random Matrices - Vadim Gorin <a href="https://www.stat.berkeley.edu/~vadicgor/" class="professor-link">Ph.D.</a></div>
+                    <div class="course">MATH 221: Advanced Matrix Computations - Jim Demmel <a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=27477" class="professor-link">Ph.D.</a></div>
+                </div>
+                
+                <h3>Selected Upper Division Coursework:</h3>
+                <div class="courses-grid">
+                    <div class="course">ENGIN 183: Engineering Leadership - Carrie Requist <a href="https://www.linkedin.com/in/carrierequist/" class="professor-link">MBA</a></div>
+                    <div class="course">ECON 157: Health Economics - Ryan Edwards <a href="https://u.demog.berkeley.edu/~redwards/" class="professor-link">Ph.D.</a></div>
+                    <div class="course">ECON 141: Mathematical Econometrics - Demian Pouzo <a href="https://www.econ.berkeley.edu/profile/demian-pouzo" class="professor-link">Ph.D.</a></div>
+                    <div class="course">ECON C110: Game Theory - Tyler Maxey <a href="https://www.tylermaxey.com/" class="professor-link">Ph.D.</a></div>
+                    <div class="course">INFO 190: Skepticism in a Data-Driven World - Jevin West <a href="https://ischool.uw.edu/people/faculty/profile/jevinw" class="professor-link">Ph.D.</a></div>
+                    <div class="course">COMPSCI 169A: Software Engineering - Armando Fox <a href="https://www.armandofox.com/" class="professor-link">Ph.D.</a></div>
+                    <div class="course">STAT H195: Honors Thesis (History of STAT 2 & Intro Stats Courses) - Advised by Andrew Bray <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=237086" class="professor-link">Ph.D.</a></div>
+                    <div class="course">STAT 165: Forecasting - Will Fithian <a href="https://www.mathgenealogy.org/id.php?id=269069" class="professor-link">Ph.D.</a></div>
+                    <div class="course">STAT 158: Experimental Design - Andrew Bray <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=237086" class="professor-link">Ph.D.</a></div>
+                    <div class="course">STAT 134: Concepts of Probability - Adam Lucas <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=37044" class="professor-link">Ph.D.</a></div>
+                    <div class="course">MATH 130: Groups and Geometry: Matroid Theory - Andres Vindas-Melendez <a href="https://www.mathgenealogy.org/id.php?id=273487" class="professor-link">Ph.D.</a></div>
+                    <div class="course">MATH 128A: Numerical Analysis - Per-Olof Persson <a href="https://www.mathgenealogy.org/id.php?id=92369" class="professor-link">Ph.D.</a></div>
+                    <div class="course">MATH 113: Abstract Algebra - Dan-Virgil Voiculescu <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=32920" class="professor-link">Ph.D.</a></div>
+                    <div class="course">MATH 110: Abstract Linear Algebra - Olga Holtz <a href="https://www.mathgenealogy.org/id.php?id=49270" class="professor-link">Ph.D.</a></div>
+                    <div class="course">MATH 105: Multivariate Analysis & Measure Theory - Khalilah Beal <a href="https://math.berkeley.edu/people/faculty/khalilah-beal" class="professor-link">Ph.D.</a></div>
+                    <div class="course">MATH 104: Real Analysis - Khalilah Beal <a href="https://math.berkeley.edu/people/faculty/khalilah-beal" class="professor-link">Ph.D.</a></div>
+                </div>
+                
+                <h3>Lower Division Coursework:</h3>
+                <div class="courses-grid">
+                    <div class="course">COMPSCI 61B: Data Structures (Java) - Justin Yokota <a href="https://sp24.datastructur.es/staff/" class="professor-link">M.S.</a></div>
+                    <div class="course">COMPSCI 61A: Program Structures (Python, Lisp) - Satish Rao <a href="https://www2.eecs.berkeley.edu/Faculty/Homepages/rao.html" class="professor-link">Ph.D.</a></div>
+                    <div class="course">DATA C8: Data Science Foundations - Joseph Gonzalez <a href="https://www2.eecs.berkeley.edu/Faculty/Homepages/jegonzal.html" class="professor-link">Ph.D.</a></div>
+                    <div class="course">STAT 33B: Advanced R Programming - Gaston Sanchez <a href="https://statistics.berkeley.edu/people/gaston-sanchez" class="professor-link">Ph.D.</a></div>
+                    <div class="course">MATH 55: Discrete Mathematics - Sylvie Corteel <a href="https://www.mathgenealogy.org/id.php?id=216292" class="professor-link">Ph.D.</a></div>
+                </div>
+                
+                <h3>Prior Education</h3>
+                <p>I did my high school at Dubai American Academy, junior high at Webber Academy (Calgary), and primary years at Jakarta International School.</p>
             </div>
-
-            
-            <h3>Graduate Division Coursework (Berkeley):</h3>
-            <div class="courses-grid">
-                <div class="course">ECON 217: Risk - Lisa R Goldberg <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=36755" class="professor-link">Ph.D.</a></div>
-                <div class="course">STAT 244: High Powered Statistical Computing in Julia - Chris Paciorek <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=77852" class="professor-link">Ph.D.</a></div>
-                <div class="course">STAT C205A: Measure Theoretic Probability - Steven N Evans <a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=32852" class="professor-link">Ph.D.</a></div>
-                <div class="course">STAT 210A: Theoretical Statistics - Will Fithian <a href="https://www.mathgenealogy.org/id.php?id=269069" class="professor-link">Ph.D.</a></div>
-                <div class="course">MATH 250A: Groups, Rings and Fields - Richard Borcherds <a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=32941" class="professor-link">Ph.D.</a></div>
-                <div class="course">MATH C223: Eigenvalues of Random Matrices - Vadim Gorin <a href="https://www.stat.berkeley.edu/~vadicgor/" class="professor-link">Ph.D.</a></div>
-                <div class="course">MATH 221: Advanced Matrix Computations - Jim Demmel <a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=27477" class="professor-link">Ph.D.</a></div>
-            </div>
-            
-            <h3>Selected Upper Division Coursework:</h3>
-            <div class="courses-grid">
-                <div class="course">ENGIN 183: Engineering Leadership - Carrie Requist <a href="https://www.linkedin.com/in/carrierequist/" class="professor-link">MBA</a></div>
-                <div class="course">ECON 157: Health Economics - Ryan Edwards <a href="https://u.demog.berkeley.edu/~redwards/" class="professor-link">Ph.D.</a></div>
-                <div class="course">ECON 141: Mathematical Econometrics - Demian Pouzo <a href="https://www.econ.berkeley.edu/profile/demian-pouzo" class="professor-link">Ph.D.</a></div>
-                <div class="course">ECON C110: Game Theory - Tyler Maxey <a href="https://www.tylermaxey.com/" class="professor-link">Ph.D.</a></div>
-                <div class="course">INFO 190: Skepticism in a Data-Driven World - Jevin West <a href="https://ischool.uw.edu/people/faculty/profile/jevinw" class="professor-link">Ph.D.</a></div>
-                <div class="course">COMPSCI 169A: Software Engineering - Armando Fox <a href="https://www.armandofox.com/" class="professor-link">Ph.D.</a></div>
-                <div class="course">STAT H195: Honors Thesis (History of STAT 2 & Intro Stats Courses) - Advised by Andrew Bray <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=237086" class="professor-link">Ph.D.</a></div>
-                <div class="course">STAT 165: Forecasting - Will Fithian <a href="https://www.mathgenealogy.org/id.php?id=269069" class="professor-link">Ph.D.</a></div>
-                <div class="course">STAT 158: Experimental Design - Andrew Bray <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=237086" class="professor-link">Ph.D.</a></div>
-                <div class="course">STAT 134: Concepts of Probability - Adam Lucas <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=37044" class="professor-link">Ph.D.</a></div>
-                <div class="course">MATH 130: Groups and Geometry: Matroid Theory - Andres Vindas-Melendez <a href="https://www.mathgenealogy.org/id.php?id=273487" class="professor-link">Ph.D.</a></div>
-                <div class="course">MATH 128A: Numerical Analysis - Per-Olof Persson <a href="https://www.mathgenealogy.org/id.php?id=92369" class="professor-link">Ph.D.</a></div>
-                <div class="course">MATH 113: Abstract Algebra - Dan-Virgil Voiculescu <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=32920" class="professor-link">Ph.D.</a></div>
-                <div class="course">MATH 110: Abstract Linear Algebra - Olga Holtz <a href="https://www.mathgenealogy.org/id.php?id=49270" class="professor-link">Ph.D.</a></div>
-                <div class="course">MATH 105: Multivariate Analysis & Measure Theory - Khalilah Beal <a href="https://math.berkeley.edu/people/faculty/khalilah-beal" class="professor-link">Ph.D.</a></div>
-                <div class="course">MATH 104: Real Analysis - Khalilah Beal <a href="https://math.berkeley.edu/people/faculty/khalilah-beal" class="professor-link">Ph.D.</a></div>
-            </div>
-            
-            <h3>Lower Division Coursework:</h3>
-            <div class="courses-grid">
-                <div class="course">COMPSCI 61B: Data Structures (Java) - Justin Yokota <a href="https://sp24.datastructur.es/staff/" class="professor-link">M.S.</a></div>
-                <div class="course">COMPSCI 61A: Program Structures (Python, Lisp) - Satish Rao <a href="https://www2.eecs.berkeley.edu/Faculty/Homepages/rao.html" class="professor-link">Ph.D.</a></div>
-                <div class="course">DATA C8: Data Science Foundations - Joseph Gonzalez <a href="https://www2.eecs.berkeley.edu/Faculty/Homepages/jegonzal.html" class="professor-link">Ph.D.</a></div>
-                <div class="course">STAT 33B: Advanced R Programming - Gaston Sanchez <a href="https://statistics.berkeley.edu/people/gaston-sanchez" class="professor-link">Ph.D.</a></div>
-                <div class="course">MATH 55: Discrete Mathematics - Sylvie Corteel <a href="https://www.mathgenealogy.org/id.php?id=216292" class="professor-link">Ph.D.</a></div>
-            </div>
-            
-            <h3>Prior Education</h3>
-            <p>I did my high school at Dubai American Academy, junior high at Webber Academy (Calgary), and primary years at Jakarta International School.</p>
         </section>
     </main>
 
@@ -710,6 +825,74 @@
         }
         
         animate();
+        
+        // Navigation system for separate pages
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('nav a[href^="#"]');
+            const header = document.querySelector('header');
+            const sections = document.querySelectorAll('.section');
+            const footer = document.querySelector('footer');
+            
+            // Function to show a specific section
+            function showSection(targetId) {
+                // Hide header and all sections
+                header.classList.add('hidden');
+                sections.forEach(section => section.classList.add('hidden'));
+                footer.classList.add('hidden');
+                
+                // Remove active class from all nav links
+                navLinks.forEach(link => link.classList.remove('active'));
+                
+                // Show the target section
+                if (targetId === 'about' || targetId === '') {
+                    // Show header and about section for home
+                    header.classList.remove('hidden');
+                    const aboutSection = document.getElementById('about');
+                    if (aboutSection) aboutSection.classList.remove('hidden');
+                    footer.classList.remove('hidden');
+                    
+                    // Set active nav link
+                    const aboutLink = document.querySelector('nav a[href="#about"]');
+                    if (aboutLink) aboutLink.classList.add('active');
+                } else {
+                    // Show specific section
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection) {
+                        targetSection.classList.remove('hidden');
+                        footer.classList.remove('hidden');
+                    }
+                    
+                    // Set active nav link
+                    const activeLink = document.querySelector(`nav a[href="#${targetId}"]`);
+                    if (activeLink) activeLink.classList.add('active');
+                }
+                
+                // Scroll to top
+                window.scrollTo(0, 0);
+            }
+            
+            // Handle navigation clicks
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    showSection(targetId);
+                    
+                    // Update URL hash
+                    history.pushState(null, null, `#${targetId}`);
+                });
+            });
+            
+            // Handle browser back/forward buttons
+            window.addEventListener('popstate', function() {
+                const hash = window.location.hash.substring(1);
+                showSection(hash || 'about');
+            });
+            
+            // Show initial section based on URL hash
+            const initialHash = window.location.hash.substring(1);
+            showSection(initialHash || 'about');
+        });
     </script>
 </body>
 </html>
