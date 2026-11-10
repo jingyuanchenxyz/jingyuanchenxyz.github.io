@@ -20,11 +20,22 @@
             --bg: #f5f7f6;
             --card: #ffffff;
             --border: rgba(21, 32, 31, 0.08);
-            --grid: rgba(0, 121, 116, 0.045);
             --radius: 6px;
             --shadow: 0 1px 2px rgba(21, 32, 31, 0.04), 0 8px 24px rgba(21, 32, 31, 0.05);
             --transition: all 0.25s ease;
-            --grid-size: 24px;
+            /* pixel-panel styling; --px is kept equal to the chalkboard's art-pixel size */
+            --px: 4px;
+            --outline: #3d2410;
+            --bevel: #e4e2d8;
+            --drop: rgba(14, 24, 19, 0.45);
+            --pixel-panel:
+                inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 0 var(--bevel),
+                0 calc(-1 * var(--px)) 0 0 var(--outline),
+                0 var(--px) 0 0 var(--outline),
+                calc(-1 * var(--px)) 0 0 0 var(--outline),
+                var(--px) 0 0 0 var(--outline),
+                var(--px) calc(2 * var(--px)) 0 0 var(--drop),
+                calc(2 * var(--px)) var(--px) 0 0 var(--drop);
         }
 
         * {
@@ -33,27 +44,20 @@
             box-sizing: border-box;
         }
 
-        /* ---------- Background: faint graph paper + random graph canvas ---------- */
-        body::before {
-            content: '';
+        /* ---------- Background: pixel-art chalkboard ---------- */
+        .board-wrap {
             position: fixed;
             inset: 0;
-            background-color: var(--bg);
-            background-image:
-                linear-gradient(var(--grid) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-            background-size: var(--grid-size) var(--grid-size);
-            z-index: -2;
+            overflow: hidden;
+            z-index: -1;
             pointer-events: none;
+            background: #2f4a3c;
         }
 
-        #math-canvas {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
+        #board {
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
 
 
@@ -61,7 +65,7 @@
             font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
             line-height: 1.6;
             color: var(--ink);
-            background-color: transparent;
+            background-color: #2f4a3c;
             font-size: 16px;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
@@ -117,9 +121,8 @@
             width: 100%;
             aspect-ratio: 1 / 1;
             object-fit: cover;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
+            border-radius: 0;
+            box-shadow: var(--pixel-panel);
             background: var(--card);
         }
 
@@ -127,9 +130,8 @@
             display: flex;
             flex-direction: column;
             background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            border-radius: 0;
+            box-shadow: var(--pixel-panel);
             padding: 1.75rem 2rem;
         }
 
@@ -353,8 +355,12 @@
         figure img {
             max-width: 100%;
             height: auto;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            border-radius: 0;
+            box-shadow:
+                0 -3px 0 0 #d3dad6,
+                0 3px 0 0 #d3dad6,
+                -3px 0 0 0 #d3dad6,
+                3px 0 0 0 #d3dad6;
         }
 
         figcaption {
@@ -369,9 +375,8 @@
             background: var(--card);
             margin: 0 auto 2rem;
             max-width: 960px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
+            border-radius: 0;
+            box-shadow: var(--pixel-panel);
             position: relative;
             z-index: 10;
             min-height: calc(100vh - 140px);
@@ -467,8 +472,12 @@
         .course {
             padding: 0.9rem 1rem;
             background: #fbfcfc;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
+            border-radius: 0;
+            box-shadow:
+                0 -2px 0 0 #d3dad6,
+                0 2px 0 0 #d3dad6,
+                -2px 0 0 0 #d3dad6,
+                2px 0 0 0 #d3dad6;
             font-size: 0.92rem;
             display: flex;
             flex-direction: column;
@@ -478,6 +487,11 @@
 
         .course:hover {
             background: #fff;
+            box-shadow:
+                0 -2px 0 0 var(--accent),
+                0 2px 0 0 var(--accent),
+                -2px 0 0 0 var(--accent),
+                2px 0 0 0 var(--accent);
         }
 
         .course .code {
@@ -530,7 +544,7 @@
 
         footer p {
             font-size: 0.85rem;
-            color: var(--faint);
+            color: rgba(242, 241, 234, 0.7);
             margin: 0;
         }
 
@@ -545,7 +559,7 @@
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             z-index: 20;
-            border-bottom: 1px solid var(--border);
+            box-shadow: 0 var(--px) 0 0 var(--outline), 0 calc(2 * var(--px)) 0 0 var(--drop);
         }
 
         nav ul {
@@ -706,7 +720,7 @@
     </style>
 </head>
 <body>
-    <canvas id="math-canvas" aria-hidden="true"></canvas>
+    <div class="board-wrap" aria-hidden="true"><canvas id="board"></canvas></div>
 
     <nav>
         <div class="container">
@@ -786,7 +800,7 @@
                         <a href="https://www.stat.berkeley.edu/~evans/">Professor Steve Evans</a>,
                         <a href="https://andrewpbray.github.io/">Professor Andrew Bray</a>,
                         <a href="https://math.hmc.edu/arvm/">Professor Andrés R. Vindas Meléndez</a>,
-                        <a href="https://econ.berkeley.edu/profile/lisa-goldberg">Professor Lisa Goldberg</a>,
+                        <a href="https://math.berkeley.edu/people/lisa-goldberg">Professor Lisa Goldberg</a>,
                         <a href="https://math.berkeley.edu/people/faculty/khalilah-beal">Professor Khalilah Beal-Uribe</a>,
                         <a href="https://profiles.ucalgary.ca/peter-daniel-zvengrowski">Professor Emeritus Peter Zvengrowski</a>,
                         <a href="https://matthewturk.github.io/">Professor Matthew Turk</a>,
@@ -858,7 +872,7 @@
 
                     <h3>Researcher at the UC Berkeley <a href="https://cdar.econ.berkeley.edu/">Consortium for Data Analytics in Risk</a></h3>
                     <p>High-dimensional covariance estimation and factor counting.</p>
-                    <p class="who">PI: <a href="https://econ.berkeley.edu/profile/lisa-goldberg">Lisa R. Goldberg</a></p>
+                    <p class="who">PI: <a href="https://math.berkeley.edu/people/lisa-goldberg">Lisa R. Goldberg</a></p>
 
                     <h3>Affiliate Graduate Student at the <a href="https://lcdm.illinois.edu/about.html">Laboratory for Computation, Data, and Machine Learning (LCDM)</a></h3>
                     <p>Transfer entropy for information flow in financial networks.</p>
@@ -1019,217 +1033,168 @@
 
     <script>
         /*
-         * Background: an Erdős–Rényi graph whose edge probability p rises and falls.
-         *
-         * Each candidate pair carries a weight U ~ Uniform(0, p_max); the pair is an edge
-         * exactly when U <= p(t). Pairs with weight above p_max never appear, so every
-         * frame is a draw from G(n, p(t)). p climbs smoothly from 0 to p_max (np = 3),
-         * holds, then falls back to 0. At the top the weights of the (now all present)
-         * edges are redrawn, so the graph comes apart in a different order than it was
-         * built while each frame stays exactly G(n, p). At the bottom a fresh set of pairs
-         * is drawn for the next cycle. The largest component is drawn in the accent
-         * colour. Vertex positions carry no meaning; they are only spread out for legibility.
+         * Background: a blank chalkboard drawn as pixel art.
+         * The board is painted into a low-resolution canvas (one art pixel = PX screen
+         * pixels) and scaled up with nearest-neighbour sampling, so every pixel stays crisp.
+         * A fixed seed keeps the texture identical between visits and on resize.
          */
         (function () {
-            const canvas = document.getElementById('math-canvas');
+            const canvas = document.getElementById('board');
             const ctx = canvas.getContext('2d');
-            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-            const TEAL = '0, 121, 116';
-            const SLATE = '70, 86, 84';
-            const C_MAX = 3.0;          // peak expected degree, np
-            const RISE_MS = 40000;
-            const TOP_MS = 6000;
-            const FALL_MS = 40000;
-            const EMPTY_MS = 3000;
-            const CYCLE_MS = RISE_MS + TOP_MS + FALL_MS + EMPTY_MS;
-            const FADE_MS = 1400;       // edges fade in and out rather than popping
+            const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+            const C = {
+                board: hex('#2f4a3c'), boardLight: hex('#355342'), boardDark: hex('#2a4336'),
+                smudge: hex('#3b5948'), smudgeHi: hex('#42614f'), dust: hex('#56725f'), speck: hex('#8fa596'),
+                woodHi: hex('#b8834b'), wood: hex('#8f5c30'), woodMid: hex('#7d4e28'), woodDark: hex('#6b411f'),
+                woodShadow: hex('#3d2410'), boardShadow: hex('#22362b'),
+                chalk: hex('#f2f1ea'), chalkEnd: hex('#d6d5cc'), chalkShade: hex('#bdbcb3'),
+                chalkYellow: hex('#f1e6a6'), chalkYellowShade: hex('#cfc386'),
+                chalkPink: hex('#f2c4c8'), chalkPinkShade: hex('#d1a2a6'),
+                felt: hex('#4a4a4a'), feltDark: hex('#3a3a3a'), eraserWood: hex('#c9a46c'), eraserWoodDark: hex('#a6824f')
+            };
 
-            let W = 0, H = 0;
-            let n, pMax, nodes, pairs, deg, inGiant, start, topDone, lastNow = 0;
-
-            function resize() {
-                const dpr = Math.min(window.devicePixelRatio || 1, 2);
-                W = window.innerWidth;
-                H = window.innerHeight;
-                canvas.width = Math.round(W * dpr);
-                canvas.height = Math.round(H * dpr);
-                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            function mulberry32(seed) {
+                return function () {
+                    seed = (seed + 0x6D2B79F5) | 0;
+                    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+                    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+                };
             }
 
-            // Mitchell's best-candidate sampling: evenly spread, still random-looking.
-            function sampleNodes(count) {
-                const pts = [];
-                const ar = W / Math.max(H, 1);
-                for (let i = 0; i < count; i++) {
-                    let best = null, bestD = -1;
-                    const candidates = i === 0 ? 1 : 12;
-                    for (let c = 0; c < candidates; c++) {
-                        const u = 0.03 + 0.94 * Math.random();
-                        const v = 0.05 + 0.90 * Math.random();
-                        let d = Infinity;
-                        for (const q of pts) {
-                            const dx = (u - q.u) * ar, dy = v - q.v;
-                            const dd = dx * dx + dy * dy;
-                            if (dd < d) d = dd;
-                        }
-                        if (d > bestD) { bestD = d; best = { u, v }; }
-                    }
-                    best.ph1 = Math.random() * Math.PI * 2;
-                    best.ph2 = Math.random() * Math.PI * 2;
-                    best.amp = 3 + Math.random() * 5;
-                    pts.push(best);
-                }
-                return pts;
-            }
+            function draw() {
+                const PX = window.innerWidth < 700 ? 3 : 4;
+                const w = Math.ceil(window.innerWidth / PX);
+                const h = Math.ceil(window.innerHeight / PX);
+                canvas.width = w;
+                canvas.height = h;
+                canvas.style.width = (w * PX) + 'px';
+                canvas.style.height = (h * PX) + 'px';
+                document.documentElement.style.setProperty('--px', PX + 'px');
 
-            // Fresh candidate pairs: each of the C(n,2) pairs is kept with probability p_max,
-            // and a kept pair's weight is then Uniform(0, p_max).
-            function samplePairs() {
-                pairs = [];
-                for (let i = 0; i < n; i++) {
-                    for (let j = i + 1; j < n; j++) {
-                        if (Math.random() < pMax) {
-                            pairs.push({ a: i, b: j, u: Math.random() * pMax, on: false, t: -1e9 });
-                        }
-                    }
-                }
-            }
+                const img = ctx.createImageData(w, h);
+                const d = img.data;
+                const R = mulberry32(20261110);
+                const put = (x, y, c) => {
+                    if (x < 0 || y < 0 || x >= w || y >= h) return;
+                    const i = (y * w + x) * 4;
+                    d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 255;
+                };
+                const rect = (x0, y0, x1, y1, c) => {
+                    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) put(x, y, c);
+                };
 
-            function recomputeComponents() {
-                const parent = Array.from({ length: n }, (_, i) => i);
-                const size = new Array(n).fill(1);
-                const find = i => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
-                deg = new Array(n).fill(0);
-                for (const e of pairs) {
-                    if (!e.on) continue;
-                    deg[e.a]++; deg[e.b]++;
-                    let a = find(e.a), b = find(e.b);
-                    if (a === b) continue;
-                    if (size[a] < size[b]) { const t = a; a = b; b = t; }
-                    parent[b] = a; size[a] += size[b];
-                }
-                let root = -1, best = 0;
-                for (let i = 0; i < n; i++) {
-                    const r = find(i);
-                    if (r === i && size[i] > best) { best = size[i]; root = i; }
-                }
-                inGiant = new Uint8Array(n);
-                if (best >= 4) for (let i = 0; i < n; i++) inGiant[i] = find(i) === root ? 1 : 0;
-            }
+                const F = 8;                       // frame thickness
+                const LEDGE = 4;                   // chalk tray height
+                const bx0 = F, by0 = F, bx1 = w - F, by1 = h - F;
+                const trayTop = by1 - LEDGE;
 
-            function setP(p, now) {
-                let changed = false;
-                for (const e of pairs) {
-                    const want = e.u <= p;
-                    if (want !== e.on) { e.on = want; e.t = now; changed = true; }
-                }
-                if (changed) recomputeComponents();
-            }
-
-            const smooth = x => x * x * (3 - 2 * x);
-
-            function pAt(el) {
-                if (el < RISE_MS) return pMax * smooth(el / RISE_MS);
-                el -= RISE_MS;
-                if (el < TOP_MS) return pMax;
-                el -= TOP_MS;
-                if (el < FALL_MS) return pMax * (1 - smooth(el / FALL_MS));
-                return 0;
-            }
-
-            function draw(now) {
-                ctx.clearRect(0, 0, W, H);
-                const t = reduceMotion ? 0 : now * 0.00022;
-                const px = new Float32Array(n), py = new Float32Array(n);
-                for (let i = 0; i < n; i++) {
-                    const nd = nodes[i];
-                    px[i] = nd.u * W + nd.amp * Math.sin(t + nd.ph1);
-                    py[i] = nd.v * H + nd.amp * Math.cos(0.8 * t + nd.ph2);
-                }
-
-                ctx.lineWidth = 1;
-                for (let pass = 0; pass < 2; pass++) {
-                    for (const e of pairs) {
-                        const g = e.on && inGiant[e.a] === 1;
-                        if ((pass === 1) !== g) continue;   // giant component drawn on top
-                        let color;
-                        if (e.on) {
-                            const age = reduceMotion ? 1 : Math.min(1, (now - e.t) / FADE_MS);
-                            color = g ? 'rgba(' + TEAL + ',' + (0.34 * age) + ')'
-                                      : 'rgba(' + SLATE + ',' + (0.17 * age) + ')';
-                        } else {
-                            const left = 1 - (now - e.t) / FADE_MS;
-                            if (left <= 0 || reduceMotion) continue;
-                            color = 'rgba(' + SLATE + ',' + (0.17 * left) + ')';
-                        }
-                        ctx.strokeStyle = color;
-                        ctx.beginPath();
-                        ctx.moveTo(px[e.a], py[e.a]);
-                        ctx.lineTo(px[e.b], py[e.b]);
-                        ctx.stroke();
+                // --- slate: base colour with a little per-pixel grain
+                for (let y = by0; y < trayTop; y++) {
+                    for (let x = bx0; x < bx1; x++) {
+                        const r = R();
+                        put(x, y, r < 0.06 ? C.boardLight : r < 0.11 ? C.boardDark : C.board);
                     }
                 }
 
-                for (let i = 0; i < n; i++) {
-                    const r = 1.6 + 0.6 * Math.sqrt(deg[i]);
-                    if (inGiant[i]) ctx.fillStyle = 'rgba(' + TEAL + ', 0.8)';
-                    else if (deg[i] > 0) ctx.fillStyle = 'rgba(' + SLATE + ', 0.45)';
-                    else ctx.fillStyle = 'rgba(' + SLATE + ', 0.22)';
-                    ctx.beginPath();
-                    ctx.arc(px[i], py[i], r, 0, Math.PI * 2);
-                    ctx.fill();
+                // --- eraser swipes: soft horizontal arcs, dithered so they stay pixelly
+                const swipes = 6;
+                for (let s = 0; s < swipes; s++) {
+                    const cx = bx0 + (0.1 + 0.8 * R()) * (bx1 - bx0);
+                    const cy = by0 + (0.12 + 0.7 * R()) * (trayTop - by0);
+                    const rx = (0.12 + 0.14 * R()) * (bx1 - bx0);
+                    const ry = 3 + R() * 5;
+                    const bend = (R() - 0.5) * 0.06;     // slight curve, like a hand-held eraser
+                    const strength = 0.35 + 0.3 * R();
+                    for (let y = Math.floor(cy - ry - rx * 0.1); y <= cy + ry + rx * 0.1; y++) {
+                        for (let x = Math.floor(cx - rx); x <= cx + rx; x++) {
+                            if (x < bx0 || x >= bx1 || y < by0 || y >= trayTop) continue;
+                            const dx = (x - cx) / rx;
+                            const yy = y - (cy + bend * (x - cx) * (x - cx) / rx);
+                            const q = dx * dx + (yy / ry) * (yy / ry);
+                            if (q >= 1) continue;
+                            const p = strength * (1 - q);
+                            const r = R();
+                            if (r < p * 0.25) put(x, y, C.smudgeHi);
+                            else if (r < p) put(x, y, C.smudge);
+                        }
+                    }
                 }
+
+                // --- scattered chalk dust, thicker just above the tray
+                for (let y = by0; y < trayTop; y++) {
+                    const nearTray = Math.max(0, 1 - (trayTop - y) / 7);
+                    for (let x = bx0; x < bx1; x++) {
+                        const r = R();
+                        if (r < 0.003 + 0.12 * nearTray * nearTray) put(x, y, R() < 0.2 ? C.speck : C.dust);
+                    }
+                }
+
+                // --- inner shadow where the frame overhangs the slate
+                for (let x = bx0; x < bx1; x++) put(x, by0, C.boardShadow);
+                for (let y = by0; y < trayTop; y++) put(bx0, y, C.boardShadow);
+
+                // --- wooden frame: horizontal grain on top/bottom, vertical on the sides
+                const woodPick = v => (v < 0.15 ? C.woodDark : v < 0.45 ? C.woodMid : v < 0.92 ? C.wood : C.woodHi);
+                const rowGrain = [], colGrain = [];
+                for (let y = 0; y < h; y++) rowGrain.push(R());
+                for (let x = 0; x < w; x++) colGrain.push(R());
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const inTopBottom = y < by0 || y >= by1;
+                        const inSides = x < bx0 || x >= bx1;
+                        if (!inTopBottom && !inSides) continue;
+                        // sides run full height; top/bottom bars sit between them (mitred look)
+                        const useRow = inTopBottom && !(inSides && Math.min(x, w - 1 - x) < Math.min(y, h - 1 - y));
+                        let v = useRow ? rowGrain[y] : colGrain[x];
+                        if (R() < 0.05) v = R();
+                        put(x, y, woodPick(v));
+                    }
+                }
+                // bevels: light outer edge, dark inner edge
+                for (let x = 0; x < w; x++) { put(x, 0, C.woodHi); put(x, by0 - 1, C.woodShadow); put(x, h - 1, C.woodShadow); }
+                for (let y = 0; y < h; y++) { put(0, y, C.woodHi); put(w - 1, y, C.woodShadow); }
+                for (let y = by0 - 1; y < by1; y++) { put(bx0 - 1, y, C.woodShadow); put(bx1, y, C.woodHi); }
+
+                // --- chalk tray (ledge)
+                rect(bx0, trayTop, bx1, trayTop + 1, C.woodHi);
+                rect(bx0, trayTop + 1, bx1, trayTop + 3, C.wood);
+                rect(bx0, trayTop + 3, bx1, by1, C.woodDark);
+                for (let x = bx0; x < bx1; x++) if (R() < 0.08) put(x, trayTop + 1, C.chalkEnd);  // dust in the tray
+
+                // --- things on the tray
+                const sitY = trayTop - 1;   // bottom row of anything resting on the ledge
+                const stick = (x, len, body, shade) => {
+                    rect(x, sitY - 2, x + len, sitY, body);
+                    rect(x, sitY, x + len, sitY + 1, shade);
+                    put(x, sitY - 2, C.chalkEnd);
+                    rect(x + len - 1, sitY - 2, x + len, sitY + 1, C.chalkEnd);   // worn tip
+                };
+                stick(Math.round(bx0 + (bx1 - bx0) * 0.035), 13, C.chalk, C.chalkShade);
+                stick(Math.round(bx0 + (bx1 - bx0) * 0.035) + 17, 6, C.chalkYellow, C.chalkYellowShade);
+                stick(Math.round(bx0 + (bx1 - bx0) * 0.55), 9, C.chalkPink, C.chalkPinkShade);
+
+                // felt eraser
+                const ex = Math.round(bx0 + (bx1 - bx0) * 0.865);
+                const ew = 20;
+                rect(ex, sitY - 6, ex + ew, sitY - 2, C.eraserWood);
+                rect(ex, sitY - 6, ex + ew, sitY - 5, C.chalkEnd);           // highlight on the handle
+                rect(ex, sitY - 5, ex + 1, sitY - 2, C.eraserWoodDark);
+                rect(ex + ew - 1, sitY - 5, ex + ew, sitY - 2, C.eraserWoodDark);
+                rect(ex, sitY - 2, ex + ew, sitY, C.felt);
+                rect(ex, sitY, ex + ew, sitY + 1, C.feltDark);
+                for (let x = ex + 1; x < ex + ew - 1; x++) if (R() < 0.35) put(x, sitY - 1, C.chalkShade);  // chalk on the felt
+
+                ctx.putImageData(img, 0, 0);
             }
 
-            function frame(now) {
-                // Don't let a backgrounded tab jump through the cycle.
-                if (lastNow && now - lastNow > 500) start += now - lastNow;
-                lastNow = now;
-
-                let el = now - start;
-                if (el >= CYCLE_MS) {            // graph is empty here: draw a new set of pairs
-                    start += CYCLE_MS;
-                    el -= CYCLE_MS;
-                    samplePairs();
-                    topDone = false;
-                    recomputeComponents();
-                }
-                if (!topDone && el >= RISE_MS) {
-                    // All candidate edges are present; redraw their weights so the graph
-                    // dissolves in a new order (each frame is still exactly G(n, p)).
-                    setP(pMax, now);
-                    for (const e of pairs) e.u = Math.random() * pMax;
-                    topDone = true;
-                }
-
-                setP(pAt(el), now);
-                draw(now);
-                requestAnimationFrame(frame);
-            }
-
-            resize();
-            n = W < 640 ? 70 : (W < 1100 ? 110 : 140);
-            pMax = C_MAX / (n - 1);
-            nodes = sampleNodes(n);
-            samplePairs();
-            recomputeComponents();
-            topDone = false;
-
+            let pending = null;
             window.addEventListener('resize', function () {
-                resize();
-                if (reduceMotion) draw(0);
+                clearTimeout(pending);
+                pending = setTimeout(draw, 120);
             });
-
-            if (reduceMotion) {
-                setP(1.8 / (n - 1), 0);   // static snapshot just past the phase transition
-                draw(0);
-            } else {
-                const now = performance.now();
-                start = now - 0.45 * RISE_MS;        // open partway in, not on an empty canvas
-                setP(pAt(now - start), now - FADE_MS);
-                requestAnimationFrame(frame);
-            }
+            draw();
         })();
 
         // Navigation: one "page" at a time.
