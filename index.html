@@ -8,416 +8,706 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Base Styles */
+        /* ---------- Tokens ---------- */
         :root {
-            --primary-color: #111;
-            --secondary-color: #555;
-            --accent-color: #c43544;
-            --background-color: #f8f7f2; /* Off-white background */
-            --section-bg: #fff;
-            --grid-color: rgba(70, 130, 180, 0.08); /*  light blue for grid lines */
-            --border-radius: 2px;
-            --transition: all 0.3s ease;
-            --shadow: 0 4px 12px rgba(0,0,0,0.05);
-            --grid-size: 20px; /* Grid size  */
+            --accent: #007974;
+            --accent-strong: #005f5b;
+            --accent-soft: rgba(0, 121, 116, 0.08);
+            --accent-line: rgba(0, 121, 116, 0.18);
+            --ink: #15201f;
+            --muted: #55625f;
+            --faint: #8a9593;
+            --bg: #f5f7f6;
+            --card: #ffffff;
+            --border: rgba(21, 32, 31, 0.08);
+            --grid: rgba(0, 121, 116, 0.045);
+            --radius: 6px;
+            --shadow: 0 1px 2px rgba(21, 32, 31, 0.04), 0 8px 24px rgba(21, 32, 31, 0.05);
+            --transition: all 0.25s ease;
+            --grid-size: 24px;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
-        /* Fixed grid background */
+
+        /* ---------- Background: faint graph paper + random graph canvas ---------- */
         body::before {
             content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--background-color);
-            background-image: 
-                linear-gradient(var(--grid-color) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
-                linear-gradient(var(--grid-color) 0.5px, transparent 0.5px),
-                linear-gradient(90deg, var(--grid-color) 0.5px, transparent 0.5px);
-            background-size: 
-                var(--grid-size) var(--grid-size),
-                var(--grid-size) var(--grid-size),
-                calc(var(--grid-size)/4) calc(var(--grid-size)/4),
-                calc(var(--grid-size)/4) calc(var(--grid-size)/4);
+            inset: 0;
+            background-color: var(--bg);
+            background-image:
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: var(--grid-size) var(--grid-size);
             z-index: -2;
             pointer-events: none;
         }
-        
+
+        #math-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+
         body {
-            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Helvetica, Arial, sans-serif;
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
             line-height: 1.6;
-            color: var(--primary-color);
+            color: var(--ink);
             background-color: transparent;
-            padding: 0;
-            margin: 0;
             font-size: 16px;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             position: relative;
             min-height: 100vh;
         }
-        
-        /* Mathematical objects canvas */
-        #math-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        /* Layout */
+
+        /* ---------- Layout ---------- */
         .container {
-            max-width: 900px;
+            max-width: 960px;
             margin: 0 auto;
             padding: 0 24px;
             position: relative;
             z-index: 10;
             width: 100%;
         }
-        
+
         main {
             position: relative;
             z-index: 10;
+            padding-top: 72px;
         }
-        
+
         header {
-            padding: 80px 0 20px;
+            padding: 96px 0 40px;
             position: relative;
             z-index: 10;
             min-height: 100vh;
             display: flex;
             align-items: center;
         }
-        
+
         .header-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
+            grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+            gap: 3.5rem;
             align-items: center;
-            min-height: 400px;
         }
-        
+
         .header-image {
             display: flex;
             justify-content: center;
-            align-items: center;
         }
-        
-        .header-image img {
+
+        .header-image a {
+            display: block;
             width: 100%;
-            max-width: 500px;
-            height: auto;
-            max-height: 600px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            object-fit: contain;
+            max-width: 400px;
         }
-        
+
+        .header-image img {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            background: var(--card);
+        }
+
         .header-info {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            padding-left: 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.75rem 2rem;
         }
-        
+
         .header-info h1 {
-            text-align: left;
+            margin-bottom: 0.35rem;
         }
-        
+
+        .role {
+            font-weight: 600;
+            color: var(--ink);
+            line-height: 1.45;
+        }
+
+        .role.secondary {
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .address {
+            margin: 0.5rem 0 0;
+            font-size: 0.92rem;
+            color: var(--faint);
+        }
+
         .header-info .contact {
-            text-align: left;
-            margin-top: 1rem;
+            margin: 0.9rem 0 1.4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
         }
-        
+
         .header-info .contact a {
-            display: block;
-            margin: 0.5rem 0;
+            font-size: 0.95rem;
+            width: fit-content;
         }
-        
-        /* Typography */
+
+        .header-info .contact a:not([href]) {
+            color: var(--ink);
+        }
+
+        .header-degrees h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin: 1.1rem 0 0.35rem;
+        }
+
+        .degrees {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            column-gap: 1rem;
+            row-gap: 0.4rem;
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .degrees .school,
+        .degrees .years {
+            white-space: nowrap;
+        }
+
+        .degrees .years {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ---------- Aligned rows (about, teaching) ---------- */
+        .ledger {
+            display: grid;
+            grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr) auto;
+            column-gap: 1.5rem;
+            row-gap: 0.85rem;
+            align-items: baseline;
+            margin-bottom: 1rem;
+        }
+
+        .ledger .c1 {
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .ledger .c2 {
+            color: var(--muted);
+        }
+
+        .ledger .c3 {
+            color: var(--muted);
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ledger .wide {
+            grid-column: 1 / 3;
+        }
+
+        .ledger .c3 a {
+            color: inherit;
+            border-bottom: 1px dotted var(--accent);
+        }
+
+        .ledger .c3 a:hover {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .ledger .note {
+            grid-column: 1 / -1;
+            margin: -0.5rem 0 0.25rem;
+            font-size: 0.92rem;
+        }
+
+        .ledger.two {
+            grid-template-columns: 7.5rem minmax(0, 1fr);
+            column-gap: 1.25rem;
+            row-gap: 0.7rem;
+            margin-bottom: 2rem;
+        }
+
+        .ledger.two .label {
+            color: var(--muted);
+            font-size: 0.92rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ledger.two .text {
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .header-interests {
+            font-size: 0.92rem;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        /* ---------- Typography ---------- */
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.6rem;
             font-weight: 700;
-            margin-bottom: 0.75rem;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
         }
-        
+
         h2 {
-            font-size: 1.75rem;
+            font-size: 1.6rem;
             font-weight: 600;
-            margin: 0 0 1.5rem 0;
+            margin: 0 0 1.75rem 0;
             letter-spacing: -0.01em;
-            color: var(--accent-color);
+            color: var(--accent);
         }
-        
+
+
+        h2:not(:first-child) {
+            margin-top: 3rem;
+        }
+
         h3 {
-            font-size: 1.125rem;
+            font-size: 1.05rem;
             font-weight: 600;
-            margin: 1.5rem 0 0.5rem 0;
-            letter-spacing: -0.01em;
+            margin: 1.25rem 0 0.4rem 0;
+            letter-spacing: -0.005em;
+            line-height: 1.45;
         }
-        
+
+        h3.subhead {
+            margin-top: 2.25rem;
+            color: var(--ink);
+        }
+
         p {
             margin-bottom: 1rem;
             font-size: 1rem;
-            line-height: 1.7;
-            color: var(--secondary-color);
+            line-height: 1.75;
+            color: var(--muted);
         }
-        
+
         a {
-            color: var(--accent-color);
+            color: var(--accent);
             text-decoration: none;
             transition: var(--transition);
         }
-        
+
         a:hover {
+            color: var(--accent-strong);
             text-decoration: underline;
+            text-underline-offset: 3px;
         }
-        
+
+        .eyebrow {
+            display: block;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 0.6rem;
+        }
+
+        .eyebrow:not(:first-child) {
+            margin-top: 2rem;
+        }
+
         .intro {
             margin: 0 auto;
-            font-size: 1.1rem;
-            line-height: 1.8;
-            max-width: 750px;
+            max-width: 760px;
         }
-        
+
         .intro p {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
         }
-        
-        .section {
-            background: var(--section-bg);
-            padding: 0;
-            margin: 0 auto; /* Center the section */
-            max-width: 900px; /* Match container max-width */
-            border-radius: var(--border-radius);
+
+        .people a {
+            white-space: nowrap;
+        }
+
+        figure {
+            margin: 2rem 0 0.5rem;
+            text-align: center;
+        }
+
+        figure img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
-            transition: var(--transition);
-            border: 1px solid rgba(70, 130, 180, 0.1);
+        }
+
+        figcaption {
+            font-size: 0.85rem;
+            color: var(--faint);
+            margin-top: 0.6rem;
+            font-style: italic;
+        }
+
+        /* ---------- Section cards ---------- */
+        .section {
+            background: var(--card);
+            margin: 0 auto 2rem;
+            max-width: 960px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
             position: relative;
             z-index: 10;
-            min-height: 100vh;
+            min-height: calc(100vh - 140px);
             display: flex;
             flex-direction: column;
         }
-        
-        .section .container {
-            padding: 6rem 3rem;
+
+        .section > .container {
+            padding: 4.5rem 3.25rem;
             flex: 1;
         }
-        
-        .section.hidden {
-            display: none;
-        }
-        
-        header.hidden {
-            display: none;
-        }
-        
-        .section:hover {
-            box-shadow: 0 6px 16px rgba(0,0,0,0.07);
-            border: 1px solid rgba(70, 130, 180, 0.2);
-        }
-        
-        .contact {
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-        
-        .contact a {
-            margin: 0 10px;
-        }
-        
-        .courses-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.25rem;
-            margin-top: 1rem;
-        }
-        
-        .course {
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.7);
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(70, 130, 180, 0.1);
-            font-size: 0.95rem;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 4rem 0;
-            color: var(--secondary-color);
-            font-size: 0.9rem;
-            position: relative;
-            z-index: 10;
-            min-height: 20vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
+
+        .section.hidden,
+        header.hidden,
         footer.hidden {
             display: none;
         }
-        
-        /* Navigation */
+
+        /* Teaching / experience entries */
+        .entry h3 {
+            margin-top: 1rem;
+        }
+
+        /* Research: title, one-line description, then PI / mentor */
+        .entry.research h3 {
+            margin: 1.5rem 0 0.25rem;
+        }
+
+        .entry.research h3:first-child {
+            margin-top: 0;
+        }
+
+        .entry.research p {
+            margin-bottom: 0.1rem;
+            line-height: 1.6;
+        }
+
+        .entry.research p.who {
+            font-size: 0.92rem;
+            color: var(--faint);
+        }
+
+        /* Education: one grid so colleges and programs share columns across schools */
+        .edu {
+            display: grid;
+            grid-template-columns: max-content minmax(0, 1fr);
+            column-gap: 2.5rem;
+            row-gap: 0.2rem;
+            align-items: baseline;
+            margin-bottom: 1rem;
+        }
+
+        .edu h3 {
+            grid-column: 1 / -1;
+            margin: 1.75rem 0 0.35rem;
+        }
+
+        .edu h3:first-child {
+            margin-top: 0;
+        }
+
+        .edu .college,
+        .edu .prog {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .edu .college {
+            grid-column: 1;
+        }
+
+        .edu .prog {
+            grid-column: 2;
+        }
+
+        .edu .sub {
+            font-size: 0.92rem;
+            color: var(--faint);
+        }
+
+        .edu .gap {
+            margin-top: 0.6rem;
+        }
+
+        /* ---------- Courses ---------- */
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .course {
+            padding: 0.9rem 1rem;
+            background: #fbfcfc;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            font-size: 0.92rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            transition: var(--transition);
+        }
+
+        .course:hover {
+            background: #fff;
+        }
+
+        .course .code {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .course .tag {
+            font-weight: 500;
+            letter-spacing: 0;
+            color: var(--faint);
+            font-style: italic;
+        }
+
+        .course .title {
+            font-weight: 600;
+            color: var(--ink);
+            line-height: 1.4;
+        }
+
+        .course .prof {
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .professor-link {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px dotted var(--accent);
+        }
+
+        .professor-link:hover {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom-style: solid;
+        }
+
+        /* ---------- Footer ---------- */
+        footer {
+            text-align: center;
+            padding: 3rem 0 4rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        footer p {
+            font-size: 0.85rem;
+            color: var(--faint);
+            margin: 0;
+        }
+
+        /* ---------- Navigation ---------- */
         nav {
             padding: 1rem 0;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(248, 247, 242, 0.95); /* Matching the off-white background */
+            background: rgba(245, 247, 246, 0.92);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             z-index: 20;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            border-bottom: 1px solid var(--border);
         }
-        
+
         nav ul {
             display: flex;
             justify-content: center;
             list-style-type: none;
         }
-        
+
         nav li {
             margin: 0 1rem;
         }
-        
+
         nav a {
-            color: var(--primary-color);
-            font-size: 0.95rem;
+            color: var(--ink);
+            font-size: 0.92rem;
             font-weight: 500;
             letter-spacing: 0.01em;
             padding: 4px 0;
             position: relative;
         }
-        
-        nav a.active {
-            color: var(--accent-color);
+
+        nav a:hover {
+            color: var(--accent);
+            text-decoration: none;
         }
-        
-        nav a:after {
+
+        nav a.active {
+            color: var(--accent);
+        }
+
+        nav a::after {
             content: '';
             position: absolute;
-            width: 0;
+            left: 0;
+            bottom: -2px;
+            width: 100%;
             height: 2px;
-            display: block;
-            margin-top: 2px;
-            right: 0;
-            background: var(--accent-color);
-            transition: width 0.25s ease;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.25s ease;
         }
-        
-        nav a.active:after {
-            width: 100%;
-            left: 0;
+
+        nav a.active::after,
+        nav a:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
         }
-        
-        nav a:hover:after {
-            width: 100%;
-            left: 0;
-            background: var(--accent-color);
-        }
-        
-        /* Professor links */
-        .professor-link {
-            color: inherit;
-            text-decoration: none;
-            border-bottom: 1px dotted var(--accent-color);
-            transition: var(--transition);
-        }
-        
-        .professor-link:hover {
-            color: var(--accent-color);
-            border-bottom: 1px solid var(--accent-color);
-        }
-        
-        /* Responsive */
+
+        /* ---------- Responsive ---------- */
         @media (max-width: 768px) {
             header {
-                padding: 80px 0 20px;
+                padding: 96px 0 24px;
                 min-height: auto;
             }
-            
+
             .header-content {
                 grid-template-columns: 1fr;
-                gap: 2rem;
-                min-height: auto;
+                gap: 2.25rem;
             }
-            
-            .header-image img {
-                max-width: 300px;
-                max-height: 400px;
+
+            .header-image a {
+                max-width: 280px;
             }
-            
+
             .header-info {
-                padding-left: 0;
-                text-align: center;
+                padding: 1.5rem 1.25rem;
             }
-            
-            .header-info h1 {
-                text-align: center;
+
+            .degrees {
+                grid-template-columns: minmax(0, 1fr) auto;
+                row-gap: 0.1rem;
             }
-            
-            .header-info .contact {
-                text-align: center;
+
+            .degrees .degree {
+                grid-column: 1 / -1;
+                color: var(--ink);
+                margin-top: 0.4rem;
             }
-            
-            .header-info .contact a {
-                display: inline;
-                margin: 0 10px;
+
+            .ledger {
+                grid-template-columns: minmax(0, 1fr) auto;
+                row-gap: 0.15rem;
             }
-            
+
+            .ledger .c1 {
+                grid-column: 1 / -1;
+                margin-top: 0.75rem;
+            }
+
+            .ledger .c1.wide {
+                grid-column: 1;
+            }
+
+            .ledger .wide + .c3 {
+                grid-column: 2;
+                margin-top: 0.75rem;
+            }
+
+            .ledger .note {
+                margin: 0.15rem 0 0;
+            }
+
+            .ledger.two {
+                grid-template-columns: 1fr;
+                row-gap: 0.1rem;
+            }
+
+            .ledger.two .label {
+                margin-top: 0.6rem;
+            }
+
+            .edu {
+                grid-template-columns: 1fr;
+            }
+
+            .edu .college,
+            .edu .prog {
+                grid-column: 1;
+            }
+
+            .edu .college {
+                color: var(--ink);
+                margin-top: 0.5rem;
+            }
+
+            .edu .prog.gap {
+                margin-top: 0;
+            }
+
             h1 {
-                font-size: 2rem;
+                font-size: 2.1rem;
             }
-            
+
             .section {
-                padding: 0;
-                margin: 0 1rem; /* Add side margins on mobile */
+                margin: 0 16px 1.5rem;
                 min-height: auto;
             }
-            
-            .section .container {
-                padding: 4rem 1.5rem;
+
+            .section > .container {
+                padding: 3rem 1.25rem;
             }
-            
-            .intro {
-                text-align: left;
-            }
-            
+
             .courses-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             nav ul {
                 flex-wrap: wrap;
+                row-gap: 0.4rem;
             }
-            
+
             nav li {
-                margin: 0 0.5rem;
+                margin: 0 0.6rem;
             }
-            
-            footer {
-                min-height: auto;
-            }
+
         }
     </style>
 </head>
 <body>
-    <canvas id="math-canvas"></canvas>
+    <canvas id="math-canvas" aria-hidden="true"></canvas>
+
     <nav>
         <div class="container">
             <ul>
@@ -435,29 +725,29 @@
         <div class="container">
             <div class="header-content">
                 <div class="header-image">
-                    <a href="https://lh3.googleusercontent.com/pw/AP1GczMvkWnAgigqnUz4BlHM7Gj6UlupdOvCgdO01PCA5pMAwJasGsmZYnvV62axkudcNgZaxBzm_ziTkN022Xjam17UbE_2-zBhhnob6Eidn1ka3mbCzpCR=w2400?source=screenshot.guru" target="_blank">
-                        <img src="https://lh3.googleusercontent.com/pw/AP1GczMvkWnAgigqnUz4BlHM7Gj6UlupdOvCgdO01PCA5pMAwJasGsmZYnvV62axkudcNgZaxBzm_ziTkN022Xjam17UbE_2-zBhhnob6Eidn1ka3mbCzpCR=w2400?source=screenshot.guru" alt="Jingyuan Chen">
+                    <a href="https://lh3.googleusercontent.com/pw/AP1GczMNogStybHAn3XEVrow_8j5yAKCZOTWqGjXmdYm_OFJL5N-vGPt9ZT8kLyyhqK7Hy_ul13kGuW_9sa3rxLx_pO6Dyym-Jkq9QJ7BpJvfr8h95_Hmzp0=w2400" target="_blank" rel="noopener">
+                        <img src="https://lh3.googleusercontent.com/pw/AP1GczMNogStybHAn3XEVrow_8j5yAKCZOTWqGjXmdYm_OFJL5N-vGPt9ZT8kLyyhqK7Hy_ul13kGuW_9sa3rxLx_pO6Dyym-Jkq9QJ7BpJvfr8h95_Hmzp0=w2400" alt="Jingyuan Chen">
                     </a>
                 </div>
                 <div class="header-info">
                     <h1>Jingyuan Chen</h1>
-                    <b>Ph.D. Student</b>
-                    <b>University of Illinois Urbana-Champaign</b>
-                    <p>Research Space 5080, 614 E Daniel Street</p>
+                    <span class="role">Ph.D. Student</span>
+                    <span class="role secondary">University of Illinois Urbana-Champaign</span>
+                    <p class="address">Research Space 5080, 614 E Daniel Street</p>
                     <div class="contact">
                         <a>jc190[at]uiuc[dot]edu</a>
-                        <a href="https://linkedin.com/in/jingyuanchenn" target="_blank">LinkedIn: @jingyuanchenn</a>
+                        <a href="https://linkedin.com/in/jingyuanchenn" target="_blank" rel="noopener">LinkedIn: @jingyuanchenn</a>
                     </div>
                     <div class="header-degrees">
                         <h4>Education</h4>
-                        <ul>
-                            <li>Applied Mathematics (Algorithms & Optimization) MS - UIUC LAS 2025 - 2026</li>
-                            <li>Pure Mathematics AB - UC Berkeley L&S 2022 - 2025</li>
-                            <li>Statistics AB - UC Berkeley CDSS 2022 - 2025</li>
-                        </ul>
+                        <div class="degrees">
+                            <span class="degree">MS Mathematics</span><span class="school">UIUC GC</span><span class="years">2025–2026</span>
+                            <span class="degree">BA (Hons) Mathematics</span><span class="school">UC Berkeley L&amp;S</span><span class="years">2022–2025</span>
+                            <span class="degree">BA (Hons) Statistics</span><span class="school">UC Berkeley CDSS</span><span class="years">2022–2025</span>
+                        </div>
                         <h4>Research Interests</h4>
                         <div class="header-interests">
-                            Automated Deduction • Formalized Math • Contract Algebras • Risk & Catastrophe Models • Stochastic Calculus & PDEs • Random Matrix Theory • Non-commutative Probability • Graphons • Scientific Computing • Statistical Education
+                            Automated Deduction · Formalized Math · Contract Algebras · Risk &amp; Catastrophe Models · Stochastic Calculus &amp; PDEs · Random Matrix Theory · Non-commutative Probability · Graphons · Scientific Computing · Statistical Education
                         </div>
                     </div>
                 </div>
@@ -469,45 +759,61 @@
         <section id="about" class="section">
             <div class="container">
                 <div class="intro">
-                    <b>About</b>
-                    <p>I am currently focused on large random combinatorial structures, clustering and flows algorithms on complex networks. I also have interests in financial risk, information retrival problems in automated deduction, and statistical education.</p>
-                    <p>I am currently a graduate student instructor for <a href="https://courses.illinois.edu/schedule/2026/fall/MATH/231">MATH 231</a>. I am advised by Professor <a href="https://matthewturk.github.io/">Matt Turk</a>.</p>
-                    <p>I am one of the test organizers for the <a href="https://intercollegiatemathtournament.org/"> Intercollegiate Math Tournament</a> (registration open!).</p>
-                    <p>For those thinking about majoring in Statistics at Berkeley I have a <a href="https://publish.illinois.edu/jingyuanchen/berkeley-stat-advice/">guide</a>.</p>
-                    <b>Mentors, Friends & Cool People:</b>
-<p>
-  <a href="https://www.stat.berkeley.edu/~evans/">Professor Steve Evans,</a>
-  <a href="https://andrewpbray.github.io/">Professor Andrew Bray,</a>
-  <a href="https://math.hmc.edu/arvm/">Professor Andrés R. Vindas Meléndez,</a>
-  <a href="https://econ.berkeley.edu/profile/lisa-goldberg">Professor Lisa Goldberg,</a>
-  <a href="https://math.berkeley.edu/people/faculty/khalilah-beal">Professor Khalilah Beal-Uribe,</a>
-  <a href="https://profiles.ucalgary.ca/peter-daniel-zvengrowski">Professor Emeritus Peter Zvengrowski,</a>
-  <a href="https://matthewturk.github.io/">Professor Matthew Turk,</a>
-  <a href="https://dependenttyp.es/,">Professor Talia Ringer,</a>
-  <a href="https://sps.columbia.edu/person/jeffrey-nisen-phd">Dr. Jeffrey Nisen,</a>
-  <a href="https://www.esantus.com/">Dr. Enrico Santus,</a>
-  <a href="https://github.com/winstonyin">Dr. Winston Yin,</a>
-  <a href="https://www.elaine-shen.com/"> Elaine,</a>
-  <a href="https://oakleafwarrior.github.io/"> Alex,</a>
-  <a href="https://aishanomani.github.io/"> Aisha,</a>
-  <a href="https://aaynameow.blogspot.com/">Aayna,</a>
-  <a href="https://m4n4h1l.github.io/fieldnotes/index.html#about">Manahil,</a>
-  <a href="https://arnavcs.github.io/">Arnav,</a>
-  <a href="https://aubrieta.github.io/">Drisana,</a>
-  <a href="https://nikita-jaya.github.io/">Nikita,</a>
-  <a href="https://www.sophiebucker.com/">Sophie,</a>
-  <a href="https://www.msorial.com/">Mark,</a>
-  <a href="https://yilinxia.com/">Yilin,</a>
-  <a href="https://yimingclara.com/">Yiming (Clara),</a>
-  <a href="https://luongcindy.github.io/index.html">Cindy,</a>
-  <a href="https://www.math.columbia.edu/~alei/index.html">Austin.</a>
-</p>
+                    <span class="eyebrow">About</span>
+                    <p>I'm a Ph.D. student at UIUC advised by Professor <a href="https://matthewturk.github.io/">Matt Turk</a>, working on large random combinatorial structures and on clustering and flow algorithms for complex networks. Other interests include financial risk, information retrieval problems in automated deduction, and statistical education.</p>
+                    <p>Thinking about majoring in Statistics at Berkeley? Here's a heavily opinionated <a href="https://publish.illinois.edu/jingyuanchen/berkeley-stat-advice/">guide</a>.</p>
 
-<div style="padding: 20px 0; text-align: center;">
-    <img src="https://lh3.googleusercontent.com/pw/AP1GczMZflgOF16oGC_6OJ44VL8-t9aIgG-vks5478BnwCajic-tLMN3DJ9ny7DkfTBtpJg--gj3vANfQOuaH8KJ7D0axt5GaWdkKdXTv9LAP-MeE3hHutMG=w2400" alt="Somewhere UAE" style="max-width: 100%; height: auto; display: inline-block;">
-</div>
-<p style="text-align: right;">Al Madam, Sharjah</p>
+                    <span class="eyebrow">Current</span>
+                    <div class="ledger two">
+                        <span class="label">Teaching</span>
+                        <span class="text">Graduate student instructor for <a href="https://courses.illinois.edu/schedule/2026/fall/MATH/231">MATH 231: Calculus II</a></span>
+                        <span class="label">Research</span>
+                        <span class="text">Core graduate student at the <a href="https://skai-institute.org/about-skai/skai-institute-members/">NSF-Simons AI Institute for the Sky (SkAI Institute)</a></span>
+                        <span class="label">Organizing</span>
+                        <span class="text">Test organizer for the <a href="https://intercollegiatemathtournament.org/">Intercollegiate Math Tournament</a> (registration open!)</span>
+                    </div>
 
+                    <span class="eyebrow">Updates</span>
+                    <div class="ledger two">
+                        <span class="label">Dec 2026</span>
+                        <span class="text"><em>Upcoming:</em> attending the <a href="https://skai-institute.org/gaia-data-release-4/">SkAI Chicago Gaia Relay</a> for Gaia Data Release 4, Dec 14–17 at the SkAI Hub.</span>
+                        <span class="label">Oct 2026</span>
+                        <span class="text">Co-authored two papers at <a href="https://colm.eventhosts.cc/">COLM 2026</a>, on <a href="https://colm.eventhosts.cc/virtual/2026/poster/1824">clinical hidden-concern reasoning under partial observability</a> and on <a href="https://colm.eventhosts.cc/virtual/2026/poster/2201">personalized medical plain language summarization</a>.</span>
+                    </div>
+
+                    <span class="eyebrow">Mentors, Friends &amp; Cool People</span>
+                    <p class="people">
+                        <a href="https://www.stat.berkeley.edu/~evans/">Professor Steve Evans</a>,
+                        <a href="https://andrewpbray.github.io/">Professor Andrew Bray</a>,
+                        <a href="https://math.hmc.edu/arvm/">Professor Andrés R. Vindas Meléndez</a>,
+                        <a href="https://econ.berkeley.edu/profile/lisa-goldberg">Professor Lisa Goldberg</a>,
+                        <a href="https://math.berkeley.edu/people/faculty/khalilah-beal">Professor Khalilah Beal-Uribe</a>,
+                        <a href="https://profiles.ucalgary.ca/peter-daniel-zvengrowski">Professor Emeritus Peter Zvengrowski</a>,
+                        <a href="https://matthewturk.github.io/">Professor Matthew Turk</a>,
+                        <a href="https://dependenttyp.es/">Professor Talia Ringer</a>,
+                        <a href="https://sps.columbia.edu/person/jeffrey-nisen-phd">Dr. Jeffrey Nisen</a>,
+                        <a href="https://www.esantus.com/">Dr. Enrico Santus</a>,
+                        <a href="https://github.com/winstonyin">Dr. Winston Yin</a>,
+                        <a href="https://www.elaine-shen.com/">Elaine</a>,
+                        <a href="https://oakleafwarrior.github.io/">Alex</a>,
+                        <a href="https://aishanomani.github.io/">Aisha</a>,
+                        <a href="https://aaynameow.blogspot.com/">Aayna</a>,
+                        <a href="https://m4n4h1l.github.io/fieldnotes/index.html#about">Manahil</a>,
+                        <a href="https://arnavcs.github.io/">Arnav</a>,
+                        <a href="https://aubrieta.github.io/">Drisana</a>,
+                        <a href="https://nikita-jaya.github.io/">Nikita</a>,
+                        <a href="https://www.sophiebucker.com/">Sophie</a>,
+                        <a href="https://www.msorial.com/">Mark</a>,
+                        <a href="https://yilinxia.com/">Yilin</a>,
+                        <a href="https://yimingclara.com/">Yiming (Clara)</a>,
+                        <a href="https://luongcindy.github.io/index.html">Cindy</a>,
+                        <a href="https://www.math.columbia.edu/~alei/index.html">Austin</a>.
+                    </p>
+
+                    <figure>
+                        <img src="https://lh3.googleusercontent.com/pw/AP1GczMZflgOF16oGC_6OJ44VL8-t9aIgG-vks5478BnwCajic-tLMN3DJ9ny7DkfTBtpJg--gj3vANfQOuaH8KJ7D0axt5GaWdkKdXTv9LAP-MeE3hHutMG=w2400" alt="Al Madam, Sharjah" loading="lazy">
+                        <figcaption>Al Madam, Sharjah</figcaption>
+                    </figure>
                 </div>
             </div>
         </section>
@@ -515,150 +821,191 @@
         <section id="Teaching" class="section">
             <div class="container">
                 <h2>Teaching Assistantships / Course Staff</h2>
-                <h3>MATH 231: Calculus II - Graduate Student Instructor (Fall 2026)</h3>
-                <h3>IS 203: Discrete Methods - Graduate Student Instructor (Spring 2026)</h3>
-                <h3>IS 445: Data Visualization - Graduate Student Instructor (<a href="https://siebelschool.illinois.edu/academics/courses/is445">Fall 2025</a>)</h3>            
-                <h3>MATH 113: Abstract Algebra - Reader (<a href="https://sites.google.com/view/normansheu/teaching/math-113-summer-2025?authuser=0"> Summer 2025 </a>)</h3>
-                <h3>MATH 105: Multivariate Real Analysis & Measure Theory - Reader (<a href="https://sites.google.com/ucdavis.edu/anuj">Spring 2025</a>)</h3>
-                <h3>STAT 2: Introduction to Statistics - Study Center Group Tutor (Spring 2025)</h3>
-                <h3>MATH 53: Multivariate and Vector Calculus - Study Center Group Tutor (Summer 2024)</h3>
-                <h3>STAT 20: Introduction to Statistics & Probability - Group Tutor (Spring 2024)</h3>
-                <h3>STAT 2: Introduction to Statistics - Study Center Group Tutor (Spring 2024)</h3>
-                <h3>DATA C8: Foundations of Data Science Academic Intern (Fall 2023)</h3>
+                <div class="ledger">
+                    <span class="c1">MATH 231: Calculus II</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2026/fall/MATH/231">Fall 2026</a></span>
+                    <span class="c1">IS 203: Discrete Methods</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2026/spring/IS/203">Spring 2026</a></span>
+                    <p class="note">Recipient of the <a href="https://isg.illinois.edu/teachinginsights">Facilitating Learning Excellence (FLEX) Award</a>.</p>
+                    <span class="c1">IS 445: Data Visualization</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2025/fall/IS/445">Fall 2025</a></span>
+                    <p class="note">Recipient of the <a href="https://isg.illinois.edu/teachinginsights">Facilitating Learning Excellence (FLEX) Award</a>.</p>
+                    <span class="c1">MATH 113: Abstract Algebra</span><span class="c2">Reader</span><span class="c3"><a href="https://sites.google.com/view/normansheu/teaching/math-113-summer-2025?authuser=0">Summer 2025</a></span>
+                    <span class="c1">MATH 105: Multivariate Real Analysis &amp; Measure Theory</span><span class="c2">Reader</span><span class="c3"><a href="https://sites.google.com/ucdavis.edu/anuj">Spring 2025</a></span>
+                    <span class="c1">STAT 2: Introduction to Statistics</span><span class="c2">Study Center Group Tutor</span><span class="c3">Spring 2025</span>
+                    <span class="c1">MATH 53: Multivariate and Vector Calculus</span><span class="c2">Study Center Group Tutor</span><span class="c3">Summer 2024</span>
+                    <span class="c1">STAT 20: Introduction to Statistics &amp; Probability</span><span class="c2">Group Tutor</span><span class="c3">Spring 2024</span>
+                    <span class="c1">STAT 2: Introduction to Statistics</span><span class="c2">Study Center Group Tutor</span><span class="c3">Spring 2024</span>
+                    <span class="c1">DATA C8: Foundations of Data Science</span><span class="c2">Academic Intern</span><span class="c3">Fall 2023</span>
+                </div>
 
                 <h2>Course Development</h2>
-                <h3>Department of Mathematics Student Researcher IV (Spring 2025)</h3>
-                <p>Developing Linear Algebra Education Tools for MATH 56: Linear Algebra, Prototype (<a href="https://linalg-app.vercel.app/">here</a>). Funded by the "Interactive Tools for Learning Linear Algebra" Instructional Technology and Innovation <a href="https://ue.berkeley.edu/projects-initiatives/course-development/instructional-tech-innovation/funded-projects">Grant</a>.</p>
-                
-                <h3>Department of Physics Course Developer (Spring 2024 - 2025)</h3>
-                <p>Developer for Nobel laureate in Physics Saul Perlmutter's L&S 22: Sense & Sensibility & Science course's data science lab on <a href="https://github.com/sensesensibilityscience/datascience/blob/master/2024/bad_science/bad_science_insurance_experiment.ipynb">bad science</a>.</p>
-                
-                <h3>DSUS Modules Developer (Fall 2023)</h3>
-                <p>Developed ECON 148: Data Science for Economists' <a href="https://www.econ148.org/sp25/">Prophet forecasting lab</a> and converted IEOR 120: Engineering Economics' homeworks into autogradable notebooks.</p>
+                <div class="ledger">
+                    <span class="c1 wide">Department of Mathematics Student Researcher IV</span><span class="c3">Spring 2025</span>
+                    <p class="note">Developing Linear Algebra Education Tools for MATH 56: Linear Algebra, Prototype (<a href="https://linalg-app.vercel.app/">here</a>). Funded by the "Interactive Tools for Learning Linear Algebra" Instructional Technology and Innovation <a href="https://ue.berkeley.edu/projects-initiatives/course-development/instructional-tech-innovation/funded-projects">Grant</a>.</p>
+
+                    <span class="c1 wide">Department of Physics Course Developer</span><span class="c3">Spring 2024–2025</span>
+                    <p class="note">Developer for Nobel laureate in Physics Saul Perlmutter's L&amp;S 22: Sense &amp; Sensibility &amp; Science course's data science lab on <a href="https://github.com/sensesensibilityscience/datascience/blob/master/2024/bad_science/bad_science_insurance_experiment.ipynb">bad science</a>.</p>
+
+                    <span class="c1 wide">DSUS Modules Developer</span><span class="c3">Fall 2023</span>
+                    <p class="note">Developed ECON 148: Data Science for Economists' <a href="https://www.econ148.org/sp25/">Prophet forecasting lab</a> and converted IEOR 120: Engineering Economics' homeworks into autogradable notebooks.</p>
+                </div>
             </div>
         </section>
 
         <section id="research" class="section">
             <div class="container">
                 <h2>Current Research</h2>
-                <h3>Core Graduate Student at <a href="https://skai-institute.org/about-skai/skai-institute-members/">NSF-Simons AI Institute for the Sky (SkAI Institute)</a>.
-                <h3>Co-author for language model papers at <a href="https://colm.eventhosts.cc/">COLM 2026</a> </h3>
-                <p>Namely a <a href="https://colm.eventhosts.cc/virtual/2026/poster/1824">Benchmark for Clinical Hidden-Concern Reasoning Under Partial Observability</a> and <a href"https://colm.eventhosts.cc/virtual/2026/poster/2201">Personalized Medical Plain Language Summarization</a>.</p>
+                <div class="entry research">
+                    <h3>Core Graduate Student at the <a href="https://skai-institute.org/about-skai/skai-institute-members/">NSF-Simons AI Institute for the Sky (SkAI Institute)</a></h3>
 
-                <h3>Researcher at UC Berkeley <a href="https://cdar.econ.berkeley.edu/">Consortium for Data Analytics in Risk</a></h3>
-                <p>Investigating high-dimensional covariance estimation and factor counting under Professor <a href="https://econ.berkeley.edu/profile/lisa-goldberg">Lisa R Goldberg</a>.</p>
-                
-                <h3>Past Research Assistantships / Fellowships</h3>
-                <p>UC Berkeley College of Letters & Science: <a href="https://research.berkeley.edu/surf-fellows/jingyuan-chen/">Research Fellow</a></p>
-                <p>Researching sparse graphons previously advised by Professor Steven Evans (Math/Stat, Berkeley). Currently collaborating with Ph.D. candidate Siddhi Kanta Mishra (IEMS, UCF), and Professor Jialie "Jerry" Shen (CS, SGUL) on applications of graphons towards information flow problems in neural networks.</p>
-                <p>Co-authoring a paper on Risk Networks of Reinsurance with <a href="https://www.olab.berkeley.edu/graduate-students-1/elena-stacy-f7ch8">Elaine Shen</a> Ph.D. Candidate at Berkeley Economics and <a href="https://tomrutter42.github.io/">Thomas Rutter</a> Ph.D. Candidate at Stanford Economics.</p>
-                <p>RA for Professor <a href="https://diagdavenport.com/">Diag Davenport</a> at the Goldman School of Public Policy. Mathematically formalizing empirical work on the pivotal voter effect.</p>
-                <p>RA for Professor <a href="https://luisacef.github.io/research/">Luisa Cefala</a> & <a href="https://afras-sial.github.io/">Afras Sial</a> Ph.D. Candidate at Berkeley Economics. Creating simulations and statistical estimations on earned wage accessed technology.</p>
-                <p>RA for Professor <a href="https://sites.google.com/view/ofereldar">Ofer Eldar</a> at Berkeley Law. Automating the extraction of net operating loss numbers from unstructured 10-K files.</p>
+                    <h3>Researcher at the UC Berkeley <a href="https://cdar.econ.berkeley.edu/">Consortium for Data Analytics in Risk</a></h3>
+                    <p>High-dimensional covariance estimation and factor counting.</p>
+                    <p class="who">PI: <a href="https://econ.berkeley.edu/profile/lisa-goldberg">Lisa R. Goldberg</a></p>
+
+                    <h3>Affiliate Graduate Student at the <a href="https://lcdm.illinois.edu/about.html">Laboratory for Computation, Data, and Machine Learning (LCDM)</a></h3>
+                    <p>Transfer entropy for information flow in financial networks.</p>
+                    <p class="who">PI: <a href="https://ece.illinois.edu/about/directory/faculty/bigdog">Robert Brunner</a></p>
+
+                    <h3>Affiliate Graduate Student at the Illinois Theorem Provers Lab</h3>
+                    <p>Learning about proof assistants, programming languages, and automated deduction.</p>
+                    <p class="who">PI: <a href="https://siebelschool.illinois.edu/about/people/faculty/tringer">Talia Ringer</a></p>
+                </div>
+
+                <h2>Past Research Assistantships / Fellowships</h2>
+                <div class="entry research">
+                    <h3><a href="https://research.berkeley.edu/surf-fellows/jingyuan-chen/">Research Fellow</a> at the UC Berkeley College of Letters &amp; Science</h3>
+                    <p>Graphons for information flow problems in neural networks.</p>
+                    <p class="who">Mentor: <a href="https://statistics.berkeley.edu/people/steven-evans">Steve Evans</a></p>
+
+                    <h3>Researcher at Berkeley Economics</h3>
+                    <p>Research on risk networks of reinsurance.</p>
+                    <p class="who">Mentors: <a href="https://www.olab.berkeley.edu/graduate-students-1/elena-stacy-f7ch8">Elaine Shen</a>, <a href="https://tomrutter42.github.io/">Thomas Rutter</a></p>
+
+                    <h3>Research Assistant at the Goldman School of Public Policy</h3>
+                    <p>Mathematically formalizing empirical work on the pivotal voter effect.</p>
+                    <p class="who">PI: <a href="https://diagdavenport.com/">Diag Davenport</a></p>
+
+                    <h3>Research Assistant at Berkeley Economics</h3>
+                    <p>Simulations and statistical estimation for earned wage access technology.</p>
+                    <p class="who">PI: <a href="https://luisacef.github.io/research/">Luisa Cefala</a> · Mentor: <a href="https://afras-sial.github.io/">Afras Sial</a></p>
+
+                    <h3>Research Assistant at Berkeley Law</h3>
+                    <p>Automating the extraction of net operating loss numbers from unstructured 10-K filings.</p>
+                    <p class="who">PI: <a href="https://sites.google.com/view/ofereldar">Ofer Eldar</a></p>
+                </div>
             </div>
         </section>
 
         <section id="previous" class="section">
             <div class="container">
                 <h2>Previous Work</h2>
+                <div class="entry">
+                    <h3>Quant Intern at Bloomberg L.P., working on <a href="https://professional.bloomberg.com/products/risk/mars/">MARS</a> and <a href="https://www.bloomberg.com/company/press/bloomberg-integrates-lexifis-technology-to-support-its-new-derivatives-library-dlib/">DLIB</a></h3>
+                    <h3>Statistical Consultant (Co-op) at Gilead Sciences</h3>
+                    <h3>Summer Analyst, Corporate Banking at ING Group N.V.</h3>
+                    <h3><a href="https://www.instagram.com/p/DLi2zxep26H/?img_index=1">Summer Camp Instructor</a> at Berkeley's Department of Industrial Engineering and Operations Research</h3>
+                    <h3><a href="https://math.berkeley.edu/~musa/former_officers#:~:text=2014%2D2016-,Jingyuan%20Chen,-Former%20Professional%20Chair">Officer</a> at Berkeley's Mathematics Undergraduate Student Association</h3>
+                    <h3>Marketing &amp; Recruitment Director at Berkeley Math Tournament</h3>
+                    <h3><a href="https://crowdfund.berkeley.edu/project/38919">Finance Lead</a> &amp; Avionics Engineer at Space Technologies and Rocketry @ Berkeley</h3>
+                </div>
 
-                <h3> Quant intern at Bloomberg L.P. working on <a href = "https://professional.bloomberg.com/products/risk/mars/">MARS</a> and <a href = "https://www.bloomberg.com/company/press/bloomberg-integrates-lexifis-technology-to-support-its-new-derivatives-library-dlib/">DLIB</a></h3>
-                
-                <h3> Statistical consultant at Gilead Sciences (co-op)</h3>
-                
-                <h3>Summer Analyst ING Group N.V. Corporate Banking</h3>
-
-                <h3><a href="https://www.instagram.com/p/DLi2zxep26H/?img_index=1">Summer Camp Instructor</a> at Berkeley's department of Industrial Engineering and Operations Research</h3>
-
-                <h3><a href="https://math.berkeley.edu/~musa/former_officers#:~:text=2014%2D2016-,Jingyuan%20Chen,-Former%20Professional%20Chair">Officer</a> at Berkeley's Mathematics Undergraduate Student Association</h3>
-                                
-                <h3>Marketing & Recruitment Director at Berkeley Math Tournament</h3>
-                
-                <h3><a href="https://crowdfund.berkeley.edu/project/38919">Finance Lead</a> & Avionics Engineer at Space Technologies and Rocketry @ Berkeley</h3>
+                <figure>
+                    <img src="https://lh3.googleusercontent.com/pw/AP1GczOZnjKWZFAuacJa8YP2VpMceyQOS0j5yyKQxbMMASoHo9bRheZsN1zti6u8q0WnFhhA1u84Jp-VP_pIzKAJLhYZklReFSivZssJb_8XMqYj7aVoQSFB=w2400" alt="Somewhere in the Mojave Desert" loading="lazy">
+                    <figcaption>Somewhere in the Mojave.</figcaption>
+                </figure>
             </div>
-
-            <div style="padding: 20px 0; text-align: center;">
-    <img src="https://lh3.googleusercontent.com/pw/AP1GczOZnjKWZFAuacJa8YP2VpMceyQOS0j5yyKQxbMMASoHo9bRheZsN1zti6u8q0WnFhhA1u84Jp-VP_pIzKAJLhYZklReFSivZssJb_8XMqYj7aVoQSFB=w2400" alt="Somewhere in the Mojave Desert" style="max-width: 90%; height: auto; display: inline-block;">
-</div>
-<p style="text-align: center;">Somewhere in the Mojave.</p>
         </section>
 
         <section id="education" class="section">
             <div class="container">
                 <h2>Education</h2>
-                
-                <p>I am currently a PhD student at UIUC under Professor <a href="https://matthewturk.github.io/">Matthew Turk</a>.</p>
-                <h3>University of Illinois Urbana-Champaign | 2025 - 2030</h3>
-                <p>School of Information Sciences: PhD Information Sciences, Statistics Minor</p>
-                <p>College of Liberal Arts & Sciences: MS Applied Mathematics: Algorithms & Optimization </p>
-                <h3>University of California, Berkeley | 2022 - 2025</h3>
-                <p>College of Letters & Science: Mathematics AB Honours</p>
-                <p>College of Computing, Data Science & Society: Statistics AB Honours</p>
-                
-                <h3>Selected Coursework</h3>
-                <p>Some selected coursework I've taken throughout the years.</p>
-                
-                <h3>Graduate Division Coursework (Illinois):</h3>
-                <div class="courses-grid">
-                    <div class="course">STAT 588: Covariance Structures and Factor Models - Steven Culpepper <a href="https://stat.illinois.edu/directory/profile/sculpepp" class="professor-link">Ph.D.</a></div>
-                    <div class="course">STAT 578: Spectral Methods, Network Analysis & Nonconvex Optimization - Joshua Agterberg <a href="https://jagterberg.github.io/" class="professor-link">Ph.D.</a></div>
-                    <div class="course">ECE 598YB: Topological Data Analysis - Yuliy Baryshnikov <a href="https://ymb.web.illinois.edu/" class="professor-link" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH 595RQT: Representation-theoretic Methods in Quantum Information Theory - Felix Leditzky <a href="https://felixleditzky.info/" class="professor-link" class="professor-link">Ph.D.</a></div>                   
-                    <div class="course">MATH 595QL: Quantum Learning Theory - Jacob Beckey <a href="https://www.jacobbeckey.com/" class="professor-link" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH 586: Algebraic Combinatorics - Alexander Yong <a href="https://ayong.web.illinois.edu/" class="professor-link" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH 503: Intro Geometric Group Theory - Igor Mineyev <a href="https://mineyev.web.illinois.edu/" class="professor-link" class="professor-link">Ph.D.</a></div>
-                    <div class="course">CSE 511: Iterative & Multigrid Methods - Luke Olson <a href="https://lukeo.cs.illinois.edu/" class="professor-link" class="professor-link">Ph.D.</a></div>
-                    <div class="course">CSE 510: Numerical Methods for PDEs - Paul Fischer <a href="https://siebelschool.illinois.edu/about/people/faculty/fischerp" class="professor-link" class="professor-link">Ph.D.</a></div>
-                    <div class="course">CS 598TLR: Building Proof Assistants - Talia Ringer <a href="https://dependenttyp.es/" class="professor-link">Ph.D.</a></div>
-                    <div class="course">CS 591BA: Biologically Plausible AI - ChengXiang Zhai <a href="https://czhai.cs.illinois.edu/" class="professor-link">Ph.D.</a></div>
-                    <div class="course">CS 576M: Computer-aided Methods for Formal Deduction - Talia Ringer <a href="https://dependenttyp.es/" class="professor-link">Ph.D.</a></div>
-                    <div class="course">CS 521FML Formal Methods & PL: Trustworthy AI Systems - Gagandeep Singh <a href="https://ggndpsngh.github.io/" class="professor-link">Ph.D.</a></div>
-                    <div class="course">CS 498SF: Software Foundations (Rocq) - Talia Ringer <a href="https://dependenttyp.es/" class="professor-link">Ph.D.</a></div>
-                    <div class="course">IS 519: Research Design - Jessie Chin <a href="https://ischool.illinois.edu/people/jessie-chin" class="professor-link">Ph.D.</a></div>
-                    <div class="course">IS 509: History and Foundations of Information Science - Michael Twidale <a href="https://ischool.illinois.edu/people/michael-twidale" class="professor-link">Ph.D.</a></div>
+
+                <div class="edu">
+                    <h3>University of Illinois Urbana-Champaign (2025 – 2029)</h3>
+                    <span class="college">Graduate College</span><span class="prog">PhD <a href="https://informatics.ischool.illinois.edu/program-area/cognitive-science-and-language-processing/">Cognitive Science &amp; Language Processing</a> (Informatics Programs)</span>
+                    <span class="prog sub">Statistics minor · Advised by Professor <a href="https://astro.illinois.edu/directory/profile/mjturk">Matthew Turk</a></span>
+                    <span class="college gap">Graduate College</span><span class="prog gap">MS Mathematics: Algorithms &amp; Optimization</span>
+
+                    <h3>University of California, Berkeley (2022 – 2025)</h3>
+                    <span class="college">College of Letters &amp; Science</span><span class="prog">BA (Hons) Mathematics</span>
+                    <span class="college">College of Computing</span><span class="prog">BA (Hons) Statistics</span>
                 </div>
-                
-                <h3>Graduate Division Coursework (Berkeley):</h3>
+
+                <h2>Select Coursework</h2>
+
+                <h3 class="subhead">Graduate College Coursework (Illinois)</h3>
                 <div class="courses-grid">
-                    <div class="course">ECON 217: Risk - Lisa R Goldberg <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=36755" class="professor-link">Ph.D.</a></div>
-                    <div class="course">STAT 244: High Powered Statistical Computing in Julia - Chris Paciorek <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=77852" class="professor-link">Ph.D.</a></div>
-                    <div class="course">STAT C205A: Measure Theoretic Probability - Steven N Evans <a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=32852" class="professor-link">Ph.D.</a></div>
-                    <div class="course">STAT 210A: Theoretical Statistics - Will Fithian <a href="https://www.mathgenealogy.org/id.php?id=269069" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH 250A: Groups, Rings and Fields - Richard Borcherds <a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=32941" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH C223: Eigenvalues of Random Matrices - Vadim Gorin <a href="https://www.stat.berkeley.edu/~vadicgor/" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH 221: Advanced Matrix Computations - Jim Demmel <a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=27477" class="professor-link">Ph.D.</a></div>
+                    <!-- Spring 2027 (upcoming) -->
+                    <div class="course"><span class="code">ASTR 510 <span class="tag">spring 2027</span></span><span class="title">Computational Astrophysics</span><span class="prof"><a href="https://astro.illinois.edu/directory/profile/gammie" class="professor-link">Charles Gammie</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">ASTR 503 <span class="tag">spring 2027</span></span><span class="title">Observational Astronomy</span><span class="prof"><a href="https://astro.illinois.edu/directory/profile/akemball" class="professor-link">Athol Kemball</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 595 <span class="tag">spring 2027</span></span><span class="title">Stochastic PDEs</span><span class="prof"><a href="https://www.mathgenealogy.org/id.php?id=262405" class="professor-link">Daniel Cooney</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">CSE 553 <span class="tag">spring 2027</span></span><span class="title">Computational Inelasticity</span><span class="prof"><a href="https://amasud.web.engr.illinois.edu/" class="professor-link">Arif Masud</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">CSE 461 <span class="tag">spring 2027</span></span><span class="title">Computational Aerodynamics</span><span class="prof">Blaine Vollmer, Ph.D.</span></div>
+
+                    <!-- Fall 2026 (in progress) -->
+                    <div class="course"><span class="code">STAT 588 <span class="tag">in progress</span></span><span class="title">Covariance Structures and Factor Models</span><span class="prof"><a href="https://stat.illinois.edu/directory/profile/sculpepp" class="professor-link">Steven Culpepper</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 595 <span class="tag">in progress</span></span><span class="title">Introduction to Topological Data Analysis</span><span class="prof"><a href="https://ymb.web.illinois.edu/" class="professor-link">Yuliy Baryshnikov</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">GGIS 527 <span class="tag">in progress</span></span><span class="title">Geospatial Artificial Intelligence &amp; Machine Learning</span><span class="prof"><a href="https://ggis.illinois.edu/directory/profile/linyue" class="professor-link">Yue Lin</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">INFO 510 <span class="tag">in progress</span></span><span class="title">Research Practicum</span><span class="prof"><a href="https://giesbusiness.illinois.edu/profile/robert-brunner" class="professor-link">Robert Brunner</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">CS 498SF <span class="tag">in progress</span></span><span class="title">Software Foundations (Rocq)</span><span class="prof"><a href="https://dependenttyp.es/" class="professor-link">Talia Ringer</a>, Ph.D.</span></div>
+
+                    <!-- Spring 2026 -->
+                    <div class="course"><span class="code">MATH 595QL</span><span class="title">Quantum Learning Theory</span><span class="prof"><a href="https://www.jacobbeckey.com/" class="professor-link">Jacob Beckey</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 586</span><span class="title">Algebraic Combinatorics</span><span class="prof"><a href="https://ayong.web.illinois.edu/" class="professor-link">Alexander Yong</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 503</span><span class="title">Introduction to Geometric Group Theory</span><span class="prof"><a href="https://mineyev.web.illinois.edu/" class="professor-link">Igor Mineyev</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">CS 555</span><span class="title">Numerical Methods for PDEs</span><span class="prof"><a href="https://siebelschool.illinois.edu/about/people/faculty/fischerp" class="professor-link">Paul Fischer</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">CS 598TLR</span><span class="title">Building Proof Assistants</span><span class="prof"><a href="https://dependenttyp.es/" class="professor-link">Talia Ringer</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">CS 591BA</span><span class="title">Biologically Plausible AI</span><span class="prof"><a href="https://czhai.cs.illinois.edu/" class="professor-link">ChengXiang Zhai</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">IS 519</span><span class="title">Research Design</span><span class="prof"><a href="https://ischool.illinois.edu/people/jessie-chin" class="professor-link">Jessie Chin</a>, Ph.D.</span></div>
+
+                    <!-- Fall 2025 -->
+                    <div class="course"><span class="code">STAT 578</span><span class="title">Spectral Methods, Network Analysis &amp; Nonconvex Optimization</span><span class="prof"><a href="https://jagterberg.github.io/" class="professor-link">Joshua Agterberg</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 595RQT</span><span class="title">Representation-theoretic Methods in Quantum Information Theory</span><span class="prof"><a href="https://felixleditzky.info/" class="professor-link">Felix Leditzky</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">CS 576M</span><span class="title">Computer-aided Methods for Formal Deduction</span><span class="prof"><a href="https://dependenttyp.es/" class="professor-link">Talia Ringer</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">IS 509</span><span class="title">History and Foundations of Information Science</span><span class="prof"><a href="https://ischool.illinois.edu/people/michael-twidale" class="professor-link">Michael Twidale</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">INFO 590</span><span class="title">Proseminar in College Teaching</span><span class="prof"><a href="https://ischool.illinois.edu/people/alaina-pincus" class="professor-link">Alaina Pincus</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">TE 566</span><span class="title">Finance for Engineering Management</span><span class="prof">Brian Lilly</span></div>
                 </div>
-                
-                <h3>Selected Upper Division Coursework:</h3>
+
+                <h3 class="subhead">Graduate Division Coursework (Berkeley)</h3>
                 <div class="courses-grid">
-                    <div class="course">ENGIN 183: Engineering Leadership - Carrie Requist <a href="https://www.linkedin.com/in/carrierequist/" class="professor-link">MBA</a></div>
-                    <div class="course">ECON 157: Health Economics - Ryan Edwards <a href="https://u.demog.berkeley.edu/~redwards/" class="professor-link">Ph.D.</a></div>
-                    <div class="course">ECON 141: Mathematical Econometrics - Demian Pouzo <a href="https://www.econ.berkeley.edu/profile/demian-pouzo" class="professor-link">Ph.D.</a></div>
-                    <div class="course">ECON C110: Game Theory - Tyler Maxey <a href="https://www.tylermaxey.com/" class="professor-link">Ph.D.</a></div>
-                    <div class="course">INFO 190: Skepticism in a Data-Driven World - Jevin West <a href="https://ischool.uw.edu/people/faculty/profile/jevinw" class="professor-link">Ph.D.</a></div>
-                    <div class="course">COMPSCI 169A: Software Engineering - Armando Fox <a href="https://www.armandofox.com/" class="professor-link">Ph.D.</a></div>
-                    <div class="course">STAT H195: Honors Thesis - Advised by Andrew Bray <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=237086" class="professor-link">Ph.D.</a></div>
-                    <div class="course">STAT 165: Forecasting - Will Fithian <a href="https://www.mathgenealogy.org/id.php?id=269069" class="professor-link">Ph.D.</a></div>
-                    <div class="course">STAT 158: Experimental Design - Andrew Bray <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=237086" class="professor-link">Ph.D.</a></div>
-                    <div class="course">STAT 134: Concepts of Probability - Adam Lucas <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=37044" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH 130: Groups and Geometry: Matroid Theory - Andres Vindas-Melendez <a href="https://www.mathgenealogy.org/id.php?id=273487" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH 128A: Numerical Analysis - Per-Olof Persson <a href="https://www.mathgenealogy.org/id.php?id=92369" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH 113: Abstract Algebra - Dan-Virgil Voiculescu <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=32920" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH 110: Abstract Linear Algebra - Olga Holtz <a href="https://www.mathgenealogy.org/id.php?id=49270" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH 105: Multivariate Analysis & Measure Theory - Khalilah Beal <a href="https://math.berkeley.edu/people/faculty/khalilah-beal" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH 104: Real Analysis - Khalilah Beal <a href="https://math.berkeley.edu/people/faculty/khalilah-beal" class="professor-link">Ph.D.</a></div>
+                    <div class="course"><span class="code">ECON 217</span><span class="title">Risk</span><span class="prof"><a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=36755" class="professor-link">Lisa R Goldberg</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">STAT 244</span><span class="title">High Powered Statistical Computing in Julia</span><span class="prof"><a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=77852" class="professor-link">Chris Paciorek</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">STAT C205A</span><span class="title">Measure Theoretic Probability</span><span class="prof"><a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=32852" class="professor-link">Steven N Evans</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">STAT 210A</span><span class="title">Theoretical Statistics</span><span class="prof"><a href="https://www.mathgenealogy.org/id.php?id=269069" class="professor-link">Will Fithian</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 250A</span><span class="title">Groups, Rings and Fields</span><span class="prof"><a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=32941" class="professor-link">Richard Borcherds</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH C223</span><span class="title">Eigenvalues of Random Matrices</span><span class="prof"><a href="https://www.stat.berkeley.edu/~vadicgor/" class="professor-link">Vadim Gorin</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 221</span><span class="title">Advanced Matrix Computations</span><span class="prof"><a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=27477" class="professor-link">Jim Demmel</a>, Ph.D.</span></div>
                 </div>
-                
-                <h3>Lower Division Coursework:</h3>
+
+                <h3 class="subhead">Selected Upper Division Coursework</h3>
                 <div class="courses-grid">
-                    <div class="course">COMPSCI 61B: Data Structures (Java) - Justin Yokota <a href="https://sp24.datastructur.es/staff/" class="professor-link">M.S.</a></div>
-                    <div class="course">COMPSCI 61A: Program Structures (Python, Lisp) - Satish Rao <a href="https://www2.eecs.berkeley.edu/Faculty/Homepages/rao.html" class="professor-link">Ph.D.</a></div>
-                    <div class="course">DATA C8: Data Science Foundations - Joseph Gonzalez <a href="https://www2.eecs.berkeley.edu/Faculty/Homepages/jegonzal.html" class="professor-link">Ph.D.</a></div>
-                    <div class="course">STAT 33B: Advanced R Programming - Gaston Sanchez <a href="https://statistics.berkeley.edu/people/gaston-sanchez" class="professor-link">Ph.D.</a></div>
-                    <div class="course">MATH 55: Discrete Mathematics - Sylvie Corteel <a href="https://www.mathgenealogy.org/id.php?id=216292" class="professor-link">Ph.D.</a></div>
+                    <div class="course"><span class="code">ENGIN 183</span><span class="title">Engineering Leadership</span><span class="prof"><a href="https://www.linkedin.com/in/carrierequist/" class="professor-link">Carrie Requist</a>, MBA</span></div>
+                    <div class="course"><span class="code">ECON 157</span><span class="title">Health Economics</span><span class="prof"><a href="https://u.demog.berkeley.edu/~redwards/" class="professor-link">Ryan Edwards</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">ECON 141</span><span class="title">Mathematical Econometrics</span><span class="prof"><a href="https://www.econ.berkeley.edu/profile/demian-pouzo" class="professor-link">Demian Pouzo</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">ECON C110</span><span class="title">Game Theory</span><span class="prof"><a href="https://www.tylermaxey.com/" class="professor-link">Tyler Maxey</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">INFO 190</span><span class="title">Skepticism in a Data-Driven World</span><span class="prof"><a href="https://ischool.uw.edu/people/faculty/profile/jevinw" class="professor-link">Jevin West</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">COMPSCI 169A</span><span class="title">Software Engineering</span><span class="prof"><a href="https://www.armandofox.com/" class="professor-link">Armando Fox</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">STAT H195</span><span class="title">Honors Thesis</span><span class="prof">Advised by <a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=237086" class="professor-link">Andrew Bray</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">STAT 165</span><span class="title">Forecasting</span><span class="prof"><a href="https://www.mathgenealogy.org/id.php?id=269069" class="professor-link">Will Fithian</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">STAT 158</span><span class="title">Experimental Design</span><span class="prof"><a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=237086" class="professor-link">Andrew Bray</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">STAT 134</span><span class="title">Concepts of Probability</span><span class="prof"><a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=37044" class="professor-link">Adam Lucas</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 130</span><span class="title">Groups and Geometry: Matroid Theory</span><span class="prof"><a href="https://www.mathgenealogy.org/id.php?id=273487" class="professor-link">Andrés Vindas-Meléndez</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 128A</span><span class="title">Numerical Analysis</span><span class="prof"><a href="https://www.mathgenealogy.org/id.php?id=92369" class="professor-link">Per-Olof Persson</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 113</span><span class="title">Abstract Algebra</span><span class="prof"><a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=32920" class="professor-link">Dan-Virgil Voiculescu</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 110</span><span class="title">Abstract Linear Algebra</span><span class="prof"><a href="https://www.mathgenealogy.org/id.php?id=49270" class="professor-link">Olga Holtz</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 105</span><span class="title">Multivariate Analysis &amp; Measure Theory</span><span class="prof"><a href="https://math.berkeley.edu/people/faculty/khalilah-beal" class="professor-link">Khalilah Beal</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 104</span><span class="title">Real Analysis</span><span class="prof"><a href="https://math.berkeley.edu/people/faculty/khalilah-beal" class="professor-link">Khalilah Beal</a>, Ph.D.</span></div>
                 </div>
-                
-                <h3>Prior Education</h3>
+
+                <h3 class="subhead">Lower Division Coursework</h3>
+                <div class="courses-grid">
+                    <div class="course"><span class="code">COMPSCI 61B</span><span class="title">Data Structures (Java)</span><span class="prof"><a href="https://sp24.datastructur.es/staff/" class="professor-link">Justin Yokota</a>, M.S.</span></div>
+                    <div class="course"><span class="code">COMPSCI 61A</span><span class="title">Program Structures (Python, Lisp)</span><span class="prof"><a href="https://www2.eecs.berkeley.edu/Faculty/Homepages/rao.html" class="professor-link">Satish Rao</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">DATA C8</span><span class="title">Data Science Foundations</span><span class="prof"><a href="https://www2.eecs.berkeley.edu/Faculty/Homepages/jegonzal.html" class="professor-link">Joseph Gonzalez</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">STAT 33B</span><span class="title">Advanced R Programming</span><span class="prof"><a href="https://statistics.berkeley.edu/people/gaston-sanchez" class="professor-link">Gaston Sanchez</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 55</span><span class="title">Discrete Mathematics</span><span class="prof"><a href="https://www.mathgenealogy.org/id.php?id=216292" class="professor-link">Sylvie Corteel</a>, Ph.D.</span></div>
+                </div>
+
+                <h3 class="subhead">Prior Education</h3>
                 <p>I did my high school at Dubai American Academy, junior high at Webber Academy (Calgary), and primary years at Jakarta International School.</p>
             </div>
         </section>
@@ -666,264 +1013,268 @@
 
     <footer>
         <div class="container">
-            <p>Jingyuan Chen 2026</p>
+            <p>© 2026 Jingyuan Chen</p>
         </div>
     </footer>
 
     <script>
-        // Mathematical objects animation
-        const canvas = document.getElementById('math-canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Set canvas size
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        
-        // Erdős–Rényi graph with accurate model (G(n,p))
-        class ErdosRenyiGraph {
-            constructor() {
-                this.nodeCount = 156; // Large number of nodes
-                this.nodes = [];
-                this.edges = [];
-                this.edgeMap = new Set(); // Track existing edges
-                this.lastEdgeTime = Date.now();
-                this.edgeDelay = 300; // Add edge every 300ms (slower)
-                this.maxEdges = 600; // Maximum edges to maintain performance
-                this.p = 0.02; // Probability for G(n,p) model
-                
-                // Create nodes in a grid-like but slightly randomized pattern
-                const cols = Math.ceil(Math.sqrt(this.nodeCount * (canvas.width / canvas.height)));
-                const rows = Math.ceil(this.nodeCount / cols);
-                const spacingX = canvas.width / (cols + 1);
-                const spacingY = canvas.height / (rows + 1);
-                
-                let nodeIndex = 0;
-                for (let row = 0; row < rows && nodeIndex < this.nodeCount; row++) {
-                    for (let col = 0; col < cols && nodeIndex < this.nodeCount; col++) {
-                        const jitterX = (Math.random() - 0.5) * spacingX * 0.4;
-                        const jitterY = (Math.random() - 0.5) * spacingY * 0.4;
-                        
-                        this.nodes.push({
-                            x: (col + 1) * spacingX + jitterX,
-                            y: (row + 1) * spacingY + jitterY,
-                            vx: 0,
-                            vy: 0,
-                            id: nodeIndex
-                        });
-                        nodeIndex++;
-                    }
-                }
-                
-                // Start with no edges (accurate to Erdős–Rényi model)
-                this.possibleEdges = [];
-                for (let i = 0; i < this.nodeCount; i++) {
-                    for (let j = i + 1; j < this.nodeCount; j++) {
-                        this.possibleEdges.push({from: i, to: j});
-                    }
-                }
-                // Shuffle possible edges for random selection
-                this.shuffleArray(this.possibleEdges);
+        /*
+         * Background: an Erdős–Rényi graph whose edge probability p rises and falls.
+         *
+         * Each candidate pair carries a weight U ~ Uniform(0, p_max); the pair is an edge
+         * exactly when U <= p(t). Pairs with weight above p_max never appear, so every
+         * frame is a draw from G(n, p(t)). p climbs smoothly from 0 to p_max (np = 3),
+         * holds, then falls back to 0. At the top the weights of the (now all present)
+         * edges are redrawn, so the graph comes apart in a different order than it was
+         * built while each frame stays exactly G(n, p). At the bottom a fresh set of pairs
+         * is drawn for the next cycle. The largest component is drawn in the accent
+         * colour. Vertex positions carry no meaning; they are only spread out for legibility.
+         */
+        (function () {
+            const canvas = document.getElementById('math-canvas');
+            const ctx = canvas.getContext('2d');
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            const TEAL = '0, 121, 116';
+            const SLATE = '70, 86, 84';
+            const C_MAX = 3.0;          // peak expected degree, np
+            const RISE_MS = 40000;
+            const TOP_MS = 6000;
+            const FALL_MS = 40000;
+            const EMPTY_MS = 3000;
+            const CYCLE_MS = RISE_MS + TOP_MS + FALL_MS + EMPTY_MS;
+            const FADE_MS = 1400;       // edges fade in and out rather than popping
+
+            let W = 0, H = 0;
+            let n, pMax, nodes, pairs, deg, inGiant, start, topDone, lastNow = 0;
+
+            function resize() {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                W = window.innerWidth;
+                H = window.innerHeight;
+                canvas.width = Math.round(W * dpr);
+                canvas.height = Math.round(H * dpr);
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             }
-            
-            shuffleArray(array) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
+
+            // Mitchell's best-candidate sampling: evenly spread, still random-looking.
+            function sampleNodes(count) {
+                const pts = [];
+                const ar = W / Math.max(H, 1);
+                for (let i = 0; i < count; i++) {
+                    let best = null, bestD = -1;
+                    const candidates = i === 0 ? 1 : 12;
+                    for (let c = 0; c < candidates; c++) {
+                        const u = 0.03 + 0.94 * Math.random();
+                        const v = 0.05 + 0.90 * Math.random();
+                        let d = Infinity;
+                        for (const q of pts) {
+                            const dx = (u - q.u) * ar, dy = v - q.v;
+                            const dd = dx * dx + dy * dy;
+                            if (dd < d) d = dd;
+                        }
+                        if (d > bestD) { bestD = d; best = { u, v }; }
+                    }
+                    best.ph1 = Math.random() * Math.PI * 2;
+                    best.ph2 = Math.random() * Math.PI * 2;
+                    best.amp = 3 + Math.random() * 5;
+                    pts.push(best);
                 }
+                return pts;
             }
-            
-            update() {
-                // Add edges randomly over time (Erdős–Rényi G(n,p) model)
-                if (Date.now() - this.lastEdgeTime > this.edgeDelay && this.edges.length < this.maxEdges) {
-                    // Try to add a new edge (higher probability since slower)
-                    if (this.possibleEdges.length > 0 && Math.random() < 0.8) {
-                        const edge = this.possibleEdges.pop();
-                        const edgeKey = `${edge.from}-${edge.to}`;
-                        
-                        if (!this.edgeMap.has(edgeKey)) {
-                            this.edges.push(edge);
-                            this.edgeMap.add(edgeKey);
+
+            // Fresh candidate pairs: each of the C(n,2) pairs is kept with probability p_max,
+            // and a kept pair's weight is then Uniform(0, p_max).
+            function samplePairs() {
+                pairs = [];
+                for (let i = 0; i < n; i++) {
+                    for (let j = i + 1; j < n; j++) {
+                        if (Math.random() < pMax) {
+                            pairs.push({ a: i, b: j, u: Math.random() * pMax, on: false, t: -1e9 });
                         }
                     }
-                    this.lastEdgeTime = Date.now();
-                    
-                    // Reset when we've added many edges
-                    if (this.edges.length >= this.maxEdges) {
-                        this.edges = [];
-                        this.edgeMap.clear();
-                        
-                        // Recreate possible edges
-                        this.possibleEdges = [];
-                        for (let i = 0; i < this.nodeCount; i++) {
-                            for (let j = i + 1; j < this.nodeCount; j++) {
-                                this.possibleEdges.push({from: i, to: j});
-                            }
-                        }
-                        this.shuffleArray(this.possibleEdges);
-                    }
                 }
-                
-                // Apply very gentle forces for minimal movement
-                this.nodes.forEach((node, i) => {
-                    // Slight random movement
-                    node.vx += (Math.random() - 0.5) * 0.01;
-                    node.vy += (Math.random() - 0.5) * 0.01;
-                    
-                    // Apply velocity with strong damping
-                    node.vx *= 0.98;
-                    node.vy *= 0.98;
-                    node.x += node.vx;
-                    node.y += node.vy;
-                    
-                    // Keep within bounds
-                    const margin = 20;
-                    if (node.x < margin) node.x = margin;
-                    if (node.x > canvas.width - margin) node.x = canvas.width - margin;
-                    if (node.y < margin) node.y = margin;
-                    if (node.y > canvas.height - margin) node.y = canvas.height - margin;
-                });
             }
-            
-            draw() {
-                ctx.save();
-                
-                // First, calculate node degrees (number of connections)
-                const nodeDegrees = new Array(this.nodeCount).fill(0);
-                this.edges.forEach(edge => {
-                    nodeDegrees[edge.from]++;
-                    nodeDegrees[edge.to]++;
-                });
-                
-                // Draw edges with higher opacity
-                ctx.globalAlpha = 0.6;
-                ctx.strokeStyle = 'rgba(70, 130, 180, 0.4)';
+
+            function recomputeComponents() {
+                const parent = Array.from({ length: n }, (_, i) => i);
+                const size = new Array(n).fill(1);
+                const find = i => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+                deg = new Array(n).fill(0);
+                for (const e of pairs) {
+                    if (!e.on) continue;
+                    deg[e.a]++; deg[e.b]++;
+                    let a = find(e.a), b = find(e.b);
+                    if (a === b) continue;
+                    if (size[a] < size[b]) { const t = a; a = b; b = t; }
+                    parent[b] = a; size[a] += size[b];
+                }
+                let root = -1, best = 0;
+                for (let i = 0; i < n; i++) {
+                    const r = find(i);
+                    if (r === i && size[i] > best) { best = size[i]; root = i; }
+                }
+                inGiant = new Uint8Array(n);
+                if (best >= 4) for (let i = 0; i < n; i++) inGiant[i] = find(i) === root ? 1 : 0;
+            }
+
+            function setP(p, now) {
+                let changed = false;
+                for (const e of pairs) {
+                    const want = e.u <= p;
+                    if (want !== e.on) { e.on = want; e.t = now; changed = true; }
+                }
+                if (changed) recomputeComponents();
+            }
+
+            const smooth = x => x * x * (3 - 2 * x);
+
+            function pAt(el) {
+                if (el < RISE_MS) return pMax * smooth(el / RISE_MS);
+                el -= RISE_MS;
+                if (el < TOP_MS) return pMax;
+                el -= TOP_MS;
+                if (el < FALL_MS) return pMax * (1 - smooth(el / FALL_MS));
+                return 0;
+            }
+
+            function draw(now) {
+                ctx.clearRect(0, 0, W, H);
+                const t = reduceMotion ? 0 : now * 0.00022;
+                const px = new Float32Array(n), py = new Float32Array(n);
+                for (let i = 0; i < n; i++) {
+                    const nd = nodes[i];
+                    px[i] = nd.u * W + nd.amp * Math.sin(t + nd.ph1);
+                    py[i] = nd.v * H + nd.amp * Math.cos(0.8 * t + nd.ph2);
+                }
+
                 ctx.lineWidth = 1;
-                this.edges.forEach(edge => {
-                    const from = this.nodes[edge.from];
-                    const to = this.nodes[edge.to];
-                    ctx.beginPath();
-                    ctx.moveTo(from.x, from.y);
-                    ctx.lineTo(to.x, to.y);
-                    ctx.stroke();
-                });
-                
-                // Draw nodes with opacity based on their degree
-                this.nodes.forEach((node, index) => {
-                    const degree = nodeDegrees[index];
-                    const maxDegree = 10; // Normalize for visual clarity
-                    const normalizedDegree = Math.min(degree / maxDegree, 1);
-                    
-                    // Unconnected nodes are very light, connected nodes get darker
-                    const baseOpacity = degree === 0 ? 0.2 : 0.5;
-                    const opacity = baseOpacity + normalizedDegree * 0.5;
-                    
-                    // Node size also increases slightly with degree
-                    const baseSize = 2;
-                    const size = baseSize + normalizedDegree * 3;
-                    
-                    ctx.fillStyle = `rgba(70, 130, 180, ${opacity})`;
-                    ctx.beginPath();
-                    ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    // Add a subtle border to connected nodes
-                    if (degree > 0) {
-                        ctx.strokeStyle = `rgba(70, 130, 180, ${opacity * 1.2})`;
-                        ctx.lineWidth = 1;
+                for (let pass = 0; pass < 2; pass++) {
+                    for (const e of pairs) {
+                        const g = e.on && inGiant[e.a] === 1;
+                        if ((pass === 1) !== g) continue;   // giant component drawn on top
+                        let color;
+                        if (e.on) {
+                            const age = reduceMotion ? 1 : Math.min(1, (now - e.t) / FADE_MS);
+                            color = g ? 'rgba(' + TEAL + ',' + (0.34 * age) + ')'
+                                      : 'rgba(' + SLATE + ',' + (0.17 * age) + ')';
+                        } else {
+                            const left = 1 - (now - e.t) / FADE_MS;
+                            if (left <= 0 || reduceMotion) continue;
+                            color = 'rgba(' + SLATE + ',' + (0.17 * left) + ')';
+                        }
+                        ctx.strokeStyle = color;
                         ctx.beginPath();
-                        ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
+                        ctx.moveTo(px[e.a], py[e.a]);
+                        ctx.lineTo(px[e.b], py[e.b]);
                         ctx.stroke();
                     }
-                });
-                
-                ctx.restore();
+                }
+
+                for (let i = 0; i < n; i++) {
+                    const r = 1.6 + 0.6 * Math.sqrt(deg[i]);
+                    if (inGiant[i]) ctx.fillStyle = 'rgba(' + TEAL + ', 0.8)';
+                    else if (deg[i] > 0) ctx.fillStyle = 'rgba(' + SLATE + ', 0.45)';
+                    else ctx.fillStyle = 'rgba(' + SLATE + ', 0.22)';
+                    ctx.beginPath();
+                    ctx.arc(px[i], py[i], r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
-        }
-        
-        // Create single large Erdős–Rényi graph
-        const graph = new ErdosRenyiGraph();
-        
-        // Animation loop
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            graph.update();
-            graph.draw();
-            
-            requestAnimationFrame(animate);
-        }
-        
-        animate();
-        
-        // Navigation system for separate pages
-        document.addEventListener('DOMContentLoaded', function() {
+
+            function frame(now) {
+                // Don't let a backgrounded tab jump through the cycle.
+                if (lastNow && now - lastNow > 500) start += now - lastNow;
+                lastNow = now;
+
+                let el = now - start;
+                if (el >= CYCLE_MS) {            // graph is empty here: draw a new set of pairs
+                    start += CYCLE_MS;
+                    el -= CYCLE_MS;
+                    samplePairs();
+                    topDone = false;
+                    recomputeComponents();
+                }
+                if (!topDone && el >= RISE_MS) {
+                    // All candidate edges are present; redraw their weights so the graph
+                    // dissolves in a new order (each frame is still exactly G(n, p)).
+                    setP(pMax, now);
+                    for (const e of pairs) e.u = Math.random() * pMax;
+                    topDone = true;
+                }
+
+                setP(pAt(el), now);
+                draw(now);
+                requestAnimationFrame(frame);
+            }
+
+            resize();
+            n = W < 640 ? 70 : (W < 1100 ? 110 : 140);
+            pMax = C_MAX / (n - 1);
+            nodes = sampleNodes(n);
+            samplePairs();
+            recomputeComponents();
+            topDone = false;
+
+            window.addEventListener('resize', function () {
+                resize();
+                if (reduceMotion) draw(0);
+            });
+
+            if (reduceMotion) {
+                setP(1.8 / (n - 1), 0);   // static snapshot just past the phase transition
+                draw(0);
+            } else {
+                const now = performance.now();
+                start = now - 0.45 * RISE_MS;        // open partway in, not on an empty canvas
+                setP(pAt(now - start), now - FADE_MS);
+                requestAnimationFrame(frame);
+            }
+        })();
+
+        // Navigation: one "page" at a time.
+        document.addEventListener('DOMContentLoaded', function () {
             const navLinks = document.querySelectorAll('nav a[href^="#"]');
             const header = document.querySelector('header');
             const sections = document.querySelectorAll('.section');
             const footer = document.querySelector('footer');
-            
-            // Function to show a specific section
+
             function showSection(targetId) {
-                // Hide header and all sections
                 header.classList.add('hidden');
                 sections.forEach(section => section.classList.add('hidden'));
-                footer.classList.add('hidden');
-                
-                // Remove active class from all nav links
                 navLinks.forEach(link => link.classList.remove('active'));
-                
-                // Show the target section
+
                 if (targetId === 'about' || targetId === '') {
-                    // Show header and about section for home
                     header.classList.remove('hidden');
                     const aboutSection = document.getElementById('about');
                     if (aboutSection) aboutSection.classList.remove('hidden');
-                    footer.classList.remove('hidden');
-                    
-                    // Set active nav link
                     const aboutLink = document.querySelector('nav a[href="#about"]');
                     if (aboutLink) aboutLink.classList.add('active');
                 } else {
-                    // Show specific section
                     const targetSection = document.getElementById(targetId);
-                    if (targetSection) {
-                        targetSection.classList.remove('hidden');
-                        footer.classList.remove('hidden');
-                    }
-                    
-                    // Set active nav link
-                    const activeLink = document.querySelector(`nav a[href="#${targetId}"]`);
+                    if (targetSection) targetSection.classList.remove('hidden');
+                    const activeLink = document.querySelector('nav a[href="#' + targetId + '"]');
                     if (activeLink) activeLink.classList.add('active');
                 }
-                
-                // Scroll to top
+
+                footer.classList.remove('hidden');
                 window.scrollTo(0, 0);
             }
-            
-            // Handle navigation clicks
+
             navLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
+                link.addEventListener('click', function (e) {
                     e.preventDefault();
                     const targetId = this.getAttribute('href').substring(1);
                     showSection(targetId);
-                    
-                    // Update URL hash
-                    history.pushState(null, null, `#${targetId}`);
+                    history.pushState(null, null, '#' + targetId);
                 });
             });
-            
-            // Handle browser back/forward buttons
-            window.addEventListener('popstate', function() {
+
+            window.addEventListener('popstate', function () {
                 const hash = window.location.hash.substring(1);
                 showSection(hash || 'about');
             });
-            
-            // Show initial section based on URL hash
+
             const initialHash = window.location.hash.substring(1);
             showSection(initialHash || 'about');
         });
