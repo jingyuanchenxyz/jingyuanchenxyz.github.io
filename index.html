@@ -6,28 +6,24 @@
     <title>Jingyuan Chen</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ---------- Tokens ---------- */
         :root {
-            --accent: #007974;
+            --accent: #007974;          /* used on the light projector screen */
             --accent-strong: #005f5b;
-            --accent-soft: rgba(0, 121, 116, 0.08);
-            --accent-line: rgba(0, 121, 116, 0.18);
             --ink: #15201f;
+
             --muted: #55625f;
             --faint: #8a9593;
-            --bg: #f5f7f6;
             --card: #ffffff;
-            --border: rgba(21, 32, 31, 0.08);
-            --radius: 6px;
-            --shadow: 0 1px 2px rgba(21, 32, 31, 0.04), 0 8px 24px rgba(21, 32, 31, 0.05);
-            --transition: all 0.25s ease;
-            /* pixel-panel styling; --px is kept equal to the chalkboard's art-pixel size */
-            --px: 4px;
-            --outline: #3d2410;
+            --tape: rgba(241, 230, 166, 0.85);
             --bevel: #e4e2d8;
-            --drop: rgba(14, 24, 19, 0.45);
+
+            --px: 4px;                  /* one art pixel; kept in sync with the board by JS */
+            --outline: #3d2410;
+            --drop: rgba(10, 18, 14, 0.45);
+            --clear: 110px;             /* room left at the top of each board for the projector */
             --pixel-panel:
                 inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 0 var(--bevel),
                 0 calc(-1 * var(--px)) 0 0 var(--outline),
@@ -36,6 +32,7 @@
                 var(--px) 0 0 0 var(--outline),
                 var(--px) calc(2 * var(--px)) 0 0 var(--drop),
                 calc(2 * var(--px)) var(--px) 0 0 var(--drop);
+            --pixel-font: 'Pixelify Sans', 'Montserrat', monospace;
         }
 
         * {
@@ -44,14 +41,30 @@
             box-sizing: border-box;
         }
 
-        /* ---------- Background: pixel-art chalkboard ---------- */
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;           /* the boards replace page scrolling */
+        }
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            font-size: 16px;
+            color: var(--ink);
+            background: #141d18;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ---------- Static frame, tray and wall (canvas) ---------- */
         .board-wrap {
             position: fixed;
             inset: 0;
             overflow: hidden;
-            z-index: -1;
+            z-index: 0;
             pointer-events: none;
-            background: #2f4a3c;
+            background: #141d18;
         }
 
         #board {
@@ -60,118 +73,373 @@
             image-rendering: crisp-edges;
         }
 
+        /* ---------- Sliding boards ---------- */
+        #stage {
+            position: fixed;
+            z-index: 5;
+            overflow: hidden;
+            /* the wall and the two steel tracks, seen only while boards pass each other */
+            background:
+                linear-gradient(to right,
+                    #4a5156 0, #4a5156 var(--px),
+                    #22282b var(--px), #22282b calc(2 * var(--px)),
+                    transparent calc(2 * var(--px)), transparent calc(100% - 2 * var(--px)),
+                    #22282b calc(100% - 2 * var(--px)), #22282b calc(100% - var(--px)),
+                    #4a5156 calc(100% - var(--px))),
+                #141d18;
+        }
 
-        body {
-            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: var(--ink);
+        .panel {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
             background-color: #2f4a3c;
-            font-size: 16px;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            position: relative;
-            min-height: 100vh;
+            background-repeat: no-repeat;
+            background-size: var(--slate-size, 100% 100%);
+            image-rendering: pixelated;
+            /* aluminium trim along the top and bottom edge of each board */
+            box-shadow:
+                inset 0 var(--px) 0 0 #8a9297,
+                inset 0 calc(2 * var(--px)) 0 0 #4a5156,
+                inset 0 calc(-1 * var(--px)) 0 0 #4a5156,
+                inset 0 calc(-2 * var(--px)) 0 0 #8a9297;
         }
 
-        /* ---------- Layout ---------- */
-        .container {
-            max-width: 960px;
+        .panel.measuring {
+            visibility: hidden;
+            z-index: 0;
+        }
+
+        .panel.scrolls {
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+
+        .panel.front {
+            z-index: 3;
+            box-shadow:
+                inset 0 var(--px) 0 0 #8a9297,
+                inset 0 calc(2 * var(--px)) 0 0 #4a5156,
+                inset 0 calc(-1 * var(--px)) 0 0 #4a5156,
+                inset 0 calc(-2 * var(--px)) 0 0 #8a9297,
+                0 calc(2 * var(--px)) 0 0 var(--drop),
+                0 calc(-2 * var(--px)) 0 0 var(--drop);
+        }
+
+        .panel.back {
+            z-index: 2;
+        }
+
+        .panel-content {
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 0 24px;
-            position: relative;
-            z-index: 10;
-            width: 100%;
+            padding: var(--clear) 44px 46px;   /* bottom room keeps the "more below" hint clear */
         }
 
-        main {
-            position: relative;
-            z-index: 10;
-            padding-top: 144px;
-        }
-
-        header {
-            padding: 150px 0 40px;
-            position: relative;
-            z-index: 10;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-        }
-
-        .header-content {
-            display: grid;
-            grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
-            gap: 3.5rem;
-            align-items: stretch;      /* left column and name card share top and bottom edges */
-        }
-
-        .header-left {
+        /* board position markers on the right-hand frame */
+        .dots {
+            position: fixed;
+            z-index: 6;
             display: flex;
             flex-direction: column;
-            gap: 1.75rem;
+            gap: calc(2 * var(--px));
+            transform: translate(-50%, -50%);
         }
 
-        .header-current {
-            flex: 1;                   /* fills whatever height the name card leaves */
+        .dots button {
+            width: calc(2 * var(--px));
+            height: calc(2 * var(--px));
+            border: 0;
+            padding: 0;
+            cursor: pointer;
+            background: transparent;
+            box-shadow: inset 0 0 0 2px rgba(242, 241, 234, 0.75);
+        }
+
+        .dots button[aria-current="true"] {
+            background: #f2f1ea;
+        }
+
+        .dots button:focus-visible {
+            outline: 2px solid #f1e6a6;
+            outline-offset: 2px;
+        }
+
+        /* "more below" hint, written in chalk just above the tray */
+        .more {
+            position: fixed;
+            z-index: 6;
+            transform: translateX(-50%);
+            font-family: var(--pixel-font);
+            font-size: 0.85rem;
+            letter-spacing: 0.06em;
+            color: rgba(242, 241, 234, 0.6);
+            background: none;
+            border: 0;
+            cursor: pointer;
+            animation: nudge 1.6s steps(2, end) infinite;
+        }
+
+        .more[hidden] {
+            display: none;
+        }
+
+        @keyframes nudge {
+            50% { transform: translate(-50%, var(--px)); }
+        }
+
+        /* ---------- Paper taped to the boards ---------- */
+        /* Text sits on white paper, as before, so contrast stays high. The paper is taped on. */
+        .panel-content > * + * {
+            margin-top: 2.25rem;
+        }
+
+        .sheet,
+        .card {
+            position: relative;
             background: var(--card);
+            color: var(--ink);
             box-shadow: var(--pixel-panel);
-            padding: 1.25rem 1.5rem;
         }
 
-        .header-current h4 {
-            font-size: 1rem;
+        .sheet {
+            padding: 2.6rem 3rem 2.2rem;
+        }
+
+        .sheet::before,
+        .sheet::after,
+        .card::before,
+        .card::after {
+            content: '';
+            position: absolute;
+            top: calc(-3 * var(--px));
+            width: calc(14 * var(--px));
+            height: calc(5 * var(--px));
+            background: var(--tape);
+            box-shadow: inset 0 calc(-1 * var(--px)) 0 0 rgba(0, 0, 0, 0.08);
+            z-index: 1;
+        }
+
+        .sheet::before,
+        .card::before { left: calc(6 * var(--px)); }
+        .sheet::after,
+        .card::after { right: calc(6 * var(--px)); }
+
+        .card::before,
+        .card::after {
+            width: calc(10 * var(--px));
+            height: calc(4 * var(--px));
+            top: calc(-2 * var(--px));
+        }
+
+        h1 {
+            font-size: 2.6rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+            color: var(--ink);
+            margin-bottom: 0.35rem;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin: 0 0 1.5rem;
+            letter-spacing: -0.01em;
+            color: var(--accent);
+        }
+
+        h2:not(:first-child) {
+            margin-top: 2.6rem;
+        }
+
+        h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin: 1.25rem 0 0.4rem;
+            letter-spacing: -0.005em;
+            line-height: 1.45;
+            color: var(--ink);
+        }
+
+        h3:first-child {
+            margin-top: 0;
+        }
+
+        h3.subhead {
+            margin-top: 2.1rem;
+        }
+
+        h3.subhead:first-child {
+            margin-top: 0;
+        }
+
+        .eyebrow {
+            display: block;
+            font-size: 1.05rem;
             font-weight: 600;
             color: var(--ink);
-            margin-bottom: 0.6rem;
+            margin: 0 0 0.6rem;
         }
 
-        .current-rows {
-            display: grid;
-            grid-template-columns: max-content minmax(0, 1fr);
-            column-gap: 1rem;
-            row-gap: 0.55rem;
-            font-size: 0.9rem;
-            line-height: 1.5;
+        .eyebrow:not(:first-child) {
+            margin-top: 2rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            line-height: 1.75;
             color: var(--muted);
         }
 
-        .current-rows .label {
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--accent-strong);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .professor-link {
+            color: inherit;
+            border-bottom: 1px dotted var(--accent);
+        }
+
+        .professor-link:hover {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom-style: solid;
+        }
+
+        /* signature, written in chalk on the board itself */
+        p.sign {
+            margin-bottom: 0;
+            font-family: var(--pixel-font);
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+            color: rgba(242, 241, 234, 0.7);
+            text-align: center;
+        }
+
+        /* photographs taped to the board */
+        .print {
+            position: relative;
+            display: inline-block;
+            background: var(--card);
+            padding: calc(2 * var(--px));
+            box-shadow: var(--pixel-panel);
+            line-height: 0;
+        }
+
+        .print::before,
+        .print::after {
+            content: '';
+            position: absolute;
+            top: calc(-2 * var(--px));
+            width: calc(10 * var(--px));
+            height: calc(4 * var(--px));
+            background: var(--tape);
+            box-shadow: inset 0 calc(-1 * var(--px)) 0 0 rgba(0, 0, 0, 0.08);
+        }
+
+        .print::before { left: calc(3 * var(--px)); }
+        .print::after { right: calc(3 * var(--px)); }
+
+        .print img {
+            display: block;
+            background: #e8e7e0;
+            color: var(--ink);
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        figure {
+            margin: 2rem 0 0.5rem;
+            text-align: center;
+        }
+
+        figure .print {
+            box-shadow:
+                0 -3px 0 0 #d3dad6,
+                0 3px 0 0 #d3dad6,
+                -3px 0 0 0 #d3dad6,
+                3px 0 0 0 #d3dad6;
+        }
+
+        figure .print::before,
+        figure .print::after {
+            display: none;
+        }
+
+        figure .print img {
+            height: min(240px, 30vh);
+            width: auto;
+            max-width: 100%;
+        }
+
+        figcaption {
+            font-size: 0.85rem;
             color: var(--faint);
+            margin-top: 0.6rem;
+            font-style: italic;
         }
 
-        .header-image {
+        /* ---------- Landing board: photo, name card and Current card, placed as before ---------- */
+        .landing {
+            display: grid;
+            grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+            grid-template-rows: auto 1fr;
+            grid-template-areas:
+                "photo info"
+                "current info";
+            column-gap: 3.5rem;
+            row-gap: 1.75rem;
+        }
+
+        .landing.part {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            gap: 2.25rem;
         }
 
-        .header-image a {
-            display: block;
-            width: 100%;
-            max-width: 400px;
+        .landing .info.part {
+            justify-content: flex-start;
         }
 
-        .header-image img {
+        .landing .info.part > :first-child {
+            margin-top: 0;
+        }
+
+        .landing .photo { grid-area: photo; }
+        .landing .info { grid-area: info; }
+        .landing .current { grid-area: current; }
+
+        .landing .photo .print {
             display: block;
+            padding: 0;
+            /* shrink the photo on short screens so the whole landing fits on one board */
+            max-width: clamp(170px, calc(var(--avail, 700px) - 365px), 380px);
+            margin: 0 auto;
+        }
+
+        .landing .photo img {
             width: 100%;
             aspect-ratio: 1 / 1;
             object-fit: cover;
-            border-radius: 0;
-            box-shadow: var(--pixel-panel);
-            background: var(--card);
         }
 
-        .header-info {
+        .landing .info {
             display: flex;
             flex-direction: column;
-            background: var(--card);
-            border-radius: 0;
-            box-shadow: var(--pixel-panel);
-            padding: 1.75rem 2rem;
             justify-content: center;
+            padding: 1.75rem 2rem;
         }
 
-        .header-info h1 {
-            margin-bottom: 0.35rem;
+        .landing .current {
+            padding: 1.25rem 1.5rem;
         }
 
         .role {
@@ -191,27 +459,32 @@
             color: var(--faint);
         }
 
-        .header-info .contact {
-            margin: 0.9rem 0 1.4rem;
+        .contact {
+            margin: 0.9rem 0 1.2rem;
             display: flex;
             flex-direction: column;
             gap: 0.2rem;
+            font-size: 0.95rem;
         }
 
-        .header-info .contact a {
-            font-size: 0.95rem;
+        .contact a {
             width: fit-content;
         }
 
-        .header-info .contact a:not([href]) {
+        .contact a:not([href]) {
             color: var(--ink);
         }
 
-        .header-degrees h4 {
+        .landing h4 {
             font-size: 1rem;
             font-weight: 600;
             color: var(--ink);
             margin: 1.1rem 0 0.35rem;
+        }
+
+        .landing .current h4 {
+            margin-top: 0;
+            margin-bottom: 0.6rem;
         }
 
         .degrees {
@@ -234,7 +507,31 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* ---------- Aligned rows (about, teaching) ---------- */
+        .interests {
+            font-size: 0.92rem;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .current-rows {
+            display: grid;
+            grid-template-columns: max-content minmax(0, 1fr);
+            column-gap: 1rem;
+            row-gap: 0.5rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--muted);
+        }
+
+        .current-rows .label {
+            color: var(--faint);
+        }
+
+        /* ---------- Aligned rows (updates, teaching, industry, service) ---------- */
+        .row {
+            display: contents;
+        }
+
         .ledger {
             display: grid;
             grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr) auto;
@@ -242,6 +539,10 @@
             row-gap: 0.85rem;
             align-items: baseline;
             margin-bottom: 1rem;
+        }
+
+        .ledger:last-child {
+            margin-bottom: 0;
         }
 
         .ledger .c1 {
@@ -280,16 +581,11 @@
             font-size: 0.92rem;
         }
 
-        p.legend {
-            margin: -0.75rem 0 1.5rem;
-            font-size: 0.92rem;
-        }
-
         .ledger.two {
             grid-template-columns: 7.5rem minmax(0, 1fr);
             column-gap: 1.25rem;
             row-gap: 0.7rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .ledger.two .label {
@@ -303,179 +599,50 @@
             line-height: 1.7;
         }
 
-        .header-interests {
+        p.legend {
+            margin: -0.75rem 0 1.5rem;
             font-size: 0.92rem;
-            color: var(--muted);
-            line-height: 1.7;
-        }
-
-        /* ---------- Typography ---------- */
-        h1 {
-            font-size: 2.6rem;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-            line-height: 1.15;
-        }
-
-        h2 {
-            font-size: 1.6rem;
-            font-weight: 600;
-            margin: 0 0 1.75rem 0;
-            letter-spacing: -0.01em;
-            color: var(--accent);
-        }
-
-
-        h2:not(:first-child) {
-            margin-top: 3rem;
-        }
-
-        h3 {
-            font-size: 1.05rem;
-            font-weight: 600;
-            margin: 1.25rem 0 0.4rem 0;
-            letter-spacing: -0.005em;
-            line-height: 1.45;
-        }
-
-        h3.subhead {
-            margin-top: 2.25rem;
-            color: var(--ink);
-        }
-
-        p {
-            margin-bottom: 1rem;
-            font-size: 1rem;
-            line-height: 1.75;
-            color: var(--muted);
-        }
-
-        a {
-            color: var(--accent);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        a:hover {
-            color: var(--accent-strong);
-            text-decoration: underline;
-            text-underline-offset: 3px;
-        }
-
-        .eyebrow {
-            display: block;
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: var(--ink);
-            margin-bottom: 0.6rem;
-        }
-
-        .eyebrow:not(:first-child) {
-            margin-top: 2rem;
-        }
-
-        .intro {
-            margin: 0 auto;
-            max-width: 760px;
-        }
-
-        .intro p {
-            font-size: 1.05rem;
         }
 
         .people a {
             white-space: nowrap;
         }
 
-        figure {
-            margin: 2rem 0 0.5rem;
-            text-align: center;
+        .sheet > :last-child {
+            margin-bottom: 0;
         }
 
-        figure img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 0;
-            box-shadow:
-                0 -3px 0 0 #d3dad6,
-                0 3px 0 0 #d3dad6,
-                -3px 0 0 0 #d3dad6,
-                3px 0 0 0 #d3dad6;
+        /* ---------- Research entries ---------- */
+        .entry .item {
+            margin-bottom: 1.5rem;
         }
 
-        figcaption {
-            font-size: 0.85rem;
-            color: var(--faint);
-            margin-top: 0.6rem;
-            font-style: italic;
+        .entry .item:last-child {
+            margin-bottom: 0;
         }
 
-        /* ---------- Section cards ---------- */
-        .section {
-            background: var(--card);
-            margin: 0 auto 2rem;
-            max-width: 960px;
-            border-radius: 0;
-            box-shadow: var(--pixel-panel);
-            position: relative;
-            z-index: 10;
-            min-height: calc(100vh - 140px);
-            display: flex;
-            flex-direction: column;
+        .entry .item h3 {
+            margin: 0 0 0.25rem;
         }
 
-        .section > .container {
-            padding: 4.5rem 3.25rem;
-            flex: 1;
-        }
-
-        .section.hidden,
-        header.hidden,
-        footer.hidden {
-            display: none;
-        }
-
-        /* Teaching / experience entries */
-        .entry h3 {
-            margin-top: 1rem;
-        }
-
-        /* Research: title, one-line description, then PI / mentor */
-        .entry.research h3 {
-            margin: 1.5rem 0 0.25rem;
-        }
-
-        .entry.research h3:first-child {
-            margin-top: 0;
-        }
-
-        .entry.research p {
+        .entry .item p {
             margin-bottom: 0.1rem;
             line-height: 1.6;
         }
 
-        .entry.research p.who {
+        .entry .item p.who {
             font-size: 0.92rem;
             color: var(--faint);
         }
 
-        /* Education: one grid so colleges and programs share columns across schools */
+        /* ---------- Education ---------- */
         .edu {
             display: grid;
-            grid-template-columns: max-content minmax(0, 1fr);
+            grid-template-columns: 16rem minmax(0, 1fr);   /* fixed so both schools line up */
             column-gap: 2.5rem;
             row-gap: 0.2rem;
             align-items: baseline;
             margin-bottom: 1rem;
-        }
-
-        .edu h3 {
-            grid-column: 1 / -1;
-            margin: 1.75rem 0 0.35rem;
-        }
-
-        .edu h3:first-child {
-            margin-top: 0;
         }
 
         .edu .college,
@@ -484,13 +651,8 @@
             line-height: 1.6;
         }
 
-        .edu .college {
-            grid-column: 1;
-        }
-
-        .edu .prog {
-            grid-column: 2;
-        }
+        .edu .college { grid-column: 1; }
+        .edu .prog { grid-column: 2; }
 
         .edu .sub {
             font-size: 0.92rem;
@@ -501,28 +663,25 @@
             margin-top: 0.6rem;
         }
 
-        /* ---------- Courses ---------- */
         .courses-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
             gap: 0.85rem;
-            margin-top: 1rem;
+            margin: 1rem 0 0.25rem;
         }
 
         .course {
             padding: 0.9rem 1rem;
             background: #fbfcfc;
-            border-radius: 0;
+            font-size: 0.92rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
             box-shadow:
                 0 -2px 0 0 #d3dad6,
                 0 2px 0 0 #d3dad6,
                 -2px 0 0 0 #d3dad6,
                 2px 0 0 0 #d3dad6;
-            font-size: 0.92rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.15rem;
-            transition: var(--transition);
         }
 
         .course:hover {
@@ -562,32 +721,6 @@
             font-size: 0.85rem;
         }
 
-        .professor-link {
-            color: inherit;
-            text-decoration: none;
-            border-bottom: 1px dotted var(--accent);
-        }
-
-        .professor-link:hover {
-            color: var(--accent);
-            text-decoration: none;
-            border-bottom-style: solid;
-        }
-
-        /* ---------- Footer ---------- */
-        footer {
-            text-align: center;
-            padding: 3rem 0 4rem;
-            position: relative;
-            z-index: 10;
-        }
-
-        footer p {
-            font-size: 0.85rem;
-            color: rgba(242, 241, 234, 0.7);
-            margin: 0;
-        }
-
         /* ---------- Navigation: pull-down projector screen ---------- */
         .projector {
             position: fixed;
@@ -595,7 +728,7 @@
             left: 0;
             right: 0;
             z-index: 20;
-            pointer-events: none;            /* only the screen parts take clicks */
+            pointer-events: none;
             --metal-hi: #737b80;
             --metal: #464d52;
             --metal-dark: #25292c;
@@ -612,7 +745,6 @@
             align-items: center;
         }
 
-        /* the roller housing */
         .casing {
             pointer-events: auto;
             position: relative;
@@ -639,7 +771,6 @@
         .casing::before { left: calc(-1 * var(--px)); }
         .casing::after { right: calc(-1 * var(--px)); }
 
-        /* the fabric: a grid row that animates between 0fr (rolled up) and 1fr */
         .screen {
             pointer-events: auto;
             width: calc(100% - 8 * var(--px));
@@ -686,6 +817,7 @@
             letter-spacing: 0.01em;
             padding: 4px 0;
             position: relative;
+            text-shadow: none;
         }
 
         .screen a:hover {
@@ -716,7 +848,6 @@
             transform-origin: left;
         }
 
-        /* the weighted bar at the bottom of the fabric */
         .weight {
             pointer-events: auto;
             width: calc(100% - 6 * var(--px));
@@ -728,7 +859,6 @@
                 var(--px) calc(2 * var(--px)) 0 0 var(--drop);
         }
 
-        /* the draw string */
         .pull {
             pointer-events: auto;
             background: none;
@@ -788,34 +918,39 @@
             .cord {
                 transition: none;
             }
+
+            .more {
+                animation: none;
+            }
         }
 
-        /* ---------- Responsive ---------- */
+        /* ---------- Phones ---------- */
         @media (max-width: 768px) {
-            header {
-                padding: 92px 0 24px;
-                min-height: auto;
+            .panel-content {
+                padding: var(--clear) 14px 40px;
             }
 
-            .header-content {
+            .sheet {
+                padding: 1.75rem 1.25rem 1.5rem;
+            }
+
+            h1 {
+                font-size: 2.1rem;
+            }
+
+            .landing {
                 grid-template-columns: 1fr;
-                gap: 2.25rem;
+                grid-template-rows: auto;
+                grid-template-areas: "photo" "info" "current";
             }
 
-            .header-image a {
-                max-width: 280px;
+            .landing .photo .print {
+                max-width: 190px;
             }
 
-            .header-left {
-                display: contents;
-            }
-
-            .header-image { order: 1; }
-            .header-info { order: 2; }
-            .header-current { order: 3; }
-
-            .header-info {
-                padding: 1.5rem 1.25rem;
+            .landing .info,
+            .landing .current {
+                padding: 1.4rem 1.2rem;
             }
 
             .degrees {
@@ -879,25 +1014,8 @@
                 margin-top: 0;
             }
 
-            h1 {
-                font-size: 2.1rem;
-            }
-
-            .section {
-                margin: 0 16px 1.5rem;
-                min-height: auto;
-            }
-
-            .section > .container {
-                padding: 3rem 1.25rem;
-            }
-
             .courses-grid {
                 grid-template-columns: 1fr;
-            }
-
-            main {
-                padding-top: 88px;
             }
 
             .projector .rig {
@@ -918,12 +1036,15 @@
             .screen a {
                 font-size: 1rem;
             }
-
         }
     </style>
 </head>
 <body>
     <div class="board-wrap" aria-hidden="true"><canvas id="board"></canvas></div>
+
+    <main id="stage"></main>
+    <div class="dots" id="dots" aria-label="Boards on this page"></div>
+    <button class="more" id="more" type="button" hidden>more below &#9660;</button>
 
     <nav class="projector no-anim" id="projector" aria-label="Site">
         <div class="rig">
@@ -950,7 +1071,7 @@
         </div>
     </nav>
     <script>
-        // Set the starting position before first paint: screen down on desktop, rolled up on phones.
+        // Starting position before first paint: screen down on desktop, rolled up on phones.
         (function () {
             const nav = document.getElementById('projector');
             const open = window.innerWidth > 768;
@@ -960,28 +1081,17 @@
         })();
     </script>
 
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="header-left">
-                    <div class="header-image">
-                        <a href="https://lh3.googleusercontent.com/pw/AP1GczMNogStybHAn3XEVrow_8j5yAKCZOTWqGjXmdYm_OFJL5N-vGPt9ZT8kLyyhqK7Hy_ul13kGuW_9sa3rxLx_pO6Dyym-Jkq9QJ7BpJvfr8h95_Hmzp0=w2400" target="_blank" rel="noopener">
-                            <img src="https://lh3.googleusercontent.com/pw/AP1GczMNogStybHAn3XEVrow_8j5yAKCZOTWqGjXmdYm_OFJL5N-vGPt9ZT8kLyyhqK7Hy_ul13kGuW_9sa3rxLx_pO6Dyym-Jkq9QJ7BpJvfr8h95_Hmzp0=w2400" alt="Jingyuan Chen">
-                        </a>
-                    </div>
-                    <div class="header-current">
-                        <h4>Current</h4>
-                        <div class="current-rows">
-                            <span class="label">Teaching</span>
-                            <span class="text">Graduate Student Instructor for <a href="https://courses.illinois.edu/schedule/2026/fall/MATH/231">MATH 231 Calculus II (ADB/ADC)</a></span>
-                            <span class="label">Research</span>
-                            <span class="text">Core Graduate Student at the <a href="https://skai-institute.org/about-skai/skai-institute-members/">NSF-Simons AI Institute for the Sky (SkAI)</a></span>
-                            <span class="label">Olympiads</span>
-                            <span class="text">Test Organizer for the <a href="https://intercollegiatemathtournament.org/">Intercollegiate Math Tournament</a> (registration open!)</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="header-info">
+    <!--
+        Everything below is the source text. It is never shown directly: the script copies it,
+        block by block, onto as many board-sized panels as each page needs.
+        Blocks marked data-split may be divided between boards at their child elements;
+        data-split-fallback blocks are only divided when they cannot fit on one board.
+    -->
+    <div id="source" hidden>
+        <section data-tab="about">
+            <div class="landing" data-split-fallback data-no-sheet>
+                <div class="photo"><a class="print" href="https://lh3.googleusercontent.com/pw/AP1GczMNogStybHAn3XEVrow_8j5yAKCZOTWqGjXmdYm_OFJL5N-vGPt9ZT8kLyyhqK7Hy_ul13kGuW_9sa3rxLx_pO6Dyym-Jkq9QJ7BpJvfr8h95_Hmzp0=w2400" target="_blank" rel="noopener"><img src="https://lh3.googleusercontent.com/pw/AP1GczMNogStybHAn3XEVrow_8j5yAKCZOTWqGjXmdYm_OFJL5N-vGPt9ZT8kLyyhqK7Hy_ul13kGuW_9sa3rxLx_pO6Dyym-Jkq9QJ7BpJvfr8h95_Hmzp0=w2400" alt="Jingyuan Chen"></a></div>
+                <div class="info card" data-split-inner>
                     <h1>Jingyuan Chen</h1>
                     <span class="role">Ph.D. Student</span>
                     <span class="role secondary">University of Illinois Urbana-Champaign</span>
@@ -990,55 +1100,44 @@
                         <a>jc190[at]uiuc[dot]edu</a>
                         <a href="https://linkedin.com/in/jingyuanchenn" target="_blank" rel="noopener">LinkedIn: @jingyuanchenn</a>
                     </div>
-                    <div class="header-degrees">
-                        <h4>Education</h4>
-                        <div class="degrees">
+                    <h4>Education</h4>
+                    <div class="degrees">
                             <span class="degree">MS Mathematics</span><span class="school">UIUC GC</span><span class="years">2025–2026</span>
                             <span class="degree">BA (Hons) Mathematics</span><span class="school">UC Berkeley L&amp;S</span><span class="years">2022–2025</span>
                             <span class="degree">BA (Hons) Statistics</span><span class="school">UC Berkeley CDSS</span><span class="years">2022–2025</span>
-                        </div>
-                        <h4>Research Interests</h4>
-                        <div class="header-interests">
-                            Automated Deduction &amp; Proof Assistants · Formalized Math · Stochastic Calculus &amp; PDEs · Random Matrix Theory · Non-commutative Probability · Scientific Computing · STEM Education
-                        </div>
-                        <h4>Professional Interests</h4>
-                        <div class="header-interests">
-                            Contract Algebras · Optimization of Contracts · Catastrophe Models · Factor Risk Models · Shock Models · Fast Pricing
-                        </div>
+                    </div>
+                    <h4>Research Interests</h4>
+                    <div class="interests">Automated Deduction &amp; Proof Assistants · Formalized Math · Stochastic Calculus &amp; PDEs · Random Matrix Theory · Non-commutative Probability · Scientific Computing · STEM Education</div>
+                    <h4>Professional Interests</h4>
+                    <div class="interests">Contract Algebras · Optimization of Contracts · Catastrophe Models · Factor Risk Models · Shock Models · Fast Pricing</div>
+                </div>
+                <div class="current card">
+                    <h4>Current</h4>
+                    <div class="current-rows">
+                            <span class="label">Teaching</span>
+                            <span class="text">Graduate Student Instructor for <a href="https://courses.illinois.edu/schedule/2026/fall/MATH/231">MATH 231 Calculus II (ADB/ADC)</a></span>
+                            <span class="label">Research</span>
+                            <span class="text">Core Graduate Student at the <a href="https://skai-institute.org/about-skai/skai-institute-members/">NSF-Simons AI Institute for the Sky (SkAI)</a></span>
+                            <span class="label">Olympiads</span>
+                            <span class="text">Test Organizer for the <a href="https://intercollegiatemathtournament.org/">Intercollegiate Math Tournament</a> (registration open!)</span>
                     </div>
                 </div>
             </div>
-        </div>
-    </header>
-
-    <main>
-        <section id="about" class="section">
-            <div class="container">
-                <div class="intro">
-                    <span class="eyebrow">About</span>
-                    <p>I'm a Ph.D. student at UIUC advised by Professor <a href="https://matthewturk.github.io/">Matt Turk</a>, working on network problems, random matrix theory, and automated theorem proving for statistics.</p>
-                    <p>Thinking about majoring in Statistics at Berkeley? Here's a heavily opinionated <a href="https://publish.illinois.edu/jingyuanchen/berkeley-stat-advice/">guide</a>.</p>
-
-                    <span class="eyebrow">Updates</span>
-                    <div class="ledger two">
-                        <span class="label">Dec 2026</span>
-                        <span class="text">Obtained my master's in passing</span>
-                        <span class="label">Dec 2026</span>
-                        <span class="text"><em>Upcoming:</em> attending the <a href="https://skai-institute.org/gaia-data-release-4/">SkAI Chicago Gaia Relay</a> for Gaia Data Release 4</span>
-                        <span class="label">Oct 2026</span>
-                        <span class="text">Co-authored two papers being presented at <a href="https://colm.eventhosts.cc/">COLM 2026</a>, on <a href="https://colm.eventhosts.cc/virtual/2026/poster/1824">clinical hidden-concern reasoning under partial observability</a> and on <a href="https://colm.eventhosts.cc/virtual/2026/poster/2201">personalized medical plain language summarization</a></span>
-                        <span class="label">May 2026</span>
-                        <span class="text">Joining the quant team at Bloomberg for the summer</span>
-                        <span class="label">Mar 2026</span>
-                        <span class="text">We're building a cool <a href="https://github.com/nicegeo/nicegeo">proof assistant</a> in Prof. Ringer's class</span>
-                        <span class="label">Aug 2025</span>
-                        <span class="text">Graduated from UC Berkeley! Headed to UIUC for my PhD</span>
-                        <span class="label">May 2025</span>
-                        <span class="text">Selected as a <a href="https://research.berkeley.edu/surf-fellows/jingyuan-chen/">Berkeley SURF Research Fellow</a>!</span>
-                    </div>
-
-                    <span class="eyebrow">Mentors, Friends &amp; Cool People</span>
-                    <p class="people">
+            <span class="eyebrow">About</span>
+            <p>I'm a Ph.D. student at UIUC advised by Professor <a href="https://matthewturk.github.io/">Matt Turk</a>, working on network problems, random matrix theory, and automated theorem proving for statistics.</p>
+            <p>Thinking about majoring in Statistics at Berkeley? Here's a heavily opinionated <a href="https://publish.illinois.edu/jingyuanchen/berkeley-stat-advice/">guide</a>.</p>
+            <span class="eyebrow">Updates</span>
+            <div class="ledger two" data-split>
+                    <div class="row"><span class="label">Dec 2026</span><span class="text">Obtained my master's in passing</span></div>
+                    <div class="row"><span class="label">Dec 2026</span><span class="text"><em>Upcoming:</em> attending the <a href="https://skai-institute.org/gaia-data-release-4/">SkAI Chicago Gaia Relay</a> for Gaia Data Release 4</span></div>
+                    <div class="row"><span class="label">Oct 2026</span><span class="text">Co-authored two papers being presented at <a href="https://colm.eventhosts.cc/">COLM 2026</a>, on <a href="https://colm.eventhosts.cc/virtual/2026/poster/1824">clinical hidden-concern reasoning under partial observability</a> and on <a href="https://colm.eventhosts.cc/virtual/2026/poster/2201">personalized medical plain language summarization</a></span></div>
+                    <div class="row"><span class="label">May 2026</span><span class="text">Joining the quant team at Bloomberg for the summer</span></div>
+                    <div class="row"><span class="label">Mar 2026</span><span class="text">We're building a cool <a href="https://github.com/nicegeo/nicegeo">proof assistant</a> in Prof. Ringer's class</span></div>
+                    <div class="row"><span class="label">Aug 2025</span><span class="text">Graduated from UC Berkeley! Headed to UIUC for my PhD</span></div>
+                    <div class="row"><span class="label">May 2025</span><span class="text">Selected as a <a href="https://research.berkeley.edu/surf-fellows/jingyuan-chen/">Berkeley SURF Research Fellow</a>!</span></div>
+            </div>
+            <span class="eyebrow">Mentors, Friends &amp; Cool People</span>
+            <p class="people">
                         <a href="https://www.stat.berkeley.edu/~evans/">Professor Steve Evans</a>,
                         <a href="https://andrewpbray.github.io/">Professor Andrew Bray</a>,
                         <a href="https://math.hmc.edu/arvm/">Professor Andrés R. Vindas Meléndez</a>,
@@ -1064,182 +1163,65 @@
                         <a href="https://yimingclara.com/">Yiming (Clara)</a>,
                         <a href="https://luongcindy.github.io/index.html">Cindy</a>,
                         <a href="https://www.math.columbia.edu/~alei/index.html">Austin</a>.
-                    </p>
-
-                    <figure>
-                        <img src="https://lh3.googleusercontent.com/pw/AP1GczMZflgOF16oGC_6OJ44VL8-t9aIgG-vks5478BnwCajic-tLMN3DJ9ny7DkfTBtpJg--gj3vANfQOuaH8KJ7D0axt5GaWdkKdXTv9LAP-MeE3hHutMG=w2400" alt="Al Madam, Sharjah" loading="lazy">
+            </p>
+            <figure>
+                        <span class="print"><img src="https://lh3.googleusercontent.com/pw/AP1GczMZflgOF16oGC_6OJ44VL8-t9aIgG-vks5478BnwCajic-tLMN3DJ9ny7DkfTBtpJg--gj3vANfQOuaH8KJ7D0axt5GaWdkKdXTv9LAP-MeE3hHutMG=w2400" alt="Al Madam, Sharjah" loading="lazy"></span>
                         <figcaption>Al Madam, Sharjah</figcaption>
                     </figure>
-                </div>
+        </section>
+
+        <section data-tab="research">
+            <h2>Current Research</h2>
+            <div class="entry" data-split>
+                    <div class="item"><h3>Core Graduate Student at the <a href="https://skai-institute.org/about-skai/skai-institute-members/">NSF-Simons AI Institute for the Sky (SkAI Institute)</a></h3></div>
+                    <div class="item"><h3>Researcher at the UC Berkeley <a href="https://cdar.econ.berkeley.edu/">Consortium for Data Analytics in Risk</a></h3> <p>High-dimensional covariance estimation and factor counting.</p> <p class="who">PI: <a href="https://math.berkeley.edu/people/lisa-goldberg">Lisa R. Goldberg</a></p></div>
+                    <div class="item"><h3>Affiliate Graduate Student at the <a href="https://lcdm.illinois.edu/about.html">Laboratory for Computation, Data, and Machine Learning (LCDM)</a></h3> <p>Transfer entropy for information flow in financial networks.</p> <p class="who">PI: <a href="https://ece.illinois.edu/about/directory/faculty/bigdog">Robert Brunner</a></p></div>
+                    <div class="item"><h3>Affiliate Graduate Student at the Illinois Theorem Provers Lab</h3> <p>Learning about proof assistants, programming languages, and automated deduction.</p> <p class="who">PI: <a href="https://siebelschool.illinois.edu/about/people/faculty/tringer">Talia Ringer</a></p></div>
+            </div>
+            <h2>Past Research Assistantships / Fellowships</h2>
+            <div class="entry" data-split>
+                    <div class="item"><h3><a href="https://research.berkeley.edu/surf-fellows/jingyuan-chen/">Research Fellow</a> at the UC Berkeley College of Letters &amp; Science</h3> <p>Graphons for information flow problems in neural networks.</p> <p class="who">Mentor: <a href="https://statistics.berkeley.edu/people/steven-evans">Steve Evans</a></p></div>
+                    <div class="item"><h3>Researcher at Berkeley Economics</h3> <p>Research on risk networks of reinsurance.</p> <p class="who">Mentors: <a href="https://www.olab.berkeley.edu/graduate-students-1/elena-stacy-f7ch8">Elaine Shen</a>, <a href="https://tomrutter42.github.io/">Thomas Rutter</a></p></div>
+                    <div class="item"><h3>Research Assistant at the Goldman School of Public Policy</h3> <p>Mathematically formalizing empirical work on the pivotal voter effect.</p> <p class="who">PI: <a href="https://diagdavenport.com/">Diag Davenport</a></p></div>
+                    <div class="item"><h3>Research Assistant at Berkeley Economics</h3> <p>Simulations and statistical estimation for earned wage access technology.</p> <p class="who">PI: <a href="https://luisacef.github.io/research/">Luisa Cefala</a> · Mentor: <a href="https://afras-sial.github.io/">Afras Sial</a></p></div>
+                    <div class="item"><h3>Research Assistant at Berkeley Law</h3> <p>Automating the extraction of net operating loss numbers from unstructured 10-K filings.</p> <p class="who">PI: <a href="https://sites.google.com/view/ofereldar">Ofer Eldar</a></p></div>
             </div>
         </section>
 
-        <section id="Teaching" class="section">
-            <div class="container">
-                <h2>Teaching Assistantships / Course Staff</h2>
-                <p class="legend">* = Recipient of the <a href="https://isg.illinois.edu/teachinginsights">Facilitating Learning Excellence (FLEX) Award</a></p>
-                <div class="ledger">
-                    <span class="c1">MATH 231: Calculus II</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2026/fall/MATH/231">Fall 2026</a></span>
-                    <span class="c1">IS 203: Discrete Methods*</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2026/spring/IS/203">Spring 2026</a></span>
-                    <span class="c1">IS 445: Data Visualization*</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2025/fall/IS/445">Fall 2025</a></span>
-                    <span class="c1">MATH 113: Abstract Algebra</span><span class="c2">Reader</span><span class="c3"><a href="https://sites.google.com/view/normansheu/teaching/math-113-summer-2025?authuser=0">Summer 2025</a></span>
-                    <span class="c1">MATH 105: Multivariate Real Analysis &amp; Measure Theory</span><span class="c2">Reader</span><span class="c3"><a href="https://sites.google.com/ucdavis.edu/anuj">Spring 2025</a></span>
-                    <span class="c1">STAT 2: Introduction to Statistics</span><span class="c2">Study Center Group Tutor</span><span class="c3">Spring 2025</span>
-                    <span class="c1">MATH 53: Multivariate and Vector Calculus</span><span class="c2">Study Center Group Tutor</span><span class="c3">Summer 2024</span>
-                    <span class="c1">STAT 20: Introduction to Statistics &amp; Probability</span><span class="c2">Group Tutor</span><span class="c3">Spring 2024</span>
-                    <span class="c1">STAT 2: Introduction to Statistics</span><span class="c2">Study Center Group Tutor</span><span class="c3">Spring 2024</span>
-                    <span class="c1">DATA C8: Foundations of Data Science</span><span class="c2">Academic Intern</span><span class="c3">Fall 2023</span>
-                </div>
-
-                <h2>Course Development</h2>
-                <div class="ledger">
-                    <span class="c1 wide">Department of Mathematics Student Researcher IV</span><span class="c3">Spring 2025</span>
-                    <p class="note">Developing linear algebra education tools for MATH 56: Linear Algebra (prototype <a href="https://linalg-app.vercel.app/">here</a>). Funded by the "Interactive Tools for Learning Linear Algebra" Instructional Technology and Innovation <a href="https://ue.berkeley.edu/projects-initiatives/course-development/instructional-tech-innovation/funded-projects">Grant</a>.</p>
-
-                    <span class="c1 wide">Department of Physics Course Developer</span><span class="c3">Spring 2024–2025</span>
-                    <p class="note">Developer for Nobel laureate in physics Saul Perlmutter's L&amp;S 22: Sense &amp; Sensibility &amp; Science course's data science lab on <a href="https://github.com/sensesensibilityscience/datascience/blob/master/2024/bad_science/bad_science_insurance_experiment.ipynb">bad science</a>.</p>
-
-                    <span class="c1 wide">DSUS Modules Developer</span><span class="c3">Fall 2023</span>
-                    <p class="note">Developed ECON 148: Data Science for Economists' <a href="https://www.econ148.org/sp25/">Prophet forecasting lab</a> and converted IEOR 120: Engineering Economics' homeworks into autogradable notebooks.</p>
-                </div>
-
-                <h2>Teaching Training &amp; Development</h2>
-                <div class="ledger">
-                    <span class="c1 wide">CITL Cheelan Bo-Linn Teaching Excellence Certificate, UIUC</span><span class="c3">In progress</span>
-                    <span class="c1 wide">CITL Master Course on Online Teaching, UIUC</span><span class="c3">2026</span>
-                    <span class="c1 wide">CITL Graduate Academy, UIUC</span><span class="c3">2025</span>
-                    <span class="c1 wide">INFO 590: College Teaching, UIUC</span><span class="c3">2025</span>
-                    <span class="c1 wide">STAT 375, UC Berkeley</span><span class="c3">2024</span>
-                </div>
+        <section data-tab="industry">
+            <h2>Industry Experience</h2>
+            <div class="ledger" data-split>
+                    <div class="row"><span class="c1 wide">Quant Intern at Bloomberg L.P., working on <a href="https://professional.bloomberg.com/products/risk/mars/">MARS</a> and <a href="https://www.bloomberg.com/company/press/bloomberg-integrates-lexifis-technology-to-support-its-new-derivatives-library-dlib/">DLIB</a></span><span class="c3">Summer 2026</span><p class="note">Mentor: <a href="https://sps.columbia.edu/person/jeffrey-nisen-phd">Jeffrey Nisen</a>, Ph.D. · Manager: <a href="https://www.linkedin.com/in/mario-bondioli-0163aa4">Mario Bondioli</a>, Ph.D.</p></div>
+                    <div class="row"><span class="c1 wide">Statistical Consultant (Co-op) at Gilead Sciences</span><span class="c3">2024–2025</span><p class="note">Mentor &amp; Manager: <a href="https://www.linkedin.com/in/ethan-yen/">Ethan Yen</a></p></div>
+                    <div class="row"><span class="c1 wide">Summer Analyst, Wholesale Banking at ING Group N.V.</span><span class="c3">Summer 2023</span></div>
             </div>
         </section>
 
-        <section id="research" class="section">
-            <div class="container">
-                <h2>Current Research</h2>
-                <div class="entry research">
-                    <h3>Core Graduate Student at the <a href="https://skai-institute.org/about-skai/skai-institute-members/">NSF-Simons AI Institute for the Sky (SkAI Institute)</a></h3>
-
-                    <h3>Researcher at the UC Berkeley <a href="https://cdar.econ.berkeley.edu/">Consortium for Data Analytics in Risk</a></h3>
-                    <p>High-dimensional covariance estimation and factor counting.</p>
-                    <p class="who">PI: <a href="https://math.berkeley.edu/people/lisa-goldberg">Lisa R. Goldberg</a></p>
-
-                    <h3>Affiliate Graduate Student at the <a href="https://lcdm.illinois.edu/about.html">Laboratory for Computation, Data, and Machine Learning (LCDM)</a></h3>
-                    <p>Transfer entropy for information flow in financial networks.</p>
-                    <p class="who">PI: <a href="https://ece.illinois.edu/about/directory/faculty/bigdog">Robert Brunner</a></p>
-
-                    <h3>Affiliate Graduate Student at the Illinois Theorem Provers Lab</h3>
-                    <p>Learning about proof assistants, programming languages, and automated deduction.</p>
-                    <p class="who">PI: <a href="https://siebelschool.illinois.edu/about/people/faculty/tringer">Talia Ringer</a></p>
-                </div>
-
-                <h2>Past Research Assistantships / Fellowships</h2>
-                <div class="entry research">
-                    <h3><a href="https://research.berkeley.edu/surf-fellows/jingyuan-chen/">Research Fellow</a> at the UC Berkeley College of Letters &amp; Science</h3>
-                    <p>Graphons for information flow problems in neural networks.</p>
-                    <p class="who">Mentor: <a href="https://statistics.berkeley.edu/people/steven-evans">Steve Evans</a></p>
-
-                    <h3>Researcher at Berkeley Economics</h3>
-                    <p>Research on risk networks of reinsurance.</p>
-                    <p class="who">Mentors: <a href="https://www.olab.berkeley.edu/graduate-students-1/elena-stacy-f7ch8">Elaine Shen</a>, <a href="https://tomrutter42.github.io/">Thomas Rutter</a></p>
-
-                    <h3>Research Assistant at the Goldman School of Public Policy</h3>
-                    <p>Mathematically formalizing empirical work on the pivotal voter effect.</p>
-                    <p class="who">PI: <a href="https://diagdavenport.com/">Diag Davenport</a></p>
-
-                    <h3>Research Assistant at Berkeley Economics</h3>
-                    <p>Simulations and statistical estimation for earned wage access technology.</p>
-                    <p class="who">PI: <a href="https://luisacef.github.io/research/">Luisa Cefala</a> · Mentor: <a href="https://afras-sial.github.io/">Afras Sial</a></p>
-
-                    <h3>Research Assistant at Berkeley Law</h3>
-                    <p>Automating the extraction of net operating loss numbers from unstructured 10-K filings.</p>
-                    <p class="who">PI: <a href="https://sites.google.com/view/ofereldar">Ofer Eldar</a></p>
-                </div>
+        <section data-tab="education">
+            <h2>Education</h2>
+            <h3>University of Illinois Urbana-Champaign (2025 – 2029)</h3>
+            <div class="edu" data-split>
+                    <div class="row"><span class="college">Graduate College</span><span class="prog">PhD <a href="https://informatics.ischool.illinois.edu/program-area/cognitive-science-and-language-processing/">Cognitive Science &amp; Language Processing</a> (Informatics Programs)</span><span class="prog sub">Statistics minor · Advised by Professor <a href="https://astro.illinois.edu/directory/profile/mjturk">Matthew Turk</a></span></div>
+                    <div class="row"><span class="college gap">Graduate College</span><span class="prog gap">MS Mathematics: Algorithms &amp; Optimization</span></div>
             </div>
-        </section>
-
-        <section id="industry" class="section">
-            <div class="container">
-                <h2>Industry Experience</h2>
-                <div class="ledger">
-                    <span class="c1 wide">Quant Intern at Bloomberg L.P., working on <a href="https://professional.bloomberg.com/products/risk/mars/">MARS</a> and <a href="https://www.bloomberg.com/company/press/bloomberg-integrates-lexifis-technology-to-support-its-new-derivatives-library-dlib/">DLIB</a></span><span class="c3">Summer 2026</span>
-                    <p class="note">Mentor: <a href="https://sps.columbia.edu/person/jeffrey-nisen-phd">Jeffrey Nisen</a>, Ph.D. · Manager: <a href="https://www.linkedin.com/in/mario-bondioli-0163aa4">Mario Bondioli</a>, Ph.D.</p>
-                    <span class="c1 wide">Statistical Consultant (Co-op) at Gilead Sciences</span><span class="c3">2024–2025</span>
-                    <p class="note">Mentor &amp; Manager: <a href="https://www.linkedin.com/in/ethan-yen/">Ethan Yen</a></p>
-                    <span class="c1 wide">Summer Analyst, Wholesale Banking at ING Group N.V.</span><span class="c3">Summer 2023</span>
-                </div>
+            <h3>University of California, Berkeley (2022 – 2025)</h3>
+            <div class="edu" data-split>
+                    <div class="row"><span class="college">College of Letters &amp; Science</span><span class="prog">BA (Hons) Mathematics</span></div>
+                    <div class="row"><span class="college">College of Computing</span><span class="prog">BA (Hons) Statistics</span></div>
             </div>
-        </section>
-
-        <section id="service" class="section">
-            <div class="container">
-                <h2>Current Service</h2>
-                <div class="ledger">
-                    <span class="c1 wide"><a href="https://math.illinois.edu/people/committees-service-appointments">Undergraduate Affairs Committee</a> Standing Member</span><span class="c3">2026–present</span>
-                    <p class="note">Department of Mathematics, UIUC</p>
-                    <span class="c1 wide">Senator</span><span class="c3">2026–present</span>
-                    <p class="note">UIUC Senate Council on Student Conduct Expectations and Accountability</p>
-                </div>
-
-                <h2>Past Service</h2>
-                <div class="ledger">
-                    <span class="c1 wide">USAMO/USAJMO Grader</span><span class="c3">2026</span>
-                    <p class="note">Mathematical Association of America (MAA)</p>
-                    <span class="c1 wide"><a href="https://www.instagram.com/p/DLi2zxep26H/?img_index=1">Summer Camp Instructor</a></span><span class="c3">Summer 2025</span>
-                    <p class="note">Department of Industrial Engineering and Operations Research, UC Berkeley</p>
-                    <span class="c1 wide">Mathematics Grievance Committee</span><span class="c3">2024–2025</span>
-                    <p class="note">UC Berkeley</p>
-                    <span class="c1 wide">Contract Action Team</span><span class="c3">2024–2025</span>
-                    <p class="note">UAW 4811</p>
-                    <span class="c1 wide"><a href="https://math.berkeley.edu/~musa/former_officers#:~:text=2014%2D2016-,Jingyuan%20Chen,-Former%20Professional%20Chair">Officer</a></span><span class="c3">2023–2025</span>
-                    <p class="note">Mathematics Undergraduate Student Association, UC Berkeley</p>
-                    <span class="c1 wide">Marketing &amp; Recruitment Director</span><span class="c3">2022–2024</span>
-                    <p class="note">Berkeley Math Tournament</p>
-                    <span class="c1 wide"><a href="https://crowdfund.berkeley.edu/project/38919">Finance Lead</a> &amp; Avionics Engineer</span><span class="c3">2022–2024</span>
-                    <p class="note">Space Technologies and Rocketry @ Berkeley</p>
-                </div>
-
-                <figure>
-                    <img src="https://lh3.googleusercontent.com/pw/AP1GczOZnjKWZFAuacJa8YP2VpMceyQOS0j5yyKQxbMMASoHo9bRheZsN1zti6u8q0WnFhhA1u84Jp-VP_pIzKAJLhYZklReFSivZssJb_8XMqYj7aVoQSFB=w2400" alt="Somewhere in the Mojave Desert" loading="lazy">
-                    <figcaption>Somewhere in the Mojave.</figcaption>
-                </figure>
-            </div>
-        </section>
-
-        <section id="education" class="section">
-            <div class="container">
-                <h2>Education</h2>
-
-                <div class="edu">
-                    <h3>University of Illinois Urbana-Champaign (2025 – 2029)</h3>
-                    <span class="college">Graduate College</span><span class="prog">PhD <a href="https://informatics.ischool.illinois.edu/program-area/cognitive-science-and-language-processing/">Cognitive Science &amp; Language Processing</a> (Informatics Programs)</span>
-                    <span class="prog sub">Statistics minor · Advised by Professor <a href="https://astro.illinois.edu/directory/profile/mjturk">Matthew Turk</a></span>
-                    <span class="college gap">Graduate College</span><span class="prog gap">MS Mathematics: Algorithms &amp; Optimization</span>
-
-                    <h3>University of California, Berkeley (2022 – 2025)</h3>
-                    <span class="college">College of Letters &amp; Science</span><span class="prog">BA (Hons) Mathematics</span>
-                    <span class="college">College of Computing</span><span class="prog">BA (Hons) Statistics</span>
-                </div>
-
-                <h2>Select Coursework</h2>
-
-                <h3 class="subhead">Graduate College Coursework (Illinois)</h3>
-                <div class="courses-grid">
-                    <!-- Spring 2027 (upcoming) -->
+            <h2>Select Coursework</h2>
+            <h3 class="subhead">Graduate College Coursework (Illinois)</h3>
+            <div class="courses-grid" data-split>
                     <div class="course"><span class="code">ASTR 510 <span class="tag">Spring 2027</span></span><span class="title">Computational Astrophysics</span><span class="prof"><a href="https://astro.illinois.edu/directory/profile/gammie" class="professor-link">Charles Gammie</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">ASTR 503 <span class="tag">Spring 2027</span></span><span class="title">Observational Astronomy</span><span class="prof"><a href="https://astro.illinois.edu/directory/profile/akemball" class="professor-link">Athol Kemball</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">MATH 595 <span class="tag">Spring 2027</span></span><span class="title">Stochastic PDEs</span><span class="prof"><a href="https://www.mathgenealogy.org/id.php?id=262405" class="professor-link">Daniel Cooney</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">CSE 553 <span class="tag">Spring 2027</span></span><span class="title">Computational Inelasticity</span><span class="prof"><a href="https://amasud.web.engr.illinois.edu/" class="professor-link">Arif Masud</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">CSE 461 <span class="tag">Spring 2027</span></span><span class="title">Computational Aerodynamics</span><span class="prof">Blaine Vollmer, Ph.D.</span></div>
-
-                    <!-- Fall 2026 (in progress) -->
                     <div class="course"><span class="code">STAT 588 <span class="tag">In progress</span></span><span class="title">Covariance Structures and Factor Models</span><span class="prof"><a href="https://stat.illinois.edu/directory/profile/sculpepp" class="professor-link">Steven Culpepper</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">MATH 595 <span class="tag">In progress</span></span><span class="title">Introduction to Topological Data Analysis</span><span class="prof"><a href="https://ymb.web.illinois.edu/" class="professor-link">Yuliy Baryshnikov</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">GGIS 527 <span class="tag">In progress</span></span><span class="title">Geospatial Artificial Intelligence &amp; Machine Learning</span><span class="prof"><a href="https://ggis.illinois.edu/directory/profile/linyue" class="professor-link">Yue Lin</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">INFO 510 <span class="tag">In progress</span></span><span class="title">Research Practicum</span><span class="prof"><a href="https://giesbusiness.illinois.edu/profile/robert-brunner" class="professor-link">Robert Brunner</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">CS 498SF <span class="tag">In progress</span></span><span class="title">Software Foundations (Rocq)</span><span class="prof"><a href="https://dependenttyp.es/" class="professor-link">Talia Ringer</a>, Ph.D.</span></div>
-
-                    <!-- Spring 2026 -->
                     <div class="course"><span class="code">MATH 595QL</span><span class="title">Quantum Learning Theory</span><span class="prof"><a href="https://www.jacobbeckey.com/" class="professor-link">Jacob Beckey</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">MATH 586</span><span class="title">Algebraic Combinatorics</span><span class="prof"><a href="https://ayong.web.illinois.edu/" class="professor-link">Alexander Yong</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">MATH 503</span><span class="title">Introduction to Geometric Group Theory</span><span class="prof"><a href="https://mineyev.web.illinois.edu/" class="professor-link">Igor Mineyev</a>, Ph.D.</span></div>
@@ -1247,18 +1229,15 @@
                     <div class="course"><span class="code">CS 598TLR</span><span class="title">Building Proof Assistants</span><span class="prof"><a href="https://dependenttyp.es/" class="professor-link">Talia Ringer</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">CS 591BA</span><span class="title">Biologically Plausible AI</span><span class="prof"><a href="https://czhai.cs.illinois.edu/" class="professor-link">ChengXiang Zhai</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">IS 519</span><span class="title">Research Design</span><span class="prof"><a href="https://ischool.illinois.edu/people/jessie-chin" class="professor-link">Jessie Chin</a>, Ph.D.</span></div>
-
-                    <!-- Fall 2025 -->
                     <div class="course"><span class="code">STAT 578</span><span class="title">Spectral Methods, Network Analysis &amp; Nonconvex Optimization</span><span class="prof"><a href="https://jagterberg.github.io/" class="professor-link">Joshua Agterberg</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">MATH 595RQT</span><span class="title">Representation-theoretic Methods in Quantum Information Theory</span><span class="prof"><a href="https://felixleditzky.info/" class="professor-link">Felix Leditzky</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">CS 576M</span><span class="title">Computer-aided Methods for Formal Deduction</span><span class="prof"><a href="https://dependenttyp.es/" class="professor-link">Talia Ringer</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">IS 509</span><span class="title">History and Foundations of Information Science</span><span class="prof"><a href="https://ischool.illinois.edu/people/michael-twidale" class="professor-link">Michael Twidale</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">INFO 590</span><span class="title">Proseminar in College Teaching</span><span class="prof"><a href="https://ischool.illinois.edu/people/alaina-pincus" class="professor-link">Alaina Pincus</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">TE 566</span><span class="title">Finance for Engineering Management</span><span class="prof">Brian Lilly</span></div>
-                </div>
-
-                <h3 class="subhead">Graduate Division Coursework (Berkeley)</h3>
-                <div class="courses-grid">
+            </div>
+            <h3 class="subhead">Graduate Division Coursework (Berkeley)</h3>
+            <div class="courses-grid" data-split>
                     <div class="course"><span class="code">ECON 217</span><span class="title">Risk</span><span class="prof"><a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=36755" class="professor-link">Lisa R Goldberg</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">STAT 244</span><span class="title">High Powered Statistical Computing in Julia</span><span class="prof"><a href="https://www.genealogy.math.ndsu.nodak.edu/id.php?id=77852" class="professor-link">Chris Paciorek</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">STAT C205A</span><span class="title">Measure Theoretic Probability</span><span class="prof"><a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=32852" class="professor-link">Steven N Evans</a>, Ph.D.</span></div>
@@ -1266,10 +1245,9 @@
                     <div class="course"><span class="code">MATH 250A</span><span class="title">Groups, Rings and Fields</span><span class="prof"><a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=32941" class="professor-link">Richard Borcherds</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">MATH C223</span><span class="title">Eigenvalues of Random Matrices</span><span class="prof"><a href="https://www.stat.berkeley.edu/~vadicgor/" class="professor-link">Vadim Gorin</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">MATH 221</span><span class="title">Advanced Matrix Computations</span><span class="prof"><a href="https://genealogy.math.ndsu.nodak.edu/id.php?id=27477" class="professor-link">Jim Demmel</a>, Ph.D.</span></div>
-                </div>
-
-                <h3 class="subhead">Selected Upper Division Coursework</h3>
-                <div class="courses-grid">
+            </div>
+            <h3 class="subhead">Selected Upper Division Coursework</h3>
+            <div class="courses-grid" data-split>
                     <div class="course"><span class="code">ENGIN 183</span><span class="title">Engineering Leadership</span><span class="prof"><a href="https://www.linkedin.com/in/carrierequist/" class="professor-link">Carrie Requist</a>, MBA</span></div>
                     <div class="course"><span class="code">ECON 157</span><span class="title">Health Economics</span><span class="prof"><a href="https://u.demog.berkeley.edu/~redwards/" class="professor-link">Ryan Edwards</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">ECON 141</span><span class="title">Mathematical Econometrics</span><span class="prof"><a href="https://www.econ.berkeley.edu/profile/demian-pouzo" class="professor-link">Demian Pouzo</a>, Ph.D.</span></div>
@@ -1286,46 +1264,108 @@
                     <div class="course"><span class="code">MATH 110</span><span class="title">Abstract Linear Algebra</span><span class="prof"><a href="https://www.mathgenealogy.org/id.php?id=49270" class="professor-link">Olga Holtz</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">MATH 105</span><span class="title">Multivariate Analysis &amp; Measure Theory</span><span class="prof"><a href="https://math.berkeley.edu/people/faculty/khalilah-beal" class="professor-link">Khalilah Beal</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">MATH 104</span><span class="title">Real Analysis</span><span class="prof"><a href="https://math.berkeley.edu/people/faculty/khalilah-beal" class="professor-link">Khalilah Beal</a>, Ph.D.</span></div>
-                </div>
-
-                <h3 class="subhead">Lower Division Coursework</h3>
-                <div class="courses-grid">
+            </div>
+            <h3 class="subhead">Lower Division Coursework</h3>
+            <div class="courses-grid" data-split>
                     <div class="course"><span class="code">COMPSCI 61B</span><span class="title">Data Structures (Java)</span><span class="prof"><a href="https://sp24.datastructur.es/staff/" class="professor-link">Justin Yokota</a>, M.S.</span></div>
                     <div class="course"><span class="code">COMPSCI 61A</span><span class="title">Program Structures (Python, Lisp)</span><span class="prof"><a href="https://www2.eecs.berkeley.edu/Faculty/Homepages/rao.html" class="professor-link">Satish Rao</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">DATA C8</span><span class="title">Data Science Foundations</span><span class="prof"><a href="https://www2.eecs.berkeley.edu/Faculty/Homepages/jegonzal.html" class="professor-link">Joseph Gonzalez</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">STAT 33B</span><span class="title">Advanced R Programming</span><span class="prof"><a href="https://statistics.berkeley.edu/people/gaston-sanchez" class="professor-link">Gaston Sanchez</a>, Ph.D.</span></div>
                     <div class="course"><span class="code">MATH 55</span><span class="title">Discrete Mathematics</span><span class="prof"><a href="https://www.mathgenealogy.org/id.php?id=216292" class="professor-link">Sylvie Corteel</a>, Ph.D.</span></div>
-                </div>
+            </div>
+            <h3 class="subhead">Prior Education</h3>
+            <p>I did my high school at Dubai American Academy, junior high at Webber Academy (Calgary), and primary years at Jakarta International School.</p>
+        </section>
 
-                <h3 class="subhead">Prior Education</h3>
-                <p>I did my high school at Dubai American Academy, junior high at Webber Academy (Calgary), and primary years at Jakarta International School.</p>
+        <section data-tab="Teaching">
+            <h2>Teaching Assistantships / Course Staff</h2>
+            <p class="legend keep">* = Recipient of the <a href="https://isg.illinois.edu/teachinginsights">Facilitating Learning Excellence (FLEX) Award</a></p>
+            <div class="ledger" data-split>
+                    <div class="row"><span class="c1">MATH 231: Calculus II</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2026/fall/MATH/231">Fall 2026</a></span></div>
+                    <div class="row"><span class="c1">IS 203: Discrete Methods*</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2026/spring/IS/203">Spring 2026</a></span></div>
+                    <div class="row"><span class="c1">IS 445: Data Visualization*</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2025/fall/IS/445">Fall 2025</a></span></div>
+                    <div class="row"><span class="c1">MATH 113: Abstract Algebra</span><span class="c2">Reader</span><span class="c3"><a href="https://sites.google.com/view/normansheu/teaching/math-113-summer-2025?authuser=0">Summer 2025</a></span></div>
+                    <div class="row"><span class="c1">MATH 105: Multivariate Real Analysis &amp; Measure Theory</span><span class="c2">Reader</span><span class="c3"><a href="https://sites.google.com/ucdavis.edu/anuj">Spring 2025</a></span></div>
+                    <div class="row"><span class="c1">STAT 2: Introduction to Statistics</span><span class="c2">Study Center Group Tutor</span><span class="c3">Spring 2025</span></div>
+                    <div class="row"><span class="c1">MATH 53: Multivariate and Vector Calculus</span><span class="c2">Study Center Group Tutor</span><span class="c3">Summer 2024</span></div>
+                    <div class="row"><span class="c1">STAT 20: Introduction to Statistics &amp; Probability</span><span class="c2">Group Tutor</span><span class="c3">Spring 2024</span></div>
+                    <div class="row"><span class="c1">STAT 2: Introduction to Statistics</span><span class="c2">Study Center Group Tutor</span><span class="c3">Spring 2024</span></div>
+                    <div class="row"><span class="c1">DATA C8: Foundations of Data Science</span><span class="c2">Academic Intern</span><span class="c3">Fall 2023</span></div>
+            </div>
+            <h2>Course Development</h2>
+            <div class="ledger" data-split>
+                    <div class="row"><span class="c1 wide">Department of Mathematics Student Researcher IV</span><span class="c3">Spring 2025</span><p class="note">Developing linear algebra education tools for MATH 56: Linear Algebra (prototype <a href="https://linalg-app.vercel.app/">here</a>). Funded by the "Interactive Tools for Learning Linear Algebra" Instructional Technology and Innovation <a href="https://ue.berkeley.edu/projects-initiatives/course-development/instructional-tech-innovation/funded-projects">Grant</a>.</p></div>
+                    <div class="row"><span class="c1 wide">Department of Physics Course Developer</span><span class="c3">Spring 2024–2025</span><p class="note">Developer for Nobel laureate in physics Saul Perlmutter's L&amp;S 22: Sense &amp; Sensibility &amp; Science course's data science lab on <a href="https://github.com/sensesensibilityscience/datascience/blob/master/2024/bad_science/bad_science_insurance_experiment.ipynb">bad science</a>.</p></div>
+                    <div class="row"><span class="c1 wide">DSUS Modules Developer</span><span class="c3">Fall 2023</span><p class="note">Developed ECON 148: Data Science for Economists' <a href="https://www.econ148.org/sp25/">Prophet forecasting lab</a> and converted IEOR 120: Engineering Economics' homeworks into autogradable notebooks.</p></div>
+            </div>
+            <h2>Teaching Training &amp; Development</h2>
+            <div class="ledger" data-split>
+                    <div class="row"><span class="c1 wide">CITL Cheelan Bo-Linn Teaching Excellence Certificate, UIUC</span><span class="c3">In progress</span></div>
+                    <div class="row"><span class="c1 wide"><a href="https://credentials.illinois.edu/59e1469a-10a8-40ef-91c8-92369fe108fd">CITL Master Course on Online Teaching</a>, UIUC</span><span class="c3">2026</span></div>
+                    <div class="row"><span class="c1 wide">CITL Graduate Academy, UIUC</span><span class="c3">2025</span></div>
+                    <div class="row"><span class="c1 wide">INFO 590: College Teaching, UIUC</span><span class="c3">2025</span></div>
+                    <div class="row"><span class="c1 wide">STAT 375, UC Berkeley</span><span class="c3">2024</span></div>
             </div>
         </section>
-    </main>
 
-    <footer>
-        <div class="container">
-            <p>© 2026 Jingyuan Chen</p>
-        </div>
-    </footer>
+        <section data-tab="service">
+            <h2>Current Service</h2>
+            <div class="ledger" data-split>
+                    <div class="row"><span class="c1 wide"><a href="https://math.illinois.edu/people/committees-service-appointments">Undergraduate Affairs Committee</a> Standing Member</span><span class="c3">2026–present</span><p class="note">Department of Mathematics, UIUC</p></div>
+                    <div class="row"><span class="c1 wide">Senator</span><span class="c3">2026–present</span><p class="note">UIUC Senate Council on Student Conduct Expectations and Accountability</p></div>
+            </div>
+            <h2>Past Service</h2>
+            <div class="ledger" data-split>
+                    <div class="row"><span class="c1 wide">USAMO/USAJMO Grader</span><span class="c3">2026</span><p class="note">Mathematical Association of America (MAA)</p></div>
+                    <div class="row"><span class="c1 wide"><a href="https://www.instagram.com/p/DLi2zxep26H/?img_index=1">Summer Camp Instructor</a></span><span class="c3">Summer 2025</span><p class="note">Department of Industrial Engineering and Operations Research, UC Berkeley</p></div>
+                    <div class="row"><span class="c1 wide">Mathematics Grievance Committee</span><span class="c3">2024–2025</span><p class="note">UC Berkeley</p></div>
+                    <div class="row"><span class="c1 wide">Contract Action Team</span><span class="c3">2024–2025</span><p class="note">UAW 4811</p></div>
+                    <div class="row"><span class="c1 wide"><a href="https://math.berkeley.edu/~musa/former_officers#:~:text=2014%2D2016-,Jingyuan%20Chen,-Former%20Professional%20Chair">Officer</a></span><span class="c3">2023–2025</span><p class="note">Mathematics Undergraduate Student Association, UC Berkeley</p></div>
+                    <div class="row"><span class="c1 wide">Marketing &amp; Recruitment Director</span><span class="c3">2022–2024</span><p class="note">Berkeley Math Tournament</p></div>
+                    <div class="row"><span class="c1 wide"><a href="https://crowdfund.berkeley.edu/project/38919">Finance Lead</a> &amp; Avionics Engineer</span><span class="c3">2022–2024</span><p class="note">Space Technologies and Rocketry @ Berkeley</p></div>
+            </div>
+            <figure>
+                    <span class="print"><img src="https://lh3.googleusercontent.com/pw/AP1GczOZnjKWZFAuacJa8YP2VpMceyQOS0j5yyKQxbMMASoHo9bRheZsN1zti6u8q0WnFhhA1u84Jp-VP_pIzKAJLhYZklReFSivZssJb_8XMqYj7aVoQSFB=w2400" alt="Somewhere in the Mojave Desert" loading="lazy"></span>
+                    <figcaption>Somewhere in the Mojave.</figcaption>
+                </figure>
+        </section>
+        <p class="sign" id="sign-src" data-no-sheet>© 2026 Jingyuan Chen</p>
+    </div>
 
     <script>
         /*
-         * Background: a blank chalkboard drawn as pixel art.
-         * The board is painted into a low-resolution canvas (one art pixel = PX screen
-         * pixels) and scaled up with nearest-neighbour sampling, so every pixel stays crisp.
-         * A fixed seed keeps the texture identical between visits and on resize.
+         * A lecture-hall chalkboard, in pixel art.
+         *
+         * The wooden frame, chalk tray and the wall behind the boards are painted once into a
+         * low-resolution canvas (one art pixel = PX screen pixels) and scaled up with
+         * nearest-neighbour sampling. The boards themselves are separate panels that slide in
+         * a track inside the frame. Each page's text is laid out across as many boards as it
+         * needs; scrolling, swiping, the arrow keys or the tabs swap boards the way
+         * counterweighted lecture-hall boards do: one rises while the next comes down past it.
          */
         (function () {
             const canvas = document.getElementById('board');
             const ctx = canvas.getContext('2d');
+            const stage = document.getElementById('stage');
+            const dotsEl = document.getElementById('dots');
+            const moreEl = document.getElementById('more');
+            const nav = document.getElementById('projector');
+            const pull = nav.querySelector('.pull');
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            const TABS = ['about', 'research', 'industry', 'education', 'Teaching', 'service'];
+            const TITLES = { about: 'About', research: 'Research', industry: 'Industry', education: 'Education', Teaching: 'Teaching', service: 'Service' };
+            const sources = {};
+            TABS.forEach(t => { sources[t] = document.querySelector('#source [data-tab="' + t + '"]'); });
+            const SIGN = document.getElementById('sign-src');
 
             const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
             const C = {
                 board: hex('#2f4a3c'), boardLight: hex('#355342'), boardDark: hex('#2a4336'),
                 smudge: hex('#3b5948'), smudgeHi: hex('#42614f'), dust: hex('#56725f'), speck: hex('#8fa596'),
+                wall: hex('#141d18'),
                 woodHi: hex('#b8834b'), wood: hex('#8f5c30'), woodMid: hex('#7d4e28'), woodDark: hex('#6b411f'),
-                woodShadow: hex('#3d2410'), boardShadow: hex('#22362b'),
+                woodShadow: hex('#3d2410'),
                 chalk: hex('#f2f1ea'), chalkEnd: hex('#d6d5cc'), chalkShade: hex('#bdbcb3'),
                 chalkYellow: hex('#f1e6a6'), chalkYellowShade: hex('#cfc386'),
                 chalkPink: hex('#f2c4c8'), chalkPinkShade: hex('#d1a2a6'),
@@ -1341,19 +1381,9 @@
                 };
             }
 
-            function draw() {
-                const PX = window.innerWidth < 700 ? 3 : 4;
-                const w = Math.ceil(window.innerWidth / PX);
-                const h = Math.ceil(window.innerHeight / PX);
-                canvas.width = w;
-                canvas.height = h;
-                canvas.style.width = (w * PX) + 'px';
-                canvas.style.height = (h * PX) + 'px';
-                document.documentElement.style.setProperty('--px', PX + 'px');
-
-                const img = ctx.createImageData(w, h);
+            function pixelBuffer(w, h) {
+                const img = new ImageData(w, h);
                 const d = img.data;
-                const R = mulberry32(20261110);
                 const put = (x, y, c) => {
                     if (x < 0 || y < 0 || x >= w || y >= h) return;
                     const i = (y * w + x) * 4;
@@ -1362,58 +1392,31 @@
                 const rect = (x0, y0, x1, y1, c) => {
                     for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) put(x, y, c);
                 };
+                return { img, put, rect };
+            }
 
-                const F = 8;                       // frame thickness
-                const LEDGE = 4;                   // chalk tray height
+            let PX = 4;
+            let slateSize = [0, 0];
+
+            // ---------- the frame, tray and wall ----------
+            function drawFrame() {
+                PX = window.innerWidth < 700 ? 3 : 4;
+                const w = Math.ceil(window.innerWidth / PX);
+                const h = Math.ceil(window.innerHeight / PX);
+                canvas.width = w;
+                canvas.height = h;
+                canvas.style.width = (w * PX) + 'px';
+                canvas.style.height = (h * PX) + 'px';
+                document.documentElement.style.setProperty('--px', PX + 'px');
+
+                const { img, put, rect } = pixelBuffer(w, h);
+                const R = mulberry32(20261110);
+                const F = 8, LEDGE = 4;
                 const bx0 = F, by0 = F, bx1 = w - F, by1 = h - F;
                 const trayTop = by1 - LEDGE;
 
-                // --- slate: base colour with a little per-pixel grain
-                for (let y = by0; y < trayTop; y++) {
-                    for (let x = bx0; x < bx1; x++) {
-                        const r = R();
-                        put(x, y, r < 0.06 ? C.boardLight : r < 0.11 ? C.boardDark : C.board);
-                    }
-                }
+                rect(bx0, by0, bx1, trayTop, C.wall);
 
-                // --- eraser swipes: soft horizontal arcs, dithered so they stay pixelly
-                const swipes = 6;
-                for (let s = 0; s < swipes; s++) {
-                    const cx = bx0 + (0.1 + 0.8 * R()) * (bx1 - bx0);
-                    const cy = by0 + (0.12 + 0.7 * R()) * (trayTop - by0);
-                    const rx = (0.12 + 0.14 * R()) * (bx1 - bx0);
-                    const ry = 3 + R() * 5;
-                    const bend = (R() - 0.5) * 0.06;     // slight curve, like a hand-held eraser
-                    const strength = 0.35 + 0.3 * R();
-                    for (let y = Math.floor(cy - ry - rx * 0.1); y <= cy + ry + rx * 0.1; y++) {
-                        for (let x = Math.floor(cx - rx); x <= cx + rx; x++) {
-                            if (x < bx0 || x >= bx1 || y < by0 || y >= trayTop) continue;
-                            const dx = (x - cx) / rx;
-                            const yy = y - (cy + bend * (x - cx) * (x - cx) / rx);
-                            const q = dx * dx + (yy / ry) * (yy / ry);
-                            if (q >= 1) continue;
-                            const p = strength * (1 - q);
-                            const r = R();
-                            if (r < p * 0.25) put(x, y, C.smudgeHi);
-                            else if (r < p) put(x, y, C.smudge);
-                        }
-                    }
-                }
-
-                // --- scattered chalk dust, thicker just above the tray
-                for (let y = by0; y < trayTop; y++) {
-                    const nearTray = Math.max(0, 1 - (trayTop - y) / 7);
-                    for (let x = bx0; x < bx1; x++) {
-                        const r = R();
-                        if (r < 0.003 + 0.12 * nearTray * nearTray) put(x, y, R() < 0.2 ? C.speck : C.dust);
-                    }
-                }
-
-                // --- inner shadow where the frame overhangs the slate
-                for (let x = bx0; x < bx1; x++) put(x, by0, C.boardShadow);
-                for (let y = by0; y < trayTop; y++) put(bx0, y, C.boardShadow);
-
-                // --- wooden frame: horizontal grain on top/bottom, vertical on the sides
                 const woodPick = v => (v < 0.15 ? C.woodDark : v < 0.45 ? C.woodMid : v < 0.92 ? C.wood : C.woodHi);
                 const rowGrain = [], colGrain = [];
                 for (let y = 0; y < h; y++) rowGrain.push(R());
@@ -1423,134 +1426,528 @@
                         const inTopBottom = y < by0 || y >= by1;
                         const inSides = x < bx0 || x >= bx1;
                         if (!inTopBottom && !inSides) continue;
-                        // sides run full height; top/bottom bars sit between them (mitred look)
                         const useRow = inTopBottom && !(inSides && Math.min(x, w - 1 - x) < Math.min(y, h - 1 - y));
                         let v = useRow ? rowGrain[y] : colGrain[x];
                         if (R() < 0.05) v = R();
                         put(x, y, woodPick(v));
                     }
                 }
-                // bevels: light outer edge, dark inner edge
                 for (let x = 0; x < w; x++) { put(x, 0, C.woodHi); put(x, by0 - 1, C.woodShadow); put(x, h - 1, C.woodShadow); }
                 for (let y = 0; y < h; y++) { put(0, y, C.woodHi); put(w - 1, y, C.woodShadow); }
                 for (let y = by0 - 1; y < by1; y++) { put(bx0 - 1, y, C.woodShadow); put(bx1, y, C.woodHi); }
 
-                // --- chalk tray (ledge)
+                // chalk tray
                 rect(bx0, trayTop, bx1, trayTop + 1, C.woodHi);
                 rect(bx0, trayTop + 1, bx1, trayTop + 3, C.wood);
                 rect(bx0, trayTop + 3, bx1, by1, C.woodDark);
-                for (let x = bx0; x < bx1; x++) if (R() < 0.08) put(x, trayTop + 1, C.chalkEnd);  // dust in the tray
+                for (let x = bx0; x < bx1; x++) if (R() < 0.08) put(x, trayTop + 1, C.chalkEnd);
 
-                // --- things on the tray
-                const sitY = trayTop - 1;   // bottom row of anything resting on the ledge
+                // chalk and eraser resting on the tray (drawn on the tray's top edge, in front of the boards)
+                const sitY = trayTop + 1;
                 const stick = (x, len, body, shade) => {
                     rect(x, sitY - 2, x + len, sitY, body);
                     rect(x, sitY, x + len, sitY + 1, shade);
                     put(x, sitY - 2, C.chalkEnd);
-                    rect(x + len - 1, sitY - 2, x + len, sitY + 1, C.chalkEnd);   // worn tip
+                    rect(x + len - 1, sitY - 2, x + len, sitY + 1, C.chalkEnd);
                 };
                 stick(Math.round(bx0 + (bx1 - bx0) * 0.035), 13, C.chalk, C.chalkShade);
                 stick(Math.round(bx0 + (bx1 - bx0) * 0.035) + 17, 6, C.chalkYellow, C.chalkYellowShade);
                 stick(Math.round(bx0 + (bx1 - bx0) * 0.55), 9, C.chalkPink, C.chalkPinkShade);
-
-                // felt eraser
                 const ex = Math.round(bx0 + (bx1 - bx0) * 0.865);
                 const ew = 20;
                 rect(ex, sitY - 6, ex + ew, sitY - 2, C.eraserWood);
-                rect(ex, sitY - 6, ex + ew, sitY - 5, C.chalkEnd);           // highlight on the handle
+                rect(ex, sitY - 6, ex + ew, sitY - 5, C.chalkEnd);
                 rect(ex, sitY - 5, ex + 1, sitY - 2, C.eraserWoodDark);
                 rect(ex + ew - 1, sitY - 5, ex + ew, sitY - 2, C.eraserWoodDark);
                 rect(ex, sitY - 2, ex + ew, sitY, C.felt);
                 rect(ex, sitY, ex + ew, sitY + 1, C.feltDark);
-                for (let x = ex + 1; x < ex + ew - 1; x++) if (R() < 0.35) put(x, sitY - 1, C.chalkShade);  // chalk on the felt
+                for (let x = ex + 1; x < ex + ew - 1; x++) if (R() < 0.35) put(x, sitY - 1, C.chalkShade);
 
                 ctx.putImageData(img, 0, 0);
+
+                // the track the boards slide in: everything above the tray and inside the frame
+                const top = by0 * PX, left = bx0 * PX;
+                const width = (bx1 - bx0) * PX, height = (trayTop - 2 - by0) * PX;
+                Object.assign(stage.style, { left: left + 'px', top: top + 'px', width: width + 'px', height: height + 'px' });
+                slateSize = [bx1 - bx0, trayTop - 2 - by0];
+                document.documentElement.style.setProperty('--slate-size', width + 'px ' + height + 'px');
+
+                // board markers sit in the middle of the right-hand frame
+                dotsEl.style.left = (left + width + (window.innerWidth - left - width) / 2) + 'px';
+                dotsEl.style.top = (top + height / 2) + 'px';
+                moreEl.style.left = (left + width / 2) + 'px';
+                moreEl.style.top = (top + height - 30) + 'px';
             }
 
-            let pending = null;
-            window.addEventListener('resize', function () {
-                clearTimeout(pending);
-                pending = setTimeout(draw, 120);
-            });
-            draw();
-        })();
+            // ---------- slate textures, one per board so they look like separate boards ----------
+            function makeSlates(count) {
+                const [w, h] = slateSize;
+                const off = document.createElement('canvas');
+                off.width = w;
+                off.height = h;
+                const octx = off.getContext('2d');
+                const urls = [];
+                for (let k = 0; k < count; k++) {
+                    const { img, put } = pixelBuffer(w, h);
+                    const R = mulberry32(7919 * (k + 1));
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            const r = R();
+                            put(x, y, r < 0.06 ? C.boardLight : r < 0.11 ? C.boardDark : C.board);
+                        }
+                    }
+                    // eraser swipes
+                    for (let s = 0; s < 4; s++) {
+                        const cx = (0.1 + 0.8 * R()) * w, cy = (0.12 + 0.76 * R()) * h;
+                        const rx = (0.12 + 0.14 * R()) * w, ry = 3 + R() * 5;
+                        const bend = (R() - 0.5) * 0.06, strength = 0.3 + 0.3 * R();
+                        for (let y = Math.floor(cy - ry - rx * 0.1); y <= cy + ry + rx * 0.1; y++) {
+                            for (let x = Math.floor(cx - rx); x <= cx + rx; x++) {
+                                const dx = (x - cx) / rx;
+                                const yy = y - (cy + bend * (x - cx) * (x - cx) / rx);
+                                const q = dx * dx + (yy / ry) * (yy / ry);
+                                if (q >= 1) continue;
+                                const p = strength * (1 - q), r = R();
+                                if (r < p * 0.25) put(x, y, C.smudgeHi);
+                                else if (r < p) put(x, y, C.smudge);
+                            }
+                        }
+                    }
+                    // chalk dust, gathering at the bottom edge
+                    for (let y = 0; y < h; y++) {
+                        const near = Math.max(0, 1 - (h - y) / 7);
+                        for (let x = 0; x < w; x++) {
+                            if (R() < 0.003 + 0.1 * near * near) put(x, y, R() < 0.2 ? C.speck : C.dust);
+                        }
+                    }
+                    octx.putImageData(img, 0, 0);
+                    urls.push(off.toDataURL('image/png'));
+                }
+                return urls;
+            }
 
-        // Projector screen: the draw string rolls it up and down.
-        (function () {
-            const nav = document.getElementById('projector');
-            const pull = nav.querySelector('.pull');
-            const mobile = () => window.innerWidth <= 768;
+            // ---------- laying text out onto boards ----------
+            const keepWithNext = el => el && el.matches && el.matches('h2, h3, h4, .eyebrow, .keep');
+
+            function newPanel() {
+                const p = document.createElement('section');
+                p.className = 'panel measuring';
+                const c = document.createElement('div');
+                c.className = 'panel-content';
+                p.appendChild(c);
+                stage.appendChild(p);
+                return p;
+            }
+
+            const fits = p => p.firstChild.offsetHeight <= p.clientHeight + 1;
+
+            // Blocks go onto white sheets of paper taped to the board. A block marked
+            // data-no-sheet (the landing cards, the chalk signature) goes straight on the board.
+            function paginate(tab) {
+                const panels = [];
+                let p = newPanel();
+                const pc = () => p.firstChild;
+                const lastSheet = () => {
+                    const last = pc().lastElementChild;
+                    return last && last.classList.contains('sheet') ? last : null;
+                };
+                const sheet = () => {
+                    let s = lastSheet();
+                    if (!s) {
+                        s = document.createElement('div');
+                        s.className = 'sheet';
+                        pc().appendChild(s);
+                    }
+                    return s;
+                };
+                const host = noSheet => (noSheet ? pc() : sheet());
+                const dropEmptySheet = () => {
+                    const s = lastSheet();
+                    if (s && !s.children.length) s.remove();
+                };
+                const onlyThing = node => {
+                    const kids = pc().children;
+                    if (kids.length !== 1) return false;
+                    const k = kids[0];
+                    return k === node || (k.classList.contains('sheet') && k.children.length === 1);
+                };
+
+                // start a new board, taking any trailing headings along so they stay with their text
+                const nextPanel = () => {
+                    const moved = [];
+                    const s = lastSheet();
+                    if (s) {
+                        while (keepWithNext(s.lastElementChild)) {
+                            const el = s.lastElementChild;
+                            el.remove();
+                            moved.unshift(el);
+                        }
+                        if (!s.children.length) s.remove();
+                    }
+                    const old = p;
+                    p = newPanel();
+                    if (moved.length) moved.forEach(el => sheet().appendChild(el));
+                    if (old.firstChild.children.length) panels.push(old); else old.remove();
+                };
+
+                const placeWhole = (node, noSheet) => {
+                    host(noSheet).appendChild(node);
+                    if (!fits(p) && !onlyThing(node)) {
+                        node.remove();
+                        dropEmptySheet();
+                        nextPanel();
+                        host(noSheet).appendChild(node);
+                    }
+                    return fits(p);
+                };
+
+                const pruneEmpty = el => {
+                    while (el && el !== pc() && !el.children.length && !el.textContent.trim()) {
+                        const up = el.parentElement;
+                        el.remove();
+                        el = up;
+                    }
+                };
+
+                // Copy src's children one at a time into a shell of src, starting a new board
+                // whenever the next one does not fit. A child that is too tall for a board on
+                // its own and is marked data-split-inner is itself split the same way.
+                const placeSplit = (src, markPart, hostFn) => {
+                    const shell = () => {
+                        const w = src.cloneNode(false);
+                        ['data-no-sheet', 'data-split', 'data-split-fallback', 'data-split-inner'].forEach(a => w.removeAttribute(a));
+                        if (markPart) w.classList.add('part');
+                        return w;
+                    };
+                    let wrap = null;
+                    const wrapHost = () => {
+                        if (!wrap || !p.contains(wrap)) {
+                            wrap = shell();
+                            hostFn().appendChild(wrap);
+                        }
+                        return wrap;
+                    };
+                    for (const unit of src.children) {
+                        const node = unit.cloneNode(true);
+                        wrapHost().appendChild(node);
+                        if (fits(p)) continue;
+                        node.remove();
+                        const carried = [];
+                        while (keepWithNext(wrap.lastElementChild)) {
+                            const el = wrap.lastElementChild;
+                            el.remove();
+                            carried.unshift(el);
+                        }
+                        pruneEmpty(wrap);
+                        if (pc().children.length) nextPanel();
+                        carried.forEach(el => wrapHost().appendChild(el));
+                        wrapHost().appendChild(node);
+                        if (fits(p)) continue;
+                        if (unit.hasAttribute('data-split-inner')) {
+                            node.remove();
+                            placeSplit(unit, true, wrapHost);
+                        } else {
+                            p.classList.add('scrolls');
+                        }
+                    }
+                };
+
+                const blocks = [...sources[tab].children, SIGN];
+                for (const src of blocks) {
+                    const noSheet = src.hasAttribute('data-no-sheet');
+                    const top = () => host(noSheet);
+                    if (src.hasAttribute('data-split')) {
+                        placeSplit(src, false, top);
+                    } else if (src.hasAttribute('data-split-fallback')) {
+                        const node = src.cloneNode(true);
+                        let ok = placeWhole(node, noSheet);
+                        if (!ok && window.innerWidth > 768) {
+                            // on a slightly short screen, shrink the block a little rather than split it
+                            const room = p.clientHeight - (pc().offsetHeight - node.offsetHeight);
+                            const ratio = room / node.offsetHeight;
+                            if (ratio >= 0.75) {
+                                node.style.zoom = (Math.floor(ratio * 1000) / 1000).toString();
+                                ok = fits(p);
+                            }
+                        }
+                        if (!ok) {
+                            node.remove();
+                            dropEmptySheet();
+                            placeSplit(src, true, top);
+                        }
+                    } else if (src === SIGN) {
+                        // the signature only goes on if there is room; it never gets a board of its own
+                        const node = src.cloneNode(true);
+                        node.removeAttribute('id');
+                        pc().appendChild(node);
+                        if (!fits(p)) node.remove();
+                    } else {
+                        const node = src.cloneNode(true);
+                        node.removeAttribute('id');
+                        if (!placeWhole(node, noSheet)) p.classList.add('scrolls');
+                    }
+                }
+                if (pc().children.length) panels.push(p); else p.remove();
+                panels.forEach(panel => { panel.remove(); panel.classList.remove('measuring'); });
+                return panels;
+            }
+
+            function computeClear() {
+                const mobile = window.innerWidth <= 768;
+                const casing = nav.querySelector('.casing').getBoundingClientRect();
+                const screenH = mobile ? 0 : nav.querySelector('.screen-inner').scrollHeight;
+                const bottom = casing.bottom + screenH + nav.querySelector('.weight').offsetHeight + pull.offsetHeight;
+                const clear = Math.max(16, Math.round(bottom - stage.getBoundingClientRect().top + 10));
+                document.documentElement.style.setProperty('--clear', clear + 'px');
+                document.documentElement.style.setProperty('--avail', (stage.clientHeight - clear - 30) + 'px');
+            }
+
+            // ---------- state ----------
+            let decks = {};
+            let tab = 'about';
+            let index = 0;
+            let current = null;
+            let busy = false;
+            let cooldownUntil = 0;
+
+            function rebuild() {
+                drawFrame();
+                computeClear();
+                stage.querySelectorAll('.panel').forEach(n => n.remove());
+                const slates = makeSlates(4);
+                decks = {};
+                let k = 0;
+                for (const t of TABS) {
+                    decks[t] = paginate(t);
+                    decks[t].forEach((panel, i) => {
+                        panel.style.backgroundImage = 'url(' + slates[k++ % slates.length] + ')';
+                        panel.setAttribute('aria-label', TITLES[t] + ', board ' + (i + 1) + ' of ' + decks[t].length);
+                    });
+                }
+                index = Math.min(index, decks[tab].length - 1);
+                current = decks[tab][index];
+                current.scrollTop = 0;
+                stage.appendChild(current);
+                updateUI();
+            }
+
+            function updateUI() {
+                nav.querySelectorAll('.screen a[href^="#"]').forEach(a => {
+                    a.classList.toggle('active', a.getAttribute('href') === '#' + tab);
+                });
+                const n = decks[tab].length;
+                dotsEl.innerHTML = '';
+                if (n > 1) {
+                    for (let i = 0; i < n; i++) {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.setAttribute('aria-label', 'Board ' + (i + 1) + ' of ' + n);
+                        if (i === index) b.setAttribute('aria-current', 'true');
+                        b.addEventListener('click', () => go(tab, i));
+                        dotsEl.appendChild(b);
+                    }
+                }
+                moreEl.hidden = index >= n - 1;
+            }
+
+            // Swap boards like a lecture-hall stack. Going forward, the front board is raised
+            // out of the way, revealing the next board already hanging behind it. Going back,
+            // the previous board is pulled down in front, landing with a small bounce.
+            let queued = null;
+            function go(t, i) {
+                if (busy) {
+                    queued = [t, i];
+                    return;
+                }
+                const deck = decks[t];
+                i = Math.max(0, Math.min(i, deck.length - 1));
+                if (t === tab && i === index) return;
+                const forward = t === tab ? i > index : TABS.indexOf(t) > TABS.indexOf(tab);
+                const prev = current;
+                const next = deck[i];
+                tab = t;
+                index = i;
+                current = next;
+                next.scrollTop = 0;
+                stage.appendChild(next);
+                updateUI();
+
+                if (reduceMotion) {
+                    prev.remove();
+                    return;
+                }
+                busy = true;
+                const mover = forward ? prev : next;
+                const still = forward ? next : prev;
+                mover.classList.add('front');
+                still.classList.add('back');
+                const anim = forward
+                    ? mover.animate(
+                        [{ transform: 'translateY(0)' }, { transform: 'translateY(-100%)' }],
+                        { duration: 750, easing: 'cubic-bezier(.55, 0, .3, 1)', fill: 'forwards' })
+                    : mover.animate(
+                        [
+                            { transform: 'translateY(-100%)', easing: 'cubic-bezier(.45, 0, .7, .9)' },
+                            { transform: 'translateY(0)', offset: 0.78, easing: 'ease-out' },
+                            { transform: 'translateY(-1.6%)', offset: 0.89, easing: 'ease-in' },
+                            { transform: 'translateY(0)' }
+                        ],
+                        { duration: 850, fill: 'forwards' });
+                anim.finished.then(() => {
+                    prev.remove();
+                    anim.cancel();
+                    prev.classList.remove('front', 'back');
+                    next.classList.remove('front', 'back');
+                    busy = false;
+                    cooldownUntil = performance.now() + 250;
+                    if (queued) {
+                        const q = queued;
+                        queued = null;
+                        go(q[0], q[1]);
+                    }
+                });
+            }
+
+            // At the first or last board the board just knocks against its stop.
+            function bump(dir) {
+                if (busy || reduceMotion) return;
+                busy = true;
+                const shift = (dir > 0 ? -3 : 3) * PX;
+                current.animate(
+                    [{ transform: 'translateY(0)' }, { transform: 'translateY(' + shift + 'px)' }, { transform: 'translateY(0)' }],
+                    { duration: 280, easing: 'ease-out' }
+                ).finished.then(() => {
+                    busy = false;
+                    cooldownUntil = performance.now() + 200;
+                });
+            }
+
+            function step(dir) {
+                const ni = index + dir;
+                if (ni < 0 || ni >= decks[tab].length) bump(dir);
+                else go(tab, ni);
+            }
+
+            // ---------- input ----------
+            const canScrollInside = (dir) => {
+                if (!current || !current.classList.contains('scrolls')) return false;
+                const atTop = current.scrollTop <= 0;
+                const atBottom = current.scrollTop + current.clientHeight >= current.scrollHeight - 1;
+                return dir > 0 ? !atBottom : !atTop;
+            };
+
+            let acc = 0, lastWheel = 0;
+            window.addEventListener('wheel', e => {
+                if (e.ctrlKey || nav.contains(e.target)) return;
+                const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+                if (canScrollInside(Math.sign(dy))) return;
+                e.preventDefault();
+                const now = performance.now();
+                if (busy || now < cooldownUntil) {
+                    cooldownUntil = Math.max(cooldownUntil, now + 180);   // swallow trackpad inertia
+                    acc = 0;
+                    return;
+                }
+                if (now - lastWheel > 220) acc = 0;
+                lastWheel = now;
+                acc += dy;
+                if (Math.abs(acc) > 40) {
+                    const dir = acc > 0 ? 1 : -1;
+                    acc = 0;
+                    step(dir);
+                }
+            }, { passive: false });
+
+            let touchY = null, touchInside = { up: false, down: false };
+            window.addEventListener('touchstart', e => {
+                if (e.touches.length !== 1 || nav.contains(e.target)) { touchY = null; return; }
+                touchY = e.touches[0].clientY;
+                touchInside = { up: canScrollInside(-1), down: canScrollInside(1) };
+            }, { passive: true });
+            window.addEventListener('touchmove', e => {
+                if (touchY !== null && !current.classList.contains('scrolls')) e.preventDefault();
+            }, { passive: false });
+            window.addEventListener('touchend', e => {
+                if (touchY === null) return;
+                const dy = touchY - e.changedTouches[0].clientY;
+                touchY = null;
+                if (Math.abs(dy) < 50) return;
+                const dir = dy > 0 ? 1 : -1;
+                if (dir > 0 ? touchInside.down : touchInside.up) return;
+                step(dir);
+            });
+
+            document.addEventListener('keydown', e => {
+                if (e.altKey || e.ctrlKey || e.metaKey) return;
+                const k = e.key;
+                if (k === 'ArrowDown' || k === 'PageDown' || (k === ' ' && !e.shiftKey && e.target === document.body)) {
+                    if (canScrollInside(1)) return;
+                    e.preventDefault(); step(1);
+                } else if (k === 'ArrowUp' || k === 'PageUp' || (k === ' ' && e.shiftKey && e.target === document.body)) {
+                    if (canScrollInside(-1)) return;
+                    e.preventDefault(); step(-1);
+                } else if (k === 'Home') {
+                    e.preventDefault(); go(tab, 0);
+                } else if (k === 'End') {
+                    e.preventDefault(); go(tab, decks[tab].length - 1);
+                } else if (k === 'Escape' && window.innerWidth <= 768) {
+                    setOpen(false);
+                }
+            });
+
+            moreEl.addEventListener('click', () => step(1));
+
+            // ---------- projector screen ----------
             const setOpen = open => {
                 nav.classList.toggle('open', open);
                 pull.setAttribute('aria-expanded', String(open));
             };
-            pull.addEventListener('click', function () {
+            pull.addEventListener('click', () => {
                 setOpen(!nav.classList.contains('open'));
                 pull.classList.add('tug');
                 setTimeout(() => pull.classList.remove('tug'), 200);
             });
-            nav.querySelectorAll('.screen a').forEach(a => a.addEventListener('click', () => {
-                if (mobile()) setOpen(false);
-            }));
-            document.addEventListener('keydown', e => {
-                if (e.key === 'Escape' && mobile()) setOpen(false);
-            });
-            let wasMobile = mobile();
-            window.addEventListener('resize', () => {
-                const m = mobile();
-                if (m !== wasMobile) { wasMobile = m; setOpen(!m); }
-            });
-        })();
 
-        // Navigation: one "page" at a time.
-        document.addEventListener('DOMContentLoaded', function () {
-            const navLinks = document.querySelectorAll('nav a[href^="#"]');
-            const header = document.querySelector('header');
-            const sections = document.querySelectorAll('.section');
-            const footer = document.querySelector('footer');
-
-            function showSection(targetId) {
-                header.classList.add('hidden');
-                sections.forEach(section => section.classList.add('hidden'));
-                navLinks.forEach(link => link.classList.remove('active'));
-
-                if (targetId === 'about' || targetId === '') {
-                    header.classList.remove('hidden');
-                    const aboutSection = document.getElementById('about');
-                    if (aboutSection) aboutSection.classList.remove('hidden');
-                    const aboutLink = document.querySelector('nav a[href="#about"]');
-                    if (aboutLink) aboutLink.classList.add('active');
-                } else {
-                    const targetSection = document.getElementById(targetId);
-                    if (targetSection) targetSection.classList.remove('hidden');
-                    const activeLink = document.querySelector('nav a[href="#' + targetId + '"]');
-                    if (activeLink) activeLink.classList.add('active');
-                }
-
-                footer.classList.remove('hidden');
-                window.scrollTo(0, 0);
-            }
-
-            navLinks.forEach(link => {
-                link.addEventListener('click', function (e) {
+            // ---------- tabs ----------
+            const tabFromHash = () => {
+                const h = window.location.hash.substring(1);
+                return TABS.includes(h) ? h : 'about';
+            };
+            nav.querySelectorAll('.screen a[href^="#"]').forEach(a => {
+                a.addEventListener('click', e => {
                     e.preventDefault();
-                    const targetId = this.getAttribute('href').substring(1);
-                    showSection(targetId);
-                    history.pushState(null, null, '#' + targetId);
+                    const t = a.getAttribute('href').substring(1);
+                    if (window.innerWidth <= 768) setOpen(false);
+                    const changed = t !== tab;
+                    go(t, 0);
+                    if (changed) {
+                        try { history.pushState(null, '', '#' + t); } catch (err) { /* sandboxed preview: no history */ }
+                    }
                 });
             });
+            window.addEventListener('popstate', () => go(tabFromHash(), 0));
 
-            window.addEventListener('popstate', function () {
-                const hash = window.location.hash.substring(1);
-                showSection(hash || 'about');
+            // ---------- start ----------
+            tab = tabFromHash();
+            rebuild();
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (!busy) rebuild(); });
+
+            let wasMobile = window.innerWidth <= 768;
+            let pending = null;
+            window.addEventListener('resize', () => {
+                clearTimeout(pending);
+                pending = setTimeout(() => {
+                    const m = window.innerWidth <= 768;
+                    if (m !== wasMobile) {
+                        wasMobile = m;
+                        nav.classList.add('no-anim');
+                        setOpen(!m);
+                        requestAnimationFrame(() => nav.classList.remove('no-anim'));
+                    }
+                    if (!busy) rebuild();
+                }, 150);
             });
-
-            const initialHash = window.location.hash.substring(1);
-            showSection(initialHash || 'about');
-            // The browser jumps to the #section anchor after load; undo that so the page starts below the screen.
-            if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-            window.addEventListener('load', () => setTimeout(() => window.scrollTo(0, 0), 0));
-        });
+        })();
     </script>
 </body>
 </html>
