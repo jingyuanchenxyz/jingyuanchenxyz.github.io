@@ -102,7 +102,41 @@
             display: grid;
             grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
             gap: 3.5rem;
-            align-items: center;
+            align-items: stretch;      /* left column and name card share top and bottom edges */
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+        }
+
+        .header-current {
+            flex: 1;                   /* fills whatever height the name card leaves */
+            background: var(--card);
+            box-shadow: var(--pixel-panel);
+            padding: 1.25rem 1.5rem;
+        }
+
+        .header-current h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 0.6rem;
+        }
+
+        .current-rows {
+            display: grid;
+            grid-template-columns: max-content minmax(0, 1fr);
+            column-gap: 1rem;
+            row-gap: 0.55rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--muted);
+        }
+
+        .current-rows .label {
+            color: var(--faint);
         }
 
         .header-image {
@@ -133,6 +167,7 @@
             border-radius: 0;
             box-shadow: var(--pixel-panel);
             padding: 1.75rem 2rem;
+            justify-content: center;
         }
 
         .header-info h1 {
@@ -242,6 +277,11 @@
         .ledger .note {
             grid-column: 1 / -1;
             margin: -0.5rem 0 0.25rem;
+            font-size: 0.92rem;
+        }
+
+        p.legend {
+            margin: -0.75rem 0 1.5rem;
             font-size: 0.92rem;
         }
 
@@ -625,6 +665,14 @@
                 max-width: 280px;
             }
 
+            .header-left {
+                display: contents;
+            }
+
+            .header-image { order: 1; }
+            .header-info { order: 2; }
+            .header-current { order: 3; }
+
             .header-info {
                 padding: 1.5rem 1.25rem;
             }
@@ -726,10 +774,11 @@
         <div class="container">
             <ul>
                 <li><a href="#about">About</a></li>
-                <li><a href="#Teaching">Teaching</a></li>
                 <li><a href="#research">Research</a></li>
-                <li><a href="#previous">Previous</a></li>
+                <li><a href="#industry">Industry</a></li>
                 <li><a href="#education">Education</a></li>
+                <li><a href="#Teaching">Teaching</a></li>
+                <li><a href="#service">Service</a></li>
                 <li><a href="https://publish.illinois.edu/jingyuanchen/">Blog</a></li>
             </ul>
         </div>
@@ -738,10 +787,23 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <div class="header-image">
-                    <a href="https://lh3.googleusercontent.com/pw/AP1GczMNogStybHAn3XEVrow_8j5yAKCZOTWqGjXmdYm_OFJL5N-vGPt9ZT8kLyyhqK7Hy_ul13kGuW_9sa3rxLx_pO6Dyym-Jkq9QJ7BpJvfr8h95_Hmzp0=w2400" target="_blank" rel="noopener">
-                        <img src="https://lh3.googleusercontent.com/pw/AP1GczMNogStybHAn3XEVrow_8j5yAKCZOTWqGjXmdYm_OFJL5N-vGPt9ZT8kLyyhqK7Hy_ul13kGuW_9sa3rxLx_pO6Dyym-Jkq9QJ7BpJvfr8h95_Hmzp0=w2400" alt="Jingyuan Chen">
-                    </a>
+                <div class="header-left">
+                    <div class="header-image">
+                        <a href="https://lh3.googleusercontent.com/pw/AP1GczMNogStybHAn3XEVrow_8j5yAKCZOTWqGjXmdYm_OFJL5N-vGPt9ZT8kLyyhqK7Hy_ul13kGuW_9sa3rxLx_pO6Dyym-Jkq9QJ7BpJvfr8h95_Hmzp0=w2400" target="_blank" rel="noopener">
+                            <img src="https://lh3.googleusercontent.com/pw/AP1GczMNogStybHAn3XEVrow_8j5yAKCZOTWqGjXmdYm_OFJL5N-vGPt9ZT8kLyyhqK7Hy_ul13kGuW_9sa3rxLx_pO6Dyym-Jkq9QJ7BpJvfr8h95_Hmzp0=w2400" alt="Jingyuan Chen">
+                        </a>
+                    </div>
+                    <div class="header-current">
+                        <h4>Current</h4>
+                        <div class="current-rows">
+                            <span class="label">Teaching</span>
+                            <span class="text">Graduate Student Instructor for <a href="https://courses.illinois.edu/schedule/2026/fall/MATH/231">MATH 231 Calculus II (ADB/ADC)</a></span>
+                            <span class="label">Research</span>
+                            <span class="text">Core Graduate Student at the <a href="https://skai-institute.org/about-skai/skai-institute-members/">NSF-Simons AI Institute for the Sky (SkAI)</a></span>
+                            <span class="label">Olympiads</span>
+                            <span class="text">Test Organizer for the <a href="https://intercollegiatemathtournament.org/">Intercollegiate Math Tournament</a> (registration open!)</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="header-info">
                     <h1>Jingyuan Chen</h1>
@@ -761,7 +823,11 @@
                         </div>
                         <h4>Research Interests</h4>
                         <div class="header-interests">
-                            Automated Deduction · Formalized Math · Contract Algebras · Risk &amp; Catastrophe Models · Stochastic Calculus &amp; PDEs · Random Matrix Theory · Non-commutative Probability · Graphons · Scientific Computing · Statistical Education
+                            Automated Deduction &amp; Proof Assistants · Formalized Math · Stochastic Calculus &amp; PDEs · Random Matrix Theory · Non-commutative Probability · Scientific Computing · STEM Education
+                        </div>
+                        <h4>Professional Interests</h4>
+                        <div class="header-interests">
+                            Contract Algebras · Optimization of Contracts · Catastrophe Models · Factor Risk Models · Shock Models · Fast Pricing
                         </div>
                     </div>
                 </div>
@@ -774,25 +840,25 @@
             <div class="container">
                 <div class="intro">
                     <span class="eyebrow">About</span>
-                    <p>I'm a Ph.D. student at UIUC advised by Professor <a href="https://matthewturk.github.io/">Matt Turk</a>, working on large random combinatorial structures and on clustering and flow algorithms for complex networks. Other interests include financial risk, information retrieval problems in automated deduction, and statistical education.</p>
+                    <p>I'm a Ph.D. student at UIUC advised by Professor <a href="https://matthewturk.github.io/">Matt Turk</a>, working on network problems, random matrix theory, and automated theorem proving for statistics.</p>
                     <p>Thinking about majoring in Statistics at Berkeley? Here's a heavily opinionated <a href="https://publish.illinois.edu/jingyuanchen/berkeley-stat-advice/">guide</a>.</p>
-
-                    <span class="eyebrow">Current</span>
-                    <div class="ledger two">
-                        <span class="label">Teaching</span>
-                        <span class="text">Graduate student instructor for <a href="https://courses.illinois.edu/schedule/2026/fall/MATH/231">MATH 231: Calculus II</a></span>
-                        <span class="label">Research</span>
-                        <span class="text">Core graduate student at the <a href="https://skai-institute.org/about-skai/skai-institute-members/">NSF-Simons AI Institute for the Sky (SkAI Institute)</a></span>
-                        <span class="label">Organizing</span>
-                        <span class="text">Test organizer for the <a href="https://intercollegiatemathtournament.org/">Intercollegiate Math Tournament</a> (registration open!)</span>
-                    </div>
 
                     <span class="eyebrow">Updates</span>
                     <div class="ledger two">
                         <span class="label">Dec 2026</span>
-                        <span class="text"><em>Upcoming:</em> attending the <a href="https://skai-institute.org/gaia-data-release-4/">SkAI Chicago Gaia Relay</a> for Gaia Data Release 4, Dec 14–17 at the SkAI Hub.</span>
+                        <span class="text">Obtained my master's in passing</span>
+                        <span class="label">Dec 2026</span>
+                        <span class="text"><em>Upcoming:</em> attending the <a href="https://skai-institute.org/gaia-data-release-4/">SkAI Chicago Gaia Relay</a> for Gaia Data Release 4</span>
                         <span class="label">Oct 2026</span>
-                        <span class="text">Co-authored two papers at <a href="https://colm.eventhosts.cc/">COLM 2026</a>, on <a href="https://colm.eventhosts.cc/virtual/2026/poster/1824">clinical hidden-concern reasoning under partial observability</a> and on <a href="https://colm.eventhosts.cc/virtual/2026/poster/2201">personalized medical plain language summarization</a>.</span>
+                        <span class="text">Co-authored two papers being presented at <a href="https://colm.eventhosts.cc/">COLM 2026</a>, on <a href="https://colm.eventhosts.cc/virtual/2026/poster/1824">clinical hidden-concern reasoning under partial observability</a> and on <a href="https://colm.eventhosts.cc/virtual/2026/poster/2201">personalized medical plain language summarization</a></span>
+                        <span class="label">May 2026</span>
+                        <span class="text">Joining the quant team at Bloomberg for the summer</span>
+                        <span class="label">Mar 2026</span>
+                        <span class="text">We're building a cool <a href="https://github.com/nicegeo/nicegeo">proof assistant</a> in Prof. Ringer's class</span>
+                        <span class="label">Aug 2025</span>
+                        <span class="text">Graduated from UC Berkeley! Headed to UIUC for my PhD</span>
+                        <span class="label">May 2025</span>
+                        <span class="text">Selected as a <a href="https://research.berkeley.edu/surf-fellows/jingyuan-chen/">Berkeley SURF Research Fellow</a>!</span>
                     </div>
 
                     <span class="eyebrow">Mentors, Friends &amp; Cool People</span>
@@ -835,12 +901,11 @@
         <section id="Teaching" class="section">
             <div class="container">
                 <h2>Teaching Assistantships / Course Staff</h2>
+                <p class="legend">* = Recipient of the <a href="https://isg.illinois.edu/teachinginsights">Facilitating Learning Excellence (FLEX) Award</a></p>
                 <div class="ledger">
                     <span class="c1">MATH 231: Calculus II</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2026/fall/MATH/231">Fall 2026</a></span>
-                    <span class="c1">IS 203: Discrete Methods</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2026/spring/IS/203">Spring 2026</a></span>
-                    <p class="note">Recipient of the <a href="https://isg.illinois.edu/teachinginsights">Facilitating Learning Excellence (FLEX) Award</a>.</p>
-                    <span class="c1">IS 445: Data Visualization</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2025/fall/IS/445">Fall 2025</a></span>
-                    <p class="note">Recipient of the <a href="https://isg.illinois.edu/teachinginsights">Facilitating Learning Excellence (FLEX) Award</a>.</p>
+                    <span class="c1">IS 203: Discrete Methods*</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2026/spring/IS/203">Spring 2026</a></span>
+                    <span class="c1">IS 445: Data Visualization*</span><span class="c2">Graduate Student Instructor</span><span class="c3"><a href="https://courses.illinois.edu/schedule/2025/fall/IS/445">Fall 2025</a></span>
                     <span class="c1">MATH 113: Abstract Algebra</span><span class="c2">Reader</span><span class="c3"><a href="https://sites.google.com/view/normansheu/teaching/math-113-summer-2025?authuser=0">Summer 2025</a></span>
                     <span class="c1">MATH 105: Multivariate Real Analysis &amp; Measure Theory</span><span class="c2">Reader</span><span class="c3"><a href="https://sites.google.com/ucdavis.edu/anuj">Spring 2025</a></span>
                     <span class="c1">STAT 2: Introduction to Statistics</span><span class="c2">Study Center Group Tutor</span><span class="c3">Spring 2025</span>
@@ -853,13 +918,22 @@
                 <h2>Course Development</h2>
                 <div class="ledger">
                     <span class="c1 wide">Department of Mathematics Student Researcher IV</span><span class="c3">Spring 2025</span>
-                    <p class="note">Developing Linear Algebra Education Tools for MATH 56: Linear Algebra, Prototype (<a href="https://linalg-app.vercel.app/">here</a>). Funded by the "Interactive Tools for Learning Linear Algebra" Instructional Technology and Innovation <a href="https://ue.berkeley.edu/projects-initiatives/course-development/instructional-tech-innovation/funded-projects">Grant</a>.</p>
+                    <p class="note">Developing linear algebra education tools for MATH 56: Linear Algebra (prototype <a href="https://linalg-app.vercel.app/">here</a>). Funded by the "Interactive Tools for Learning Linear Algebra" Instructional Technology and Innovation <a href="https://ue.berkeley.edu/projects-initiatives/course-development/instructional-tech-innovation/funded-projects">Grant</a>.</p>
 
                     <span class="c1 wide">Department of Physics Course Developer</span><span class="c3">Spring 2024–2025</span>
-                    <p class="note">Developer for Nobel laureate in Physics Saul Perlmutter's L&amp;S 22: Sense &amp; Sensibility &amp; Science course's data science lab on <a href="https://github.com/sensesensibilityscience/datascience/blob/master/2024/bad_science/bad_science_insurance_experiment.ipynb">bad science</a>.</p>
+                    <p class="note">Developer for Nobel laureate in physics Saul Perlmutter's L&amp;S 22: Sense &amp; Sensibility &amp; Science course's data science lab on <a href="https://github.com/sensesensibilityscience/datascience/blob/master/2024/bad_science/bad_science_insurance_experiment.ipynb">bad science</a>.</p>
 
                     <span class="c1 wide">DSUS Modules Developer</span><span class="c3">Fall 2023</span>
                     <p class="note">Developed ECON 148: Data Science for Economists' <a href="https://www.econ148.org/sp25/">Prophet forecasting lab</a> and converted IEOR 120: Engineering Economics' homeworks into autogradable notebooks.</p>
+                </div>
+
+                <h2>Teaching Training &amp; Development</h2>
+                <div class="ledger">
+                    <span class="c1 wide">CITL Cheelan Bo-Linn Teaching Excellence Certificate, UIUC</span><span class="c3">In progress</span>
+                    <span class="c1 wide">CITL Master Course on Online Teaching, UIUC</span><span class="c3">2026</span>
+                    <span class="c1 wide">CITL Graduate Academy, UIUC</span><span class="c3">2025</span>
+                    <span class="c1 wide">INFO 590: College Teaching, UIUC</span><span class="c3">2025</span>
+                    <span class="c1 wide">STAT 375, UC Berkeley</span><span class="c3">2024</span>
                 </div>
             </div>
         </section>
@@ -908,17 +982,45 @@
             </div>
         </section>
 
-        <section id="previous" class="section">
+        <section id="industry" class="section">
             <div class="container">
-                <h2>Previous Work</h2>
-                <div class="entry">
-                    <h3>Quant Intern at Bloomberg L.P., working on <a href="https://professional.bloomberg.com/products/risk/mars/">MARS</a> and <a href="https://www.bloomberg.com/company/press/bloomberg-integrates-lexifis-technology-to-support-its-new-derivatives-library-dlib/">DLIB</a></h3>
-                    <h3>Statistical Consultant (Co-op) at Gilead Sciences</h3>
-                    <h3>Summer Analyst, Corporate Banking at ING Group N.V.</h3>
-                    <h3><a href="https://www.instagram.com/p/DLi2zxep26H/?img_index=1">Summer Camp Instructor</a> at Berkeley's Department of Industrial Engineering and Operations Research</h3>
-                    <h3><a href="https://math.berkeley.edu/~musa/former_officers#:~:text=2014%2D2016-,Jingyuan%20Chen,-Former%20Professional%20Chair">Officer</a> at Berkeley's Mathematics Undergraduate Student Association</h3>
-                    <h3>Marketing &amp; Recruitment Director at Berkeley Math Tournament</h3>
-                    <h3><a href="https://crowdfund.berkeley.edu/project/38919">Finance Lead</a> &amp; Avionics Engineer at Space Technologies and Rocketry @ Berkeley</h3>
+                <h2>Industry Experience</h2>
+                <div class="ledger">
+                    <span class="c1 wide">Quant Intern at Bloomberg L.P., working on <a href="https://professional.bloomberg.com/products/risk/mars/">MARS</a> and <a href="https://www.bloomberg.com/company/press/bloomberg-integrates-lexifis-technology-to-support-its-new-derivatives-library-dlib/">DLIB</a></span><span class="c3">Summer 2026</span>
+                    <p class="note">Mentor: <a href="https://sps.columbia.edu/person/jeffrey-nisen-phd">Jeffrey Nisen</a>, Ph.D. · Manager: <a href="https://www.linkedin.com/in/mario-bondioli-0163aa4">Mario Bondioli</a>, Ph.D.</p>
+                    <span class="c1 wide">Statistical Consultant (Co-op) at Gilead Sciences</span><span class="c3">2024–2025</span>
+                    <p class="note">Mentor &amp; Manager: <a href="https://www.linkedin.com/in/ethan-yen/">Ethan Yen</a></p>
+                    <span class="c1 wide">Summer Analyst, Wholesale Banking at ING Group N.V.</span><span class="c3">Summer 2023</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="service" class="section">
+            <div class="container">
+                <h2>Current Service</h2>
+                <div class="ledger">
+                    <span class="c1 wide"><a href="https://math.illinois.edu/people/committees-service-appointments">Undergraduate Affairs Committee</a> Standing Member</span><span class="c3">2026–present</span>
+                    <p class="note">Department of Mathematics, UIUC</p>
+                    <span class="c1 wide">Senator</span><span class="c3">2026–present</span>
+                    <p class="note">UIUC Senate Council on Student Conduct Expectations and Accountability</p>
+                </div>
+
+                <h2>Past Service</h2>
+                <div class="ledger">
+                    <span class="c1 wide">USAMO/USAJMO Grader</span><span class="c3">2026</span>
+                    <p class="note">Mathematical Association of America (MAA)</p>
+                    <span class="c1 wide"><a href="https://www.instagram.com/p/DLi2zxep26H/?img_index=1">Summer Camp Instructor</a></span><span class="c3">Summer 2025</span>
+                    <p class="note">Department of Industrial Engineering and Operations Research, UC Berkeley</p>
+                    <span class="c1 wide">Mathematics Grievance Committee</span><span class="c3">2024–2025</span>
+                    <p class="note">UC Berkeley</p>
+                    <span class="c1 wide">Contract Action Team</span><span class="c3">2024–2025</span>
+                    <p class="note">UAW 4811</p>
+                    <span class="c1 wide"><a href="https://math.berkeley.edu/~musa/former_officers#:~:text=2014%2D2016-,Jingyuan%20Chen,-Former%20Professional%20Chair">Officer</a></span><span class="c3">2023–2025</span>
+                    <p class="note">Mathematics Undergraduate Student Association, UC Berkeley</p>
+                    <span class="c1 wide">Marketing &amp; Recruitment Director</span><span class="c3">2022–2024</span>
+                    <p class="note">Berkeley Math Tournament</p>
+                    <span class="c1 wide"><a href="https://crowdfund.berkeley.edu/project/38919">Finance Lead</a> &amp; Avionics Engineer</span><span class="c3">2022–2024</span>
+                    <p class="note">Space Technologies and Rocketry @ Berkeley</p>
                 </div>
 
                 <figure>
@@ -948,18 +1050,18 @@
                 <h3 class="subhead">Graduate College Coursework (Illinois)</h3>
                 <div class="courses-grid">
                     <!-- Spring 2027 (upcoming) -->
-                    <div class="course"><span class="code">ASTR 510 <span class="tag">spring 2027</span></span><span class="title">Computational Astrophysics</span><span class="prof"><a href="https://astro.illinois.edu/directory/profile/gammie" class="professor-link">Charles Gammie</a>, Ph.D.</span></div>
-                    <div class="course"><span class="code">ASTR 503 <span class="tag">spring 2027</span></span><span class="title">Observational Astronomy</span><span class="prof"><a href="https://astro.illinois.edu/directory/profile/akemball" class="professor-link">Athol Kemball</a>, Ph.D.</span></div>
-                    <div class="course"><span class="code">MATH 595 <span class="tag">spring 2027</span></span><span class="title">Stochastic PDEs</span><span class="prof"><a href="https://www.mathgenealogy.org/id.php?id=262405" class="professor-link">Daniel Cooney</a>, Ph.D.</span></div>
-                    <div class="course"><span class="code">CSE 553 <span class="tag">spring 2027</span></span><span class="title">Computational Inelasticity</span><span class="prof"><a href="https://amasud.web.engr.illinois.edu/" class="professor-link">Arif Masud</a>, Ph.D.</span></div>
-                    <div class="course"><span class="code">CSE 461 <span class="tag">spring 2027</span></span><span class="title">Computational Aerodynamics</span><span class="prof">Blaine Vollmer, Ph.D.</span></div>
+                    <div class="course"><span class="code">ASTR 510 <span class="tag">Spring 2027</span></span><span class="title">Computational Astrophysics</span><span class="prof"><a href="https://astro.illinois.edu/directory/profile/gammie" class="professor-link">Charles Gammie</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">ASTR 503 <span class="tag">Spring 2027</span></span><span class="title">Observational Astronomy</span><span class="prof"><a href="https://astro.illinois.edu/directory/profile/akemball" class="professor-link">Athol Kemball</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 595 <span class="tag">Spring 2027</span></span><span class="title">Stochastic PDEs</span><span class="prof"><a href="https://www.mathgenealogy.org/id.php?id=262405" class="professor-link">Daniel Cooney</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">CSE 553 <span class="tag">Spring 2027</span></span><span class="title">Computational Inelasticity</span><span class="prof"><a href="https://amasud.web.engr.illinois.edu/" class="professor-link">Arif Masud</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">CSE 461 <span class="tag">Spring 2027</span></span><span class="title">Computational Aerodynamics</span><span class="prof">Blaine Vollmer, Ph.D.</span></div>
 
                     <!-- Fall 2026 (in progress) -->
-                    <div class="course"><span class="code">STAT 588 <span class="tag">in progress</span></span><span class="title">Covariance Structures and Factor Models</span><span class="prof"><a href="https://stat.illinois.edu/directory/profile/sculpepp" class="professor-link">Steven Culpepper</a>, Ph.D.</span></div>
-                    <div class="course"><span class="code">MATH 595 <span class="tag">in progress</span></span><span class="title">Introduction to Topological Data Analysis</span><span class="prof"><a href="https://ymb.web.illinois.edu/" class="professor-link">Yuliy Baryshnikov</a>, Ph.D.</span></div>
-                    <div class="course"><span class="code">GGIS 527 <span class="tag">in progress</span></span><span class="title">Geospatial Artificial Intelligence &amp; Machine Learning</span><span class="prof"><a href="https://ggis.illinois.edu/directory/profile/linyue" class="professor-link">Yue Lin</a>, Ph.D.</span></div>
-                    <div class="course"><span class="code">INFO 510 <span class="tag">in progress</span></span><span class="title">Research Practicum</span><span class="prof"><a href="https://giesbusiness.illinois.edu/profile/robert-brunner" class="professor-link">Robert Brunner</a>, Ph.D.</span></div>
-                    <div class="course"><span class="code">CS 498SF <span class="tag">in progress</span></span><span class="title">Software Foundations (Rocq)</span><span class="prof"><a href="https://dependenttyp.es/" class="professor-link">Talia Ringer</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">STAT 588 <span class="tag">In progress</span></span><span class="title">Covariance Structures and Factor Models</span><span class="prof"><a href="https://stat.illinois.edu/directory/profile/sculpepp" class="professor-link">Steven Culpepper</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">MATH 595 <span class="tag">In progress</span></span><span class="title">Introduction to Topological Data Analysis</span><span class="prof"><a href="https://ymb.web.illinois.edu/" class="professor-link">Yuliy Baryshnikov</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">GGIS 527 <span class="tag">In progress</span></span><span class="title">Geospatial Artificial Intelligence &amp; Machine Learning</span><span class="prof"><a href="https://ggis.illinois.edu/directory/profile/linyue" class="professor-link">Yue Lin</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">INFO 510 <span class="tag">In progress</span></span><span class="title">Research Practicum</span><span class="prof"><a href="https://giesbusiness.illinois.edu/profile/robert-brunner" class="professor-link">Robert Brunner</a>, Ph.D.</span></div>
+                    <div class="course"><span class="code">CS 498SF <span class="tag">In progress</span></span><span class="title">Software Foundations (Rocq)</span><span class="prof"><a href="https://dependenttyp.es/" class="professor-link">Talia Ringer</a>, Ph.D.</span></div>
 
                     <!-- Spring 2026 -->
                     <div class="course"><span class="code">MATH 595QL</span><span class="title">Quantum Learning Theory</span><span class="prof"><a href="https://www.jacobbeckey.com/" class="professor-link">Jacob Beckey</a>, Ph.D.</span></div>
