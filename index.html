@@ -869,21 +869,53 @@
 
         /* ---------- Research Space 5080 (unlisted page at #5080) ---------- */
         .room-sign {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: baseline;
-            column-gap: 1.25rem;
-            row-gap: 0.25rem;
-            padding: 1.1rem 1.6rem 1rem;
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            column-gap: 2.25rem;
+            align-items: center;
+            padding: 0.95rem 1.6rem 0.9rem;
         }
 
         .room-sign h2 {
-            margin: 0;
+            margin: 0 0 0.15rem;
+            white-space: nowrap;
         }
 
-        .room-sign p {
+        .room-id p {
             margin: 0;
             color: var(--muted);
+            font-size: 0.92rem;
+            white-space: nowrap;
+        }
+
+        .room-sign .blurb {
+            margin: 0;
+            padding-left: 2.25rem;
+            border-left: 1px solid #e3e8e5;
+            font-size: 0.85rem;
+            line-height: 1.55;
+            color: var(--muted);
+        }
+
+        @media (max-width: 1060px) {
+            .room-sign {
+                grid-template-columns: 1fr;
+                row-gap: 0.7rem;
+            }
+
+            .room-sign h2,
+            .room-id p {
+                white-space: normal;
+            }
+
+            .room-sign .blurb {
+                padding-left: 0;
+                border-left: 0;
+            }
+        }
+
+        .panel-content > .room-sign + .people-grid {
+            margin-top: 1.35rem;
         }
 
         /* vertical profile cards, all side by side on a laptop or desktop */
@@ -894,54 +926,59 @@
             align-items: stretch;
         }
 
-        /* Each card is a subgrid spanning four shared rows (photo, name, education, the rest),
-           so the line between education and advisors sits at the same height on every card. */
+        /* Each card is a subgrid over seven shared rows (photo, name, education, advisors,
+           research focus, previous experience, links), so every field starts at the same height on every card. */
         .person {
             display: grid;
-            grid-row: span 4;
+            grid-row: span 7;
             grid-template-rows: subgrid;
             row-gap: 0;
             justify-items: center;
+            align-content: start;
             text-align: center;
-            padding: 1.1rem 0.8rem 0.9rem;
+            padding: 0.95rem 0.75rem 0.8rem;
+        }
+
+        .person > * {
+            width: 100%;
         }
 
         .person .avatar {
-            width: 76px;
-            height: 76px;
-            flex: none;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             object-fit: cover;
             background: #e4e3dc;
             box-shadow: 0 0 0 3px #fff, 0 0 0 5px #d3dad6;
             color: var(--ink);
             font-size: 0.7rem;
-            margin-bottom: 0.7rem;
-        }
-
-        .person .who-text {
-            display: contents;
-        }
-
-        .person .col {
-            width: 100%;
+            margin-bottom: 0.55rem;
         }
 
         .person h3 {
-            margin: 0 0 0.4rem;
+            margin: 0 0 0.3rem;
             font-size: 1.02rem;
         }
 
-        .person .col + .col {
-            margin-top: 0.55rem;
-            padding-top: 0.55rem;
+        .person .adv {
+            margin-top: 0.45rem;
+            padding-top: 0.45rem;
             border-top: 1px solid #e3e8e5;
         }
 
-        .person .col:last-child {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+        .person .adv-name {
+            display: block;                 /* one advisor per line */
+            font-size: 0.8rem;
+            line-height: 1.45;
+            color: var(--muted);
+        }
+
+        .person .focus {
+            margin-top: 0.4rem;
+        }
+
+        .person .prev {
+            margin-top: 0.4rem;
         }
 
         .person .line {
@@ -970,8 +1007,9 @@
         }
 
         .person .links {
-            margin: auto 0 0;                /* links line up along the bottom of every card */
-            padding-top: 0.55rem;
+            align-self: end;                /* links sit along the bottom of every card */
+            margin: 0;
+            padding-top: 0.45rem;
             font-size: 0.8rem;
             color: var(--faint);
         }
@@ -1606,13 +1644,13 @@
             </figure>
         </section>
         <section data-tab="5080" data-wide>
-            <div class="card room-sign" data-no-sheet><h2>Research Space 5080</h2><p>614 E Daniel Street, Champaign, IL 61820</p></div>
+            <div class="card room-sign" data-no-sheet><div class="room-id"><h2>Research Space 5080</h2><p>614 E Daniel Street, Champaign, IL 61820</p></div><p class="blurb">We’re a group of PhD students and candidates at the University of Illinois Urbana-Champaign studying computer and information science. Our working group develops intelligent systems that integrate machine learning, natural language processing, knowledge representation, and automated reasoning to discover, organize, and extract knowledge across diverse scientific domains, including mathematics, astronomy, chemistry, and medicine.</p></div>
             <div class="people-grid" data-split-fallback data-no-sheet>
-                <article class="person card"><img class="avatar" src="https://yueguo-50.github.io/assets/img/members/joey_chan.jpg" alt="Joey Chan" loading="lazy"><div class="who-text"><h3>Joey Chan</h3><div class="col"><p class="line">PhD Student, Computer Science, Illinois (2025–present)</p><p class="line">MS &amp; BS Computer Science, Johns Hopkins</p><p class="market"><a href="https://siebelschool.illinois.edu/academics/graduate/phd-program/amazon-ai-phd-fellows/Joey-Chan" target="_blank" rel="noopener">Amazon AI PhD Fellow</a></p></div><div class="col"><p class="line"><span class="label">Advisors:</span> Prof. <a href="https://ischool.illinois.edu/people/yue-guo">Yue Guo</a>, Prof. <a href="https://hanj.cs.illinois.edu/">Jiawei Han</a></p><p class="line"><span class="label">Research focus:</span> Natural Language Processing, Knowledge Discovery, AI for Science</p><p class="links"><a href="https://jchan58.github.io/" target="_blank" rel="noopener">Website</a> · <a href="https://scholar.google.com/citations?user=JdobToEAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a></p></div></div></article>
-                <article class="person card"><img class="avatar" src="https://lh3.googleusercontent.com/pw/AP1GczMNogStybHAn3XEVrow_8j5yAKCZOTWqGjXmdYm_OFJL5N-vGPt9ZT8kLyyhqK7Hy_ul13kGuW_9sa3rxLx_pO6Dyym-Jkq9QJ7BpJvfr8h95_Hmzp0=w2400" alt="Jingyuan Chen" loading="lazy"><div class="who-text"><h3>Jingyuan Chen</h3><div class="col"><p class="line">PhD Student, Applied Computing (Informatics), Illinois (2025–present)</p><p class="line">MS Mathematics, Illinois</p><p class="line">BA Maths, BA Stats, UC Berkeley</p></div><div class="col"><p class="line"><span class="label">Advisor:</span> Prof. <a href="https://astro.illinois.edu/directory/profile/mjturk">Matthew Turk</a></p><p class="line"><span class="label">Research focus:</span> Random Matrix Theory, Random Graphs, Proof Assistants, AI for Finance, Math &amp; Science (Astronomy)</p><p class="links"><a href="#about">Website</a> · <a href="https://scholar.google.com/citations?user=Ibe-n2oAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a></p></div></div></article>
-                <article class="person card"><img class="avatar" src="https://yikunhan42.github.io/images/avatar-new.jpg" alt="Yikun Han" loading="lazy"><div class="who-text"><h3>Yikun Han</h3><div class="col"><p class="line">PhD Student, Information Science, Illinois (2025–present)</p><p class="line">MS Data Science, Michigan</p><p class="line">BS Information Management, Sichuan University</p></div><div class="col"><p class="line"><span class="label">Advisors:</span> Prof. <a href="https://ischool.illinois.edu/people/yue-guo">Yue Guo</a>, Prof. <a href="https://kilicogluh.github.io/">Halil Kilicoglu</a></p><p class="line"><span class="label">Research focus:</span> Large Language Models, Information Retrieval, AI for (Biomedical) Science, Natural Language Processing</p><p class="links"><a href="https://yikunhan42.github.io/" target="_blank" rel="noopener">Website</a> · <a href="https://scholar.google.com/citations?user=ZJ8VfjcAAAAJ&amp;hl=zh-CN" target="_blank" rel="noopener">Google Scholar</a></p></div></div></article>
-                <article class="person card"><img class="avatar" src="https://ischool.illinois.edu/sites/default/files/styles/large_square/public/images/Meng-Li.jpg?itok=W4yelUE0" alt="Meng Li" loading="lazy"><div class="who-text"><h3>Meng Li</h3><div class="col"><p class="line">PhD Candidate, Information Science, Illinois (2021–present)</p><p class="line">MS Big Data Analytics, Pittsburgh</p></div><div class="col"><p class="line"><span class="label">Advisor:</span> Prof. <a href="https://ischool.illinois.edu/people/bertram-ludascher">Bertram Ludäscher</a></p><p class="line"><span class="label">Research focus:</span> Neurosymbolic AI, LLMs for Code, Machine Learning, Argumentation</p><p class="links"><a href="https://ischool.illinois.edu/people/meng-li" target="_blank" rel="noopener">Website</a> · <a href="https://scholar.google.com/citations?user=FQBFOGIAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a></p></div></div></article>
-                <article class="person card"><img class="avatar" src="https://yilinxia.com/images/profile/profile-new.png" alt="Yilin Xia" loading="lazy"><div class="who-text"><h3>Yilin Xia</h3><div class="col"><p class="line">PhD Candidate, Information Science, Illinois (2021–present)</p><p class="market">On the job market</p></div><div class="col"><p class="line"><span class="label">Advisors:</span> Prof. <a href="https://astro.illinois.edu/directory/profile/mjturk">Matthew Turk</a>, Prof. <a href="https://ischool.illinois.edu/people/bertram-ludascher">Bertram Ludäscher</a></p><p class="line"><span class="label">Research focus:</span> Databases, Neurosymbolic AI, Graph Reasoning, Argumentation, Knowledge Graphs</p><p class="links"><a href="https://yilinxia.com/" target="_blank" rel="noopener">Website</a> · <a href="https://scholar.google.co.uk/citations?user=Zh6YCqgAAAAJ&amp;hl=en&amp;oi=ao" target="_blank" rel="noopener">Google Scholar</a></p></div></div></article>
+                <article class="person card"><img class="avatar" src="https://yueguo-50.github.io/assets/img/members/joey_chan.jpg" alt="Joey Chan" loading="lazy"><h3>Joey Chan</h3><div class="edu-col"><p class="line">PhD Student, Computer Science (2025–present)</p><p class="line">MS &amp; BS Computer Science, Johns Hopkins</p><p class="market"><a href="https://siebelschool.illinois.edu/academics/graduate/phd-program/amazon-ai-phd-fellows/Joey-Chan" target="_blank" rel="noopener">Amazon AI PhD Fellow</a></p></div><div class="adv"><span class="label">Advisors</span><span class="adv-name">Prof. <a href="https://ischool.illinois.edu/people/yue-guo">Yue Guo</a></span><span class="adv-name">Prof. <a href="https://hanj.cs.illinois.edu/">Jiawei Han</a></span></div><div class="focus"><span class="label">Research focus</span><p class="line">Natural Language Processing, Knowledge Discovery, AI for Science</p></div><div class="prev"><span class="label">Previously</span><p class="line">Applied Scientist Intern @ Amazon</p></div><p class="links"><a href="https://jchan58.github.io/" target="_blank" rel="noopener">Website</a> · <a href="https://scholar.google.com/citations?user=JdobToEAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a></p></article>
+                <article class="person card"><img class="avatar" src="https://lh3.googleusercontent.com/pw/AP1GczMNogStybHAn3XEVrow_8j5yAKCZOTWqGjXmdYm_OFJL5N-vGPt9ZT8kLyyhqK7Hy_ul13kGuW_9sa3rxLx_pO6Dyym-Jkq9QJ7BpJvfr8h95_Hmzp0=w2400" alt="Jingyuan Chen" loading="lazy"><h3>Jingyuan Chen</h3><div class="edu-col"><p class="line">PhD Student, Applied Computing (Informatics) (2025–present)</p><p class="line">MS Mathematics, Illinois</p><p class="line">BA Maths, BA Stats, UC Berkeley</p></div><div class="adv"><span class="label">Advisor</span><span class="adv-name">Prof. <a href="https://astro.illinois.edu/directory/profile/mjturk">Matthew Turk</a></span></div><div class="focus"><span class="label">Research focus</span><p class="line">Random Matrix Theory, Free Probability, Proof Assistants, AI for Finance, Math &amp; Science (Astronomy)</p></div><div class="prev"><span class="label">Previously</span><p class="line">Quant Intern @ Bloomberg</p></div><p class="links"><a href="#about">Website</a> · <a href="https://scholar.google.com/citations?user=Ibe-n2oAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a></p></article>
+                <article class="person card"><img class="avatar" src="https://yikunhan42.github.io/images/avatar-new.jpg" alt="Yikun Han" loading="lazy"><h3>Yikun Han</h3><div class="edu-col"><p class="line">PhD Student, Information Science (2025–present)</p><p class="line">MS Data Science, Michigan</p><p class="line">BS Information Management, Sichuan University</p></div><div class="adv"><span class="label">Advisors</span><span class="adv-name">Prof. <a href="https://ischool.illinois.edu/people/yue-guo">Yue Guo</a></span><span class="adv-name">Prof. <a href="https://kilicogluh.github.io/">Halil Kilicoglu</a></span></div><div class="focus"><span class="label">Research focus</span><p class="line">Large Language Models, Information Retrieval, AI for (Biomedical) Science, Natural Language Processing</p></div><div class="prev"><span class="label">Previously</span><p class="line">Data Analyst Intern @ Tencent</p></div><p class="links"><a href="https://yikunhan42.github.io/" target="_blank" rel="noopener">Website</a> · <a href="https://scholar.google.com/citations?user=ZJ8VfjcAAAAJ&amp;hl=zh-CN" target="_blank" rel="noopener">Google Scholar</a></p></article>
+                <article class="person card"><img class="avatar" src="https://ischool.illinois.edu/sites/default/files/styles/large_square/public/images/Meng-Li.jpg?itok=W4yelUE0" alt="Meng Li" loading="lazy"><h3>Meng Li</h3><div class="edu-col"><p class="line">PhD Candidate, Information Science (2022–present)</p><p class="line">MS Big Data Analytics, Pittsburgh</p></div><div class="adv"><span class="label">Advisor</span><span class="adv-name">Prof. <a href="https://ischool.illinois.edu/people/bertram-ludascher">Bertram Ludäscher</a></span></div><div class="focus"><span class="label">Research focus</span><p class="line">Neurosymbolic AI, LLMs for Code, Machine Learning, Argumentation</p></div><div class="prev"><span class="label">Previously</span><p class="line">Systems Engineer @ UPMC Cancer Center</p></div><p class="links"><a href="https://ischool.illinois.edu/people/meng-li" target="_blank" rel="noopener">Website</a> · <a href="https://scholar.google.com/citations?user=FQBFOGIAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a></p></article>
+                <article class="person card"><img class="avatar" src="https://yilinxia.com/images/profile/profile-new.png" alt="Yilin Xia" loading="lazy"><h3>Yilin Xia</h3><div class="edu-col"><p class="line">PhD Candidate, Information Science (2021–present)</p><p class="market">Final year</p></div><div class="adv"><span class="label">Advisors</span><span class="adv-name">Prof. <a href="https://astro.illinois.edu/directory/profile/mjturk">Matthew Turk</a></span><span class="adv-name">Prof. <a href="https://ischool.illinois.edu/people/bertram-ludascher">Bertram Ludäscher</a></span></div><div class="focus"><span class="label">Research focus</span><p class="line">Databases, Neurosymbolic AI, Graph Reasoning, Argumentation, Knowledge Graphs</p></div><div class="prev"><span class="label">Previously</span><p class="line">Data Engineering Intern @ Airbus</p></div><p class="links"><a href="https://yilinxia.com/" target="_blank" rel="noopener">Website</a> · <a href="https://scholar.google.co.uk/citations?user=Zh6YCqgAAAAJ&amp;hl=en&amp;oi=ao" target="_blank" rel="noopener">Google Scholar</a></p></article>
             </div>
         </section>
         <p class="sign" id="sign-src" data-no-sheet>© 2026 Jingyuan Chen</p>
