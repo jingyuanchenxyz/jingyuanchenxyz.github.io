@@ -6,7 +6,7 @@
     <title>Jingyuan Chen</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Pixelify+Sans:wght@400;500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
     <style>
         /* ---------- Tokens ---------- */
         :root {
@@ -105,6 +105,62 @@
                 inset 0 calc(-2 * var(--px)) 0 0 #8a9297;
         }
 
+        /* the chalk you write with lives on its own layer, under the paper */
+        .chalk-layer {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 0;
+            pointer-events: none;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .panel-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        body.holding #stage {
+            cursor: var(--tool-cursor, crosshair);
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body.holding #stage .sheet,
+        body.holding #stage .card,
+        body.holding #stage .print {
+            cursor: auto;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        body.holding #stage a {
+            cursor: pointer;
+        }
+
+        /* invisible hit areas over the chalk and eraser painted on the tray */
+        .tool {
+            position: fixed;
+            z-index: 7;
+            background: transparent;
+            border: 0;
+            padding: 0;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .tool:hover,
+        .tool:focus-visible {
+            outline: 2px dashed rgba(242, 241, 234, 0.55);
+            outline-offset: -2px;
+        }
+
+        .tool[aria-pressed="true"] {
+            outline: none;
+        }
+
         .panel.measuring {
             visibility: hidden;
             z-index: 0;
@@ -133,7 +189,7 @@
         .panel-content {
             max-width: 1000px;
             margin: 0 auto;
-            padding: var(--clear) 44px 46px;   /* bottom room keeps the "more below" hint clear */
+            padding: var(--clear) 44px 30px;
         }
 
         /* board position markers on the right-hand frame */
@@ -165,27 +221,53 @@
             outline-offset: 2px;
         }
 
-        /* "more below" hint, written in chalk just above the tray */
-        .more {
+        /* pixel arrows above and below the board markers: there is a board that way */
+        .arrow {
             position: fixed;
             z-index: 6;
-            transform: translateX(-50%);
-            font-family: var(--pixel-font);
-            font-size: 0.85rem;
-            letter-spacing: 0.06em;
-            color: rgba(242, 241, 234, 0.6);
+            display: block;
             background: none;
             border: 0;
+            padding: 6px;
+            line-height: 0;
             cursor: pointer;
-            animation: nudge 1.6s steps(2, end) infinite;
+            transform: translateX(-50%);
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .more[hidden] {
+        .arrow svg {
+            width: calc(5 * var(--px));
+            height: calc(3 * var(--px));
+            fill: rgba(242, 241, 234, 0.85);
+            shape-rendering: crispEdges;
+        }
+
+        .arrow:hover svg {
+            fill: #f1e6a6;
+        }
+
+        .arrow:focus-visible {
+            outline: 2px solid #f1e6a6;
+        }
+
+        .arrow[hidden] {
             display: none;
         }
 
-        @keyframes nudge {
+        #arrow-down {
+            animation: bob-down 1.4s steps(2, end) infinite;
+        }
+
+        #arrow-up {
+            animation: bob-up 1.4s steps(2, end) infinite;
+        }
+
+        @keyframes bob-down {
             50% { transform: translate(-50%, var(--px)); }
+        }
+
+        @keyframes bob-up {
+            50% { transform: translate(-50%, calc(-1 * var(--px))); }
         }
 
         /* ---------- Paper taped to the boards ---------- */
@@ -385,6 +467,62 @@
             color: var(--faint);
             margin-top: 0.6rem;
             font-style: italic;
+        }
+
+        /* ---------- Polaroids pinned to the board ---------- */
+        /* proportioned like an SX-70 print: a square photo, thin even borders on three sides
+           and a deep strip at the bottom (about 3.1 in square on a 3.5 x 4.2 in card) */
+        figure.polaroid {
+            --pol: min(250px, 30vh);        /* fixed size keeps the board layout stable while it loads */
+            display: table;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            background: #fbfaf5;
+            padding: calc(var(--pol) * 0.065) calc(var(--pol) * 0.065) 0;
+            transform: rotate(var(--tilt, -1.5deg));
+            box-shadow:
+                0 calc(-1 * var(--px)) 0 0 rgba(0, 0, 0, 0.12),
+                calc(2 * var(--px)) calc(2 * var(--px)) 0 0 var(--drop);
+        }
+
+        figure.polaroid::before {
+            content: '';
+            position: absolute;
+            top: calc(-3 * var(--px));
+            left: 50%;
+            width: calc(16 * var(--px));
+            height: calc(5 * var(--px));
+            transform: translateX(-50%) rotate(calc(-1 * var(--tilt, -1.5deg)));
+            background: var(--tape);
+            box-shadow: inset 0 calc(-1 * var(--px)) 0 0 rgba(0, 0, 0, 0.08);
+        }
+
+        figure.polaroid img {
+            display: block;
+            width: var(--pol);
+            height: var(--pol);
+            object-fit: cover;
+            background: #e4e3dc;
+            color: var(--ink);
+            font-size: 0.8rem;
+        }
+
+        figure.polaroid figcaption {
+            font-family: 'Caveat', 'Segoe Print', cursive;
+            font-size: 1.55rem;
+            font-weight: 600;
+            font-style: normal;
+            line-height: 1;
+            color: #2c2f33;
+            text-align: center;
+            margin: 0;
+            height: calc(var(--pol) * 0.27);
+            width: var(--pol);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
         }
 
         /* ---------- Landing board: photo, name card and Current card, placed as before ---------- */
@@ -919,15 +1057,15 @@
                 transition: none;
             }
 
-            .more {
-                animation: none;
+            .arrow {
+                animation: none !important;
             }
         }
 
         /* ---------- Phones ---------- */
         @media (max-width: 768px) {
             .panel-content {
-                padding: var(--clear) 14px 40px;
+                padding: var(--clear) 14px 22px;
             }
 
             .sheet {
@@ -1044,7 +1182,16 @@
 
     <main id="stage"></main>
     <div class="dots" id="dots" aria-label="Boards on this page"></div>
-    <button class="more" id="more" type="button" hidden>more below &#9660;</button>
+    <button class="arrow" id="arrow-up" type="button" aria-label="Previous board" hidden>
+        <svg viewBox="0 0 5 3" aria-hidden="true"><path d="M2 0h1v1h1v1h1v1H0V2h1V1h1z"/></svg>
+    </button>
+    <button class="arrow" id="arrow-down" type="button" aria-label="Next board" hidden>
+        <svg viewBox="0 0 5 3" aria-hidden="true"><path d="M0 0h5v1H4v1H3v1H2V2H1V1H0z"/></svg>
+    </button>
+    <button class="tool" type="button" data-tool="white" aria-pressed="false" title="Pick up the white chalk"><span class="sr-only">White chalk</span></button>
+    <button class="tool" type="button" data-tool="yellow" aria-pressed="false" title="Pick up the yellow chalk"><span class="sr-only">Yellow chalk</span></button>
+    <button class="tool" type="button" data-tool="pink" aria-pressed="false" title="Pick up the pink chalk"><span class="sr-only">Pink chalk</span></button>
+    <button class="tool" type="button" data-tool="eraser" aria-pressed="false" title="Pick up the eraser (double-click to wipe this board)"><span class="sr-only">Eraser</span></button>
 
     <nav class="projector no-anim" id="projector" aria-label="Site">
         <div class="rig">
@@ -1164,10 +1311,10 @@
                         <a href="https://luongcindy.github.io/index.html">Cindy</a>,
                         <a href="https://www.math.columbia.edu/~alei/index.html">Austin</a>.
             </p>
-            <figure>
-                        <span class="print"><img src="https://lh3.googleusercontent.com/pw/AP1GczMZflgOF16oGC_6OJ44VL8-t9aIgG-vks5478BnwCajic-tLMN3DJ9ny7DkfTBtpJg--gj3vANfQOuaH8KJ7D0axt5GaWdkKdXTv9LAP-MeE3hHutMG=w2400" alt="Al Madam, Sharjah" loading="lazy"></span>
-                        <figcaption>Al Madam, Sharjah</figcaption>
-                    </figure>
+            <figure class="polaroid" data-no-sheet style="--tilt: -2deg">
+                <img src="https://lh3.googleusercontent.com/pw/AP1GczMZflgOF16oGC_6OJ44VL8-t9aIgG-vks5478BnwCajic-tLMN3DJ9ny7DkfTBtpJg--gj3vANfQOuaH8KJ7D0axt5GaWdkKdXTv9LAP-MeE3hHutMG=w2400" alt="Al Madam, Sharjah" loading="lazy">
+                <figcaption>Al Madam, Sharjah</figcaption>
+            </figure>
         </section>
 
         <section data-tab="research">
@@ -1324,10 +1471,10 @@
                     <div class="row"><span class="c1 wide">Marketing &amp; Recruitment Director</span><span class="c3">2022–2024</span><p class="note">Berkeley Math Tournament</p></div>
                     <div class="row"><span class="c1 wide"><a href="https://crowdfund.berkeley.edu/project/38919">Finance Lead</a> &amp; Avionics Engineer</span><span class="c3">2022–2024</span><p class="note">Space Technologies and Rocketry @ Berkeley</p></div>
             </div>
-            <figure>
-                    <span class="print"><img src="https://lh3.googleusercontent.com/pw/AP1GczOZnjKWZFAuacJa8YP2VpMceyQOS0j5yyKQxbMMASoHo9bRheZsN1zti6u8q0WnFhhA1u84Jp-VP_pIzKAJLhYZklReFSivZssJb_8XMqYj7aVoQSFB=w2400" alt="Somewhere in the Mojave Desert" loading="lazy"></span>
-                    <figcaption>Somewhere in the Mojave.</figcaption>
-                </figure>
+            <figure class="polaroid" data-no-sheet style="--tilt: 1.6deg">
+                <img src="https://lh3.googleusercontent.com/pw/AP1GczOZnjKWZFAuacJa8YP2VpMceyQOS0j5yyKQxbMMASoHo9bRheZsN1zti6u8q0WnFhhA1u84Jp-VP_pIzKAJLhYZklReFSivZssJb_8XMqYj7aVoQSFB=w2400" alt="Somewhere in the Mojave Desert" loading="lazy">
+                <figcaption>Somewhere in the Mojave</figcaption>
+            </figure>
         </section>
         <p class="sign" id="sign-src" data-no-sheet>© 2026 Jingyuan Chen</p>
     </div>
@@ -1348,7 +1495,8 @@
             const ctx = canvas.getContext('2d');
             const stage = document.getElementById('stage');
             const dotsEl = document.getElementById('dots');
-            const moreEl = document.getElementById('more');
+            const upEl = document.getElementById('arrow-up');
+            const downEl = document.getElementById('arrow-down');
             const nav = document.getElementById('projector');
             const pull = nav.querySelector('.pull');
             const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1397,6 +1545,8 @@
 
             let PX = 4;
             let slateSize = [0, 0];
+            let held = null;            // 'white' | 'yellow' | 'pink' | 'eraser' | null
+            let toolRects = {};
 
             // ---------- the frame, tray and wall ----------
             function drawFrame() {
@@ -1444,17 +1594,25 @@
 
                 // chalk and eraser resting on the tray (drawn on the tray's top edge, in front of the boards)
                 const sitY = trayTop + 1;
+                toolRects = {};
                 const stick = (x, len, body, shade) => {
                     rect(x, sitY - 2, x + len, sitY, body);
                     rect(x, sitY, x + len, sitY + 1, shade);
                     put(x, sitY - 2, C.chalkEnd);
                     rect(x + len - 1, sitY - 2, x + len, sitY + 1, C.chalkEnd);
                 };
-                stick(Math.round(bx0 + (bx1 - bx0) * 0.035), 13, C.chalk, C.chalkShade);
-                stick(Math.round(bx0 + (bx1 - bx0) * 0.035) + 17, 6, C.chalkYellow, C.chalkYellowShade);
-                stick(Math.round(bx0 + (bx1 - bx0) * 0.55), 9, C.chalkPink, C.chalkPinkShade);
+                const wx = Math.round(bx0 + (bx1 - bx0) * 0.035);
+                const px = Math.round(bx0 + (bx1 - bx0) * 0.55);
+                toolRects.white = [wx, sitY - 2, 13, 3];
+                toolRects.yellow = [wx + 17, sitY - 2, 6, 3];
+                toolRects.pink = [px, sitY - 2, 9, 3];
+                if (held !== 'white') stick(wx, 13, C.chalk, C.chalkShade);
+                if (held !== 'yellow') stick(wx + 17, 6, C.chalkYellow, C.chalkYellowShade);
+                if (held !== 'pink') stick(px, 9, C.chalkPink, C.chalkPinkShade);
                 const ex = Math.round(bx0 + (bx1 - bx0) * 0.865);
                 const ew = 20;
+                toolRects.eraser = [ex, sitY - 6, ew, 7];
+                if (held !== 'eraser') {
                 rect(ex, sitY - 6, ex + ew, sitY - 2, C.eraserWood);
                 rect(ex, sitY - 6, ex + ew, sitY - 5, C.chalkEnd);
                 rect(ex, sitY - 5, ex + 1, sitY - 2, C.eraserWoodDark);
@@ -1462,8 +1620,21 @@
                 rect(ex, sitY - 2, ex + ew, sitY, C.felt);
                 rect(ex, sitY, ex + ew, sitY + 1, C.feltDark);
                 for (let x = ex + 1; x < ex + ew - 1; x++) if (R() < 0.35) put(x, sitY - 1, C.chalkShade);
+                }
 
                 ctx.putImageData(img, 0, 0);
+
+                // hit areas for picking things up, a little larger than the pixels themselves
+                document.querySelectorAll('.tool').forEach(b => {
+                    const [x, y, tw, th] = toolRects[b.dataset.tool];
+                    const hgt = Math.max(th * PX + 12, 30);
+                    Object.assign(b.style, {
+                        left: (x * PX - 6) + 'px',
+                        top: ((y + th) * PX + 4 - hgt) + 'px',
+                        width: (tw * PX + 12) + 'px',
+                        height: hgt + 'px'
+                    });
+                });
 
                 // the track the boards slide in: everything above the tray and inside the frame
                 const top = by0 * PX, left = bx0 * PX;
@@ -1475,8 +1646,6 @@
                 // board markers sit in the middle of the right-hand frame
                 dotsEl.style.left = (left + width + (window.innerWidth - left - width) / 2) + 'px';
                 dotsEl.style.top = (top + height / 2) + 'px';
-                moreEl.style.left = (left + width / 2) + 'px';
-                moreEl.style.top = (top + height - 30) + 'px';
             }
 
             // ---------- slate textures, one per board so they look like separate boards ----------
@@ -1632,6 +1801,11 @@
                         wrapHost().appendChild(node);
                         if (fits(p)) continue;
                         node.remove();
+                        if (unit.hasAttribute('data-split-inner')) {
+                            // start this card on the current board and continue it on the next
+                            placeSplit(unit, true, wrapHost);
+                            continue;
+                        }
                         const carried = [];
                         while (keepWithNext(wrap.lastElementChild)) {
                             const el = wrap.lastElementChild;
@@ -1722,6 +1896,7 @@
                     decks[t].forEach((panel, i) => {
                         panel.style.backgroundImage = 'url(' + slates[k++ % slates.length] + ')';
                         panel.setAttribute('aria-label', TITLES[t] + ', board ' + (i + 1) + ' of ' + decks[t].length);
+                        attachChalk(panel, t, i);
                     });
                 }
                 index = Math.min(index, decks[tab].length - 1);
@@ -1747,7 +1922,15 @@
                         dotsEl.appendChild(b);
                     }
                 }
-                moreEl.hidden = index >= n - 1;
+                upEl.hidden = index <= 0;
+                downEl.hidden = index >= n - 1;
+                // the arrows sit in the right-hand frame, just above and below the board markers
+                const r = dotsEl.getBoundingClientRect();
+                const cx = r.left + r.width / 2;
+                const gap = 3 * PX;
+                upEl.style.left = downEl.style.left = cx + 'px';
+                upEl.style.top = (r.top - gap - 3 * PX - 12) + 'px';
+                downEl.style.top = (r.bottom + gap) + 'px';
             }
 
             // Swap boards like a lecture-hall stack. Going forward, the front board is raised
@@ -1784,7 +1967,7 @@
                 const anim = forward
                     ? mover.animate(
                         [{ transform: 'translateY(0)' }, { transform: 'translateY(-100%)' }],
-                        { duration: 750, easing: 'cubic-bezier(.55, 0, .3, 1)', fill: 'forwards' })
+                        { duration: 560, easing: 'cubic-bezier(.55, 0, .3, 1)', fill: 'forwards' })
                     : mover.animate(
                         [
                             { transform: 'translateY(-100%)', easing: 'cubic-bezier(.45, 0, .7, .9)' },
@@ -1792,14 +1975,13 @@
                             { transform: 'translateY(-1.6%)', offset: 0.89, easing: 'ease-in' },
                             { transform: 'translateY(0)' }
                         ],
-                        { duration: 850, fill: 'forwards' });
+                        { duration: 650, fill: 'forwards' });
                 anim.finished.then(() => {
                     prev.remove();
                     anim.cancel();
                     prev.classList.remove('front', 'back');
                     next.classList.remove('front', 'back');
                     busy = false;
-                    cooldownUntil = performance.now() + 250;
                     if (queued) {
                         const q = queued;
                         queued = null;
@@ -1823,6 +2005,12 @@
             }
 
             function step(dir) {
+                if (busy) {
+                    const base = queued && queued[0] === tab ? queued[1] : index;
+                    const qi = base + dir;
+                    if (qi >= 0 && qi < decks[tab].length) queued = [tab, qi];
+                    return;
+                }
                 const ni = index + dir;
                 if (ni < 0 || ni >= decks[tab].length) bump(dir);
                 else go(tab, ni);
@@ -1836,24 +2024,29 @@
                 return dir > 0 ? !atBottom : !atTop;
             };
 
-            let acc = 0, lastWheel = 0;
+            // One board per scroll gesture. A gesture starts when the wheel changes direction,
+            // after a short pause, or when the deltas jump up again (a fresh flick rather than a
+            // trackpad's inertia tail). A gesture made while a board is moving is queued, so
+            // scrolling quickly never gets swallowed.
+            let gest = { dir: 0, last: 0, lastAbs: 0, acc: 0, fired: false };
             window.addEventListener('wheel', e => {
                 if (e.ctrlKey || nav.contains(e.target)) return;
-                const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
-                if (canScrollInside(Math.sign(dy))) return;
+                const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
+                const dir = Math.sign(dy);
+                if (!dir) return;
+                if (canScrollInside(dir)) return;
                 e.preventDefault();
                 const now = performance.now();
-                if (busy || now < cooldownUntil) {
-                    cooldownUntil = Math.max(cooldownUntil, now + 180);   // swallow trackpad inertia
-                    acc = 0;
-                    return;
-                }
-                if (now - lastWheel > 220) acc = 0;
-                lastWheel = now;
-                acc += dy;
-                if (Math.abs(acc) > 40) {
-                    const dir = acc > 0 ? 1 : -1;
-                    acc = 0;
+                const abs = Math.abs(dy);
+                const fresh = dir !== gest.dir
+                    || now - gest.last > 140
+                    || (abs >= 12 && abs > gest.lastAbs * 1.6 + 6);
+                if (fresh) gest = { dir, last: now, lastAbs: abs, acc: 0, fired: false };
+                gest.last = now;
+                gest.lastAbs = abs;
+                gest.acc += abs;
+                if (!gest.fired && gest.acc >= 20) {
+                    gest.fired = true;
                     step(dir);
                 }
             }, { passive: false });
@@ -1861,6 +2054,7 @@
             let touchY = null, touchInside = { up: false, down: false };
             window.addEventListener('touchstart', e => {
                 if (e.touches.length !== 1 || nav.contains(e.target)) { touchY = null; return; }
+                if (held && stage.contains(e.target) && !e.target.closest('.sheet, .card, .print, a, button')) { touchY = null; return; }
                 touchY = e.touches[0].clientY;
                 touchInside = { up: canScrollInside(-1), down: canScrollInside(1) };
             }, { passive: true });
@@ -1890,12 +2084,171 @@
                     e.preventDefault(); go(tab, 0);
                 } else if (k === 'End') {
                     e.preventDefault(); go(tab, decks[tab].length - 1);
-                } else if (k === 'Escape' && window.innerWidth <= 768) {
-                    setOpen(false);
+                } else if (k === 'Escape') {
+                    if (held) setHeld(null);
+                    else if (window.innerWidth <= 768) setOpen(false);
                 }
             });
 
-            moreEl.addEventListener('click', () => step(1));
+            upEl.addEventListener('click', () => step(-1));
+            downEl.addEventListener('click', () => step(1));
+
+            // ---------- writing on the boards ----------
+            // Each board has a transparent canvas at art-pixel resolution, sitting under the paper,
+            // so chalk only ever shows on the green. What you draw is kept in this browser.
+            const STORE_KEY = 'chalkboard-doodles-v1';
+            let doodles = {};
+            try { doodles = JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (err) { doodles = {}; }
+            const saveDoodles = () => {
+                try { localStorage.setItem(STORE_KEY, JSON.stringify(doodles)); } catch (err) { /* storage unavailable */ }
+            };
+            const boardKey = (t, i) => (window.innerWidth <= 768 ? 'm' : 'd') + ':' + t + ':' + i;
+
+            function attachChalk(panel, t, i) {
+                const [w, h] = slateSize;
+                const c = document.createElement('canvas');
+                c.className = 'chalk-layer';
+                c.width = w;
+                c.height = h;
+                c.style.width = (w * PX) + 'px';
+                c.style.height = (h * PX) + 'px';
+                c.dataset.key = boardKey(t, i);
+                panel.insertBefore(c, panel.firstChild);
+                const saved = doodles[c.dataset.key];
+                if (saved) {
+                    const img = new Image();
+                    img.onload = () => c.getContext('2d').drawImage(img, 0, 0);
+                    img.src = saved;
+                }
+            }
+
+            const CHALK = {
+                white: [[242, 241, 234], [214, 213, 204]],
+                yellow: [[241, 230, 166], [207, 195, 134]],
+                pink: [[242, 196, 200], [209, 162, 166]]
+            };
+            const rgba = (c, a) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
+
+            function chalkDot(g, x, y, tool) {
+                const [main, shade] = CHALK[tool];
+                if (Math.random() < 0.9) {
+                    g.fillStyle = rgba(Math.random() < 0.75 ? main : shade, (0.78 + Math.random() * 0.22).toFixed(2));
+                    g.fillRect(x, y, 1, 1);
+                }
+                if (Math.random() < 0.3) {   // a stray grain beside the line
+                    const d = [[1, 0], [-1, 0], [0, 1], [0, -1]][Math.floor(Math.random() * 4)];
+                    g.fillStyle = rgba(main, 0.45);
+                    g.fillRect(x + d[0], y + d[1], 1, 1);
+                }
+            }
+
+            function eraseAt(g, x, y) {
+                g.clearRect(x - 3, y - 2, 7, 4);
+                for (let yy = y - 2; yy < y + 2; yy++) {
+                    for (let xx = x - 3; xx < x + 4; xx++) {
+                        if (Math.random() < 0.05) {     // erasing leaves a faint haze, as on a real board
+                            g.fillStyle = 'rgba(205, 220, 210, 0.12)';
+                            g.fillRect(xx, yy, 1, 1);
+                        }
+                    }
+                }
+            }
+
+            function stroke(g, x0, y0, x1, y1) {
+                // Bresenham, so the line stays on the pixel grid
+                const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0);
+                const sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+                let err = dx + dy;
+                for (;;) {
+                    if (held === 'eraser') eraseAt(g, x0, y0); else chalkDot(g, x0, y0, held);
+                    if (x0 === x1 && y0 === y1) break;
+                    const e2 = 2 * err;
+                    if (e2 >= dy) { err += dy; x0 += sx; }
+                    if (e2 <= dx) { err += dx; y0 += sy; }
+                }
+            }
+
+            // cursors: a pixel stick of chalk (tip at the hotspot) and the felt eraser
+            function makeCursor(tool) {
+                const cv = document.createElement('canvas');
+                const g = cv.getContext('2d');
+                if (tool === 'eraser') {
+                    cv.width = 30; cv.height = 18;
+                    g.fillStyle = '#3d2410'; g.fillRect(0, 0, 30, 18);
+                    g.fillStyle = '#c9a46c'; g.fillRect(2, 2, 26, 8);
+                    g.fillStyle = '#e2c592'; g.fillRect(2, 2, 26, 2);
+                    g.fillStyle = '#4a4a4a'; g.fillRect(2, 10, 26, 6);
+                    return 'url(' + cv.toDataURL() + ') 15 16, crosshair';
+                }
+                cv.width = 32; cv.height = 32;
+                const body = 'rgb(' + CHALK[tool][0].join(',') + ')';
+                const shade = 'rgb(' + CHALK[tool][1].join(',') + ')';
+                for (let i = 0; i < 7; i++) {
+                    const x = 1 + 3 * i, y = 25 - 3 * i;
+                    g.fillStyle = '#25292c'; g.fillRect(x - 1, y - 1, 8, 8);
+                }
+                for (let i = 0; i < 7; i++) {
+                    const x = 1 + 3 * i, y = 25 - 3 * i;
+                    g.fillStyle = i === 0 ? shade : body; g.fillRect(x, y, 6, 6);
+                }
+                return 'url(' + cv.toDataURL() + ') 1 30, crosshair';
+            }
+
+            function setHeld(tool) {
+                held = tool;
+                document.body.classList.toggle('holding', !!tool);
+                document.querySelectorAll('.tool').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tool === tool)));
+                if (tool) document.documentElement.style.setProperty('--tool-cursor', makeCursor(tool));
+                drawFrame();    // repaint the tray without (or with) the piece in hand
+            }
+
+            document.querySelectorAll('.tool').forEach(b => {
+                b.addEventListener('click', () => setHeld(held === b.dataset.tool ? null : b.dataset.tool));
+            });
+            document.querySelector('.tool[data-tool="eraser"]').addEventListener('dblclick', () => {
+                const layer = current && current.querySelector('.chalk-layer');
+                if (!layer) return;
+                layer.getContext('2d').clearRect(0, 0, layer.width, layer.height);
+                delete doodles[layer.dataset.key];
+                saveDoodles();
+            });
+
+            const onPaper = target => target.closest('.sheet, .card, .print, a, button, input');
+            let drawing = null;
+            stage.addEventListener('pointerdown', e => {
+                if (!held || busy || e.button !== 0 || onPaper(e.target)) return;
+                const panel = e.target.closest('.panel');
+                const layer = panel && panel.querySelector('.chalk-layer');
+                if (!layer) return;
+                e.preventDefault();
+                const r = panel.getBoundingClientRect();
+                const at = ev => [
+                    Math.floor((ev.clientX - r.left) / PX),
+                    Math.floor((ev.clientY - r.top + panel.scrollTop) / PX)
+                ];
+                const [x, y] = at(e);
+                drawing = { layer, g: layer.getContext('2d'), at, x, y, id: e.pointerId };
+                stroke(drawing.g, x, y, x, y);
+                stage.setPointerCapture(e.pointerId);
+            });
+            stage.addEventListener('pointermove', e => {
+                if (!drawing || e.pointerId !== drawing.id) return;
+                const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+                for (const ev of (events.length ? events : [e])) {
+                    const [x, y] = drawing.at(ev);
+                    stroke(drawing.g, drawing.x, drawing.y, x, y);
+                    drawing.x = x;
+                    drawing.y = y;
+                }
+            });
+            const endStroke = e => {
+                if (!drawing || e.pointerId !== drawing.id) return;
+                doodles[drawing.layer.dataset.key] = drawing.layer.toDataURL('image/png');
+                saveDoodles();
+                drawing = null;
+            };
+            stage.addEventListener('pointerup', endStroke);
+            stage.addEventListener('pointercancel', endStroke);
 
             // ---------- projector screen ----------
             const setOpen = open => {
