@@ -86,11 +86,11 @@
         main {
             position: relative;
             z-index: 10;
-            padding-top: 72px;
+            padding-top: 144px;
         }
 
         header {
-            padding: 96px 0 40px;
+            padding: 150px 0 40px;
             position: relative;
             z-index: 10;
             min-height: 100vh;
@@ -588,31 +588,98 @@
             margin: 0;
         }
 
-        /* ---------- Navigation ---------- */
-        nav {
-            padding: 1rem 0;
+        /* ---------- Navigation: pull-down projector screen ---------- */
+        .projector {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(245, 247, 246, 0.92);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             z-index: 20;
-            box-shadow: 0 var(--px) 0 0 var(--outline), 0 calc(2 * var(--px)) 0 0 var(--drop);
+            pointer-events: none;            /* only the screen parts take clicks */
+            --metal-hi: #737b80;
+            --metal: #464d52;
+            --metal-dark: #25292c;
+            --screen: #f6f5f0;
+            --screen-edge: #2b2f32;
         }
 
-        nav ul {
+        .projector .rig {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* the roller housing */
+        .casing {
+            pointer-events: auto;
+            position: relative;
+            width: 100%;
+            height: calc(5 * var(--px));
+            background: var(--metal);
+            box-shadow:
+                inset 0 var(--px) 0 0 var(--metal-hi),
+                inset 0 calc(-1 * var(--px)) 0 0 var(--metal-dark),
+                0 var(--px) 0 0 var(--drop);
+        }
+
+        .casing::before,
+        .casing::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: calc(3 * var(--px));
+            height: calc(6 * var(--px));
+            background: var(--metal-dark);
+            box-shadow: inset var(--px) var(--px) 0 0 var(--metal);
+        }
+
+        .casing::before { left: calc(-1 * var(--px)); }
+        .casing::after { right: calc(-1 * var(--px)); }
+
+        /* the fabric: a grid row that animates between 0fr (rolled up) and 1fr */
+        .screen {
+            pointer-events: auto;
+            width: calc(100% - 8 * var(--px));
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.5s steps(8, end);
+            background: var(--screen);
+            box-shadow:
+                inset var(--px) 0 0 0 var(--screen-edge),
+                inset calc(-1 * var(--px)) 0 0 0 var(--screen-edge),
+                calc(2 * var(--px)) 0 0 0 var(--drop);
+        }
+
+        .projector.open .screen {
+            grid-template-rows: 1fr;
+        }
+
+        .projector.no-anim .screen,
+        .projector.no-anim .cord {
+            transition: none;
+        }
+
+        .screen-inner {
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .screen ul {
             display: flex;
             justify-content: center;
+            flex-wrap: wrap;
             list-style-type: none;
+            padding: 0.85rem 1.5rem 0.75rem;
         }
 
-        nav li {
+        .screen li {
             margin: 0 1rem;
         }
 
-        nav a {
+        .screen a {
             color: var(--ink);
             font-size: 0.92rem;
             font-weight: 500;
@@ -621,16 +688,16 @@
             position: relative;
         }
 
-        nav a:hover {
+        .screen a:hover {
             color: var(--accent);
             text-decoration: none;
         }
 
-        nav a.active {
+        .screen a.active {
             color: var(--accent);
         }
 
-        nav a::after {
+        .screen a::after {
             content: '';
             position: absolute;
             left: 0;
@@ -643,16 +710,90 @@
             transition: transform 0.25s ease;
         }
 
-        nav a.active::after,
-        nav a:hover::after {
+        .screen a.active::after,
+        .screen a:hover::after {
             transform: scaleX(1);
             transform-origin: left;
+        }
+
+        /* the weighted bar at the bottom of the fabric */
+        .weight {
+            pointer-events: auto;
+            width: calc(100% - 6 * var(--px));
+            height: calc(3 * var(--px));
+            background: var(--metal);
+            box-shadow:
+                inset 0 var(--px) 0 0 var(--metal-hi),
+                calc(2 * var(--px)) var(--px) 0 0 var(--drop),
+                var(--px) calc(2 * var(--px)) 0 0 var(--drop);
+        }
+
+        /* the draw string */
+        .pull {
+            pointer-events: auto;
+            background: none;
+            border: 0;
+            padding: 0 10px 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .cord {
+            width: 2px;
+            height: calc(6 * var(--px));
+            background: var(--metal-dark);
+            transition: height 0.18s steps(3, end);
+        }
+
+        .pull:hover .cord,
+        .pull.tug .cord {
+            height: calc(8 * var(--px));
+        }
+
+        .handle {
+            width: calc(4 * var(--px));
+            height: calc(5 * var(--px));
+            background: #c9a46c;
+            box-shadow:
+                inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 0 #a6824f,
+                inset var(--px) var(--px) 0 0 #e2c592,
+                0 calc(-1 * var(--px)) 0 0 var(--outline),
+                0 var(--px) 0 0 var(--outline),
+                calc(-1 * var(--px)) 0 0 0 var(--outline),
+                var(--px) 0 0 0 var(--outline);
+        }
+
+        .pull:focus-visible {
+            outline: none;
+        }
+
+        .pull:focus-visible .handle {
+            background: var(--accent);
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .screen,
+            .cord {
+                transition: none;
+            }
         }
 
         /* ---------- Responsive ---------- */
         @media (max-width: 768px) {
             header {
-                padding: 96px 0 24px;
+                padding: 92px 0 24px;
                 min-height: auto;
             }
 
@@ -755,13 +896,27 @@
                 grid-template-columns: 1fr;
             }
 
-            nav ul {
-                flex-wrap: wrap;
-                row-gap: 0.4rem;
+            main {
+                padding-top: 88px;
             }
 
-            nav li {
-                margin: 0 0.6rem;
+            .projector .rig {
+                padding: 0 12px;
+            }
+
+            .screen ul {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.55rem;
+                padding: 1.1rem 1rem 1rem;
+            }
+
+            .screen li {
+                margin: 0;
+            }
+
+            .screen a {
+                font-size: 1rem;
             }
 
         }
@@ -770,19 +925,40 @@
 <body>
     <div class="board-wrap" aria-hidden="true"><canvas id="board"></canvas></div>
 
-    <nav>
-        <div class="container">
-            <ul>
-                <li><a href="#about">About</a></li>
-                <li><a href="#research">Research</a></li>
-                <li><a href="#industry">Industry</a></li>
-                <li><a href="#education">Education</a></li>
-                <li><a href="#Teaching">Teaching</a></li>
-                <li><a href="#service">Service</a></li>
-                <li><a href="https://publish.illinois.edu/jingyuanchen/">Blog</a></li>
-            </ul>
+    <nav class="projector no-anim" id="projector" aria-label="Site">
+        <div class="rig">
+            <div class="casing" aria-hidden="true"></div>
+            <div class="screen" id="nav-screen">
+                <div class="screen-inner">
+                    <ul>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#research">Research</a></li>
+                        <li><a href="#industry">Industry</a></li>
+                        <li><a href="#education">Education</a></li>
+                        <li><a href="#Teaching">Teaching</a></li>
+                        <li><a href="#service">Service</a></li>
+                        <li><a href="https://publish.illinois.edu/jingyuanchen/">Blog</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="weight" aria-hidden="true"></div>
+            <button class="pull" type="button" aria-controls="nav-screen" aria-expanded="false">
+                <span class="cord" aria-hidden="true"></span>
+                <span class="handle" aria-hidden="true"></span>
+                <span class="sr-only">Show or hide navigation</span>
+            </button>
         </div>
     </nav>
+    <script>
+        // Set the starting position before first paint: screen down on desktop, rolled up on phones.
+        (function () {
+            const nav = document.getElementById('projector');
+            const open = window.innerWidth > 768;
+            nav.classList.toggle('open', open);
+            nav.querySelector('.pull').setAttribute('aria-expanded', String(open));
+            requestAnimationFrame(() => requestAnimationFrame(() => nav.classList.remove('no-anim')));
+        })();
+    </script>
 
     <header>
         <div class="container">
@@ -1299,6 +1475,33 @@
             draw();
         })();
 
+        // Projector screen: the draw string rolls it up and down.
+        (function () {
+            const nav = document.getElementById('projector');
+            const pull = nav.querySelector('.pull');
+            const mobile = () => window.innerWidth <= 768;
+            const setOpen = open => {
+                nav.classList.toggle('open', open);
+                pull.setAttribute('aria-expanded', String(open));
+            };
+            pull.addEventListener('click', function () {
+                setOpen(!nav.classList.contains('open'));
+                pull.classList.add('tug');
+                setTimeout(() => pull.classList.remove('tug'), 200);
+            });
+            nav.querySelectorAll('.screen a').forEach(a => a.addEventListener('click', () => {
+                if (mobile()) setOpen(false);
+            }));
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && mobile()) setOpen(false);
+            });
+            let wasMobile = mobile();
+            window.addEventListener('resize', () => {
+                const m = mobile();
+                if (m !== wasMobile) { wasMobile = m; setOpen(!m); }
+            });
+        })();
+
         // Navigation: one "page" at a time.
         document.addEventListener('DOMContentLoaded', function () {
             const navLinks = document.querySelectorAll('nav a[href^="#"]');
@@ -1344,6 +1547,9 @@
 
             const initialHash = window.location.hash.substring(1);
             showSection(initialHash || 'about');
+            // The browser jumps to the #section anchor after load; undo that so the page starts below the screen.
+            if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+            window.addEventListener('load', () => setTimeout(() => window.scrollTo(0, 0), 0));
         });
     </script>
 </body>
