@@ -1,0 +1,2120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blessing of Dimensionality Joint Risk Seminar 2026–2027</title>
+    <meta name="description" content="Blessing of Dimensionality Joint Risk Seminar, 2026–2027: UC Berkeley CDAR, the University of Illinois Urbana-Champaign, the University of Washington and Florida State University, on portfolio optimization, autoformalization of statistics, high-dimensional data and financial risk theory.">
+
+    <!-- Tab icon: a solid accent-green dot -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23007974'/%3E%3C/svg%3E">
+
+    <!-- Link previews -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Blessing of Dimensionality Joint Risk Seminar">
+    <meta property="og:title" content="Blessing of Dimensionality Joint Risk Seminar 2026–2027">
+    <meta property="og:description" content="Weekly online seminar across UC Berkeley CDAR, UIUC, the University of Washington and Florida State University on portfolio optimization, autoformalization of statistics, high-dimensional data and financial risk theory.">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Blessing of Dimensionality Joint Risk Seminar 2026–2027">
+    <meta name="twitter:description" content="Weekly online seminar across UC Berkeley CDAR, UIUC, the University of Washington and Florida State University on portfolio optimization, autoformalization of statistics, high-dimensional data and financial risk theory.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ---------- Tokens ---------- */
+        :root {
+            --accent: #007974;
+            --accent-strong: #005f5b;
+            --ink: #15201f;
+
+            --muted: #55625f;
+            --faint: #8a9593;
+            --card: #ffffff;
+            --tape: rgba(241, 230, 166, 0.85);
+            --bevel: #e4e2d8;
+
+            --px: 4px;                  /* one art pixel; kept in sync with the board by JS */
+            --outline: #3d2410;
+            --drop: rgba(10, 18, 14, 0.45);
+            --clear: 110px;             /* room left at the top of each board for the projector */
+            --pixel-panel:
+                inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 0 var(--bevel),
+                0 calc(-1 * var(--px)) 0 0 var(--outline),
+                0 var(--px) 0 0 var(--outline),
+                calc(-1 * var(--px)) 0 0 0 var(--outline),
+                var(--px) 0 0 0 var(--outline),
+                var(--px) calc(2 * var(--px)) 0 0 var(--drop),
+                calc(2 * var(--px)) var(--px) 0 0 var(--drop);
+            --pixel-font: 'Pixelify Sans', 'Montserrat', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;           /* the boards replace page scrolling */
+        }
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            font-size: 16px;
+            color: var(--ink);
+            background: #141d18;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ---------- Static frame, tray and wall (canvas) ---------- */
+        .board-wrap {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+            background: #141d18;
+        }
+
+        #board {
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        /* ---------- Sliding boards ---------- */
+        #stage {
+            position: fixed;
+            z-index: 5;
+            overflow: hidden;
+            /* the wall and the two steel tracks, seen only while boards pass each other */
+            background:
+                linear-gradient(to right,
+                    #4a5156 0, #4a5156 var(--px),
+                    #22282b var(--px), #22282b calc(2 * var(--px)),
+                    transparent calc(2 * var(--px)), transparent calc(100% - 2 * var(--px)),
+                    #22282b calc(100% - 2 * var(--px)), #22282b calc(100% - var(--px)),
+                    #4a5156 calc(100% - var(--px))),
+                #141d18;
+        }
+
+        .panel {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            background-color: #2f4a3c;
+            background-repeat: no-repeat;
+            background-size: var(--slate-size, 100% 100%);
+            image-rendering: pixelated;
+            /* aluminium trim along the top and bottom edge of each board */
+            box-shadow:
+                inset 0 var(--px) 0 0 #8a9297,
+                inset 0 calc(2 * var(--px)) 0 0 #4a5156,
+                inset 0 calc(-1 * var(--px)) 0 0 #4a5156,
+                inset 0 calc(-2 * var(--px)) 0 0 #8a9297;
+        }
+
+        /* the chalk you write with lives on its own layer, under the paper */
+        .chalk-layer {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 0;
+            pointer-events: none;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .panel-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: var(--clear) 44px 30px;
+        }
+
+        body.holding #stage {
+            cursor: var(--tool-cursor, crosshair);
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body.holding #stage .sheet,
+        body.holding #stage .card {
+            cursor: auto;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        body.holding #stage a {
+            cursor: pointer;
+        }
+
+        /* invisible hit areas over the chalk and eraser painted on the tray */
+        .tool {
+            position: fixed;
+            z-index: 7;
+            background: transparent;
+            border: 0;
+            padding: 0;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .tool:hover,
+        .tool:focus-visible {
+            outline: 2px dashed rgba(242, 241, 234, 0.55);
+            outline-offset: -2px;
+        }
+
+        .tool[aria-pressed="true"] {
+            outline: none;
+        }
+
+        .panel.measuring {
+            visibility: hidden;
+            z-index: 0;
+        }
+
+        .panel.scrolls {
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+
+        .panel.front {
+            z-index: 3;
+            box-shadow:
+                inset 0 var(--px) 0 0 #8a9297,
+                inset 0 calc(2 * var(--px)) 0 0 #4a5156,
+                inset 0 calc(-1 * var(--px)) 0 0 #4a5156,
+                inset 0 calc(-2 * var(--px)) 0 0 #8a9297,
+                0 calc(2 * var(--px)) 0 0 var(--drop),
+                0 calc(-2 * var(--px)) 0 0 var(--drop);
+        }
+
+        .panel.back {
+            z-index: 2;
+        }
+
+        /* board position markers on the right-hand frame */
+        .dots {
+            position: fixed;
+            z-index: 6;
+            display: flex;
+            flex-direction: column;
+            gap: calc(2 * var(--px));
+            transform: translate(-50%, -50%);
+        }
+
+        .dots button {
+            width: calc(2 * var(--px));
+            height: calc(2 * var(--px));
+            border: 0;
+            padding: 0;
+            cursor: pointer;
+            background: transparent;
+            box-shadow: inset 0 0 0 2px rgba(242, 241, 234, 0.75);
+        }
+
+        .dots button[aria-current="true"] {
+            background: #f2f1ea;
+        }
+
+        .dots button:focus-visible {
+            outline: 2px solid #f1e6a6;
+            outline-offset: 2px;
+        }
+
+        /* pixel arrows above and below the board markers: there is a board that way */
+        .arrow {
+            position: fixed;
+            z-index: 6;
+            display: block;
+            background: none;
+            border: 0;
+            padding: 6px;
+            line-height: 0;
+            cursor: pointer;
+            transform: translateX(-50%);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .arrow svg {
+            width: calc(5 * var(--px));
+            height: calc(3 * var(--px));
+            fill: rgba(242, 241, 234, 0.85);
+            shape-rendering: crispEdges;
+        }
+
+        .arrow:hover svg {
+            fill: #f1e6a6;
+        }
+
+        .arrow:focus-visible {
+            outline: 2px solid #f1e6a6;
+        }
+
+        .arrow[hidden] {
+            display: none;
+        }
+
+        #arrow-down {
+            animation: bob-down 1.4s steps(2, end) infinite;
+        }
+
+        #arrow-up {
+            animation: bob-up 1.4s steps(2, end) infinite;
+        }
+
+        @keyframes bob-down {
+            50% { transform: translate(-50%, var(--px)); }
+        }
+
+        @keyframes bob-up {
+            50% { transform: translate(-50%, calc(-1 * var(--px))); }
+        }
+
+        /* ---------- Paper taped to the boards ---------- */
+        .panel-content > * + * {
+            margin-top: 2.25rem;
+        }
+
+        .sheet,
+        .card {
+            position: relative;
+            background: var(--card);
+            color: var(--ink);
+            box-shadow: var(--pixel-panel);
+        }
+
+        .sheet {
+            padding: 2.6rem 3rem 2.2rem;
+        }
+
+        .sheet::before,
+        .sheet::after,
+        .card::before,
+        .card::after {
+            content: '';
+            position: absolute;
+            top: calc(-3 * var(--px));
+            width: calc(14 * var(--px));
+            height: calc(5 * var(--px));
+            background: var(--tape);
+            box-shadow: inset 0 calc(-1 * var(--px)) 0 0 rgba(0, 0, 0, 0.08);
+            z-index: 1;
+        }
+
+        .sheet::before,
+        .card::before { left: calc(6 * var(--px)); }
+        .sheet::after,
+        .card::after { right: calc(6 * var(--px)); }
+
+        .sheet > :last-child {
+            margin-bottom: 0;
+        }
+
+        h1 {
+            font-size: 2.6rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+            color: var(--ink);
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin: 0 0 1.5rem;
+            letter-spacing: -0.01em;
+            color: var(--accent);
+        }
+
+        h2:not(:first-child) {
+            margin-top: 2.6rem;
+        }
+
+        h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin: 1.25rem 0 0.4rem;
+            letter-spacing: -0.005em;
+            line-height: 1.45;
+            color: var(--ink);
+        }
+
+        h3:first-child {
+            margin-top: 0;
+        }
+
+        .eyebrow {
+            display: block;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin: 0 0 0.6rem;
+        }
+
+        .eyebrow:not(:first-child) {
+            margin-top: 2rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            line-height: 1.75;
+            color: var(--muted);
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            overflow-wrap: anywhere;
+        }
+
+        a:hover {
+            color: var(--accent-strong);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        /* signature, written in chalk on the board itself */
+        p.sign {
+            margin-bottom: 0;
+            font-family: var(--pixel-font);
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+            color: rgba(242, 241, 234, 0.7);
+            text-align: center;
+        }
+
+        /* ---------- Title card on the first board ---------- */
+        .masthead {
+            text-align: center;
+            padding: 2.1rem 2.5rem 1.9rem;
+        }
+
+        .masthead .kicker {
+            display: block;
+            font-family: var(--pixel-font);
+            font-size: 0.95rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .masthead .year {
+            display: block;
+            font-family: var(--pixel-font);
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--ink);
+            margin-top: 0.35rem;
+        }
+
+        .schools {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.2rem 1.4rem;
+            margin: 1.1rem 0 0;
+            font-size: 0.95rem;
+            color: var(--muted);
+            list-style: none;
+        }
+
+        .people-line {
+            margin: 0.9rem 0 0;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        .people-line + .people-line {
+            margin-top: 0.15rem;
+        }
+
+        .people-line .label {
+            color: var(--faint);
+            margin-right: 0.35rem;
+        }
+
+        p.callout {
+            color: var(--ink);
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        /* ---------- Aligned rows (details, schedules) ---------- */
+        .row {
+            display: contents;
+        }
+
+        .ledger.two {
+            display: grid;
+            grid-template-columns: 7.5rem minmax(0, 1fr);
+            column-gap: 1.25rem;
+            row-gap: 0.85rem;
+            align-items: baseline;
+            margin-bottom: 1.5rem;
+        }
+
+        .ledger.two:last-child {
+            margin-bottom: 0;
+        }
+
+        .ledger.two .label {
+            color: var(--muted);
+            font-size: 0.92rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ledger.two .text {
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        .talk + .talk {
+            margin-top: 0.35rem;
+        }
+
+        .talk .who {
+            color: var(--faint);
+        }
+
+        .talk a.slides {
+            margin-left: 0.35rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        p.legend {
+            margin: -0.75rem 0 1.5rem;
+            font-size: 0.92rem;
+        }
+
+        /* ---------- Papers and reading list ---------- */
+        .entry .item {
+            margin-bottom: 1.6rem;
+        }
+
+        .entry .item:last-child {
+            margin-bottom: 0;
+        }
+
+        .entry .item h3 {
+            margin: 0 0 0.25rem;
+        }
+
+        .entry .item p {
+            margin-bottom: 0.1rem;
+            line-height: 1.6;
+        }
+
+        .entry .item p.who {
+            font-size: 0.95rem;
+            color: var(--muted);
+        }
+
+        .entry .item p.src {
+            font-size: 0.85rem;
+            color: var(--faint);
+        }
+
+        .entry .item p.meta {
+            font-size: 0.92rem;
+            color: var(--muted);
+        }
+
+        .entry .item p.meta .k {
+            display: inline-block;
+            min-width: 6.5rem;
+            color: var(--faint);
+        }
+
+        .entry .item p.who + p.meta,
+        .entry .item p.src + p.meta,
+        .entry .item h3 + p.meta {
+            margin-top: 0.3rem;
+        }
+
+        /* the button on the title card */
+        a.cta {
+            display: inline-block;
+            margin-top: 1.4rem;
+            padding: 0.55rem 1.15rem 0.5rem;
+            font-family: var(--pixel-font);
+            font-size: 1.05rem;
+            letter-spacing: 0.03em;
+            color: #fff;
+            background: var(--accent);
+            box-shadow:
+                inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 0 var(--accent-strong),
+                0 calc(-1 * var(--px)) 0 0 var(--outline),
+                0 var(--px) 0 0 var(--outline),
+                calc(-1 * var(--px)) 0 0 0 var(--outline),
+                var(--px) 0 0 0 var(--outline),
+                var(--px) calc(2 * var(--px)) 0 0 var(--drop);
+        }
+
+        a.cta:hover {
+            color: #fff;
+            background: var(--accent-strong);
+            text-decoration: none;
+        }
+
+        a.cta:active {
+            transform: translate(var(--px), var(--px));
+            box-shadow:
+                0 calc(-1 * var(--px)) 0 0 var(--outline),
+                0 var(--px) 0 0 var(--outline),
+                calc(-1 * var(--px)) 0 0 0 var(--outline),
+                var(--px) 0 0 0 var(--outline);
+        }
+
+        a.cta:focus-visible {
+            outline: 2px solid #f1e6a6;
+            outline-offset: 4px;
+        }
+
+        .kind {
+            display: inline-block;
+            font-family: var(--pixel-font);
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.2rem;
+        }
+
+        .links {
+            list-style: none;
+        }
+
+        .links li {
+            padding-left: 1rem;
+            position: relative;
+            line-height: 1.55;
+            margin-bottom: 0.35rem;
+        }
+
+        .links li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.6em;
+            width: 5px;
+            height: 5px;
+            background: var(--accent);
+        }
+
+        /* ---------- People ---------- */
+        h2.group {
+            font-size: 1.3rem;
+            margin-bottom: 0.9rem;
+        }
+
+        h2.group:not(:first-child) {
+            margin-top: 1.7rem;
+        }
+
+        .roster {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.85rem 1.5rem;
+        }
+
+        /* name and credentials share a line; the affiliation goes underneath */
+        .member {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            column-gap: 0.4rem;
+            padding-left: 0.8rem;
+            border-left: 3px solid #d3dad6;
+            line-height: 1.4;
+        }
+
+        .member:hover {
+            border-left-color: var(--accent);
+        }
+
+        .member .name {
+            font-weight: 600;
+            font-size: 1.02rem;
+        }
+
+        .member .cred {
+            font-size: 0.85rem;
+            color: var(--faint);
+        }
+
+        .member .aff {
+            flex-basis: 100%;
+            font-size: 0.88rem;
+            color: var(--muted);
+            margin-top: 0.1rem;
+        }
+
+        .schools a {
+            color: inherit;
+            border-bottom: 1px dotted var(--accent);
+        }
+
+        .schools a:hover {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* ---------- Navigation: pull-down projector screen ---------- */
+        .projector {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            pointer-events: none;
+            --metal-hi: #737b80;
+            --metal: #464d52;
+            --metal-dark: #25292c;
+            --screen: #f6f5f0;
+            --screen-edge: #2b2f32;
+        }
+
+        .projector .rig {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .casing {
+            pointer-events: auto;
+            position: relative;
+            width: 100%;
+            height: calc(5 * var(--px));
+            background: var(--metal);
+            box-shadow:
+                inset 0 var(--px) 0 0 var(--metal-hi),
+                inset 0 calc(-1 * var(--px)) 0 0 var(--metal-dark),
+                0 var(--px) 0 0 var(--drop);
+        }
+
+        .casing::before,
+        .casing::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: calc(3 * var(--px));
+            height: calc(6 * var(--px));
+            background: var(--metal-dark);
+            box-shadow: inset var(--px) var(--px) 0 0 var(--metal);
+        }
+
+        .casing::before { left: calc(-1 * var(--px)); }
+        .casing::after { right: calc(-1 * var(--px)); }
+
+        .screen {
+            pointer-events: auto;
+            width: calc(100% - 8 * var(--px));
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.5s steps(8, end);
+            background: var(--screen);
+            box-shadow:
+                inset var(--px) 0 0 0 var(--screen-edge),
+                inset calc(-1 * var(--px)) 0 0 0 var(--screen-edge),
+                calc(2 * var(--px)) 0 0 0 var(--drop);
+        }
+
+        .projector.open .screen {
+            grid-template-rows: 1fr;
+        }
+
+        .projector.no-anim .screen,
+        .projector.no-anim .cord {
+            transition: none;
+        }
+
+        .screen-inner {
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .screen ul {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            list-style-type: none;
+            padding: 0.85rem 1.5rem 0.75rem;
+        }
+
+        .screen li {
+            margin: 0 1rem;
+        }
+
+        .screen a {
+            color: var(--ink);
+            font-size: 0.92rem;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            padding: 4px 0;
+            position: relative;
+            text-shadow: none;
+        }
+
+        .screen a:hover {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .screen a.active {
+            color: var(--accent);
+        }
+
+        .screen a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.25s ease;
+        }
+
+        .screen a.active::after,
+        .screen a:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .weight {
+            pointer-events: auto;
+            width: calc(100% - 6 * var(--px));
+            height: calc(3 * var(--px));
+            background: var(--metal);
+            box-shadow:
+                inset 0 var(--px) 0 0 var(--metal-hi),
+                calc(2 * var(--px)) var(--px) 0 0 var(--drop),
+                var(--px) calc(2 * var(--px)) 0 0 var(--drop);
+        }
+
+        .pull {
+            pointer-events: auto;
+            background: none;
+            border: 0;
+            padding: 0 10px 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .cord {
+            width: 2px;
+            height: calc(6 * var(--px));
+            background: var(--metal-dark);
+            transition: height 0.18s steps(3, end);
+        }
+
+        .pull:hover .cord,
+        .pull.tug .cord {
+            height: calc(8 * var(--px));
+        }
+
+        .handle {
+            width: calc(4 * var(--px));
+            height: calc(5 * var(--px));
+            background: #c9a46c;
+            box-shadow:
+                inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 0 #a6824f,
+                inset var(--px) var(--px) 0 0 #e2c592,
+                0 calc(-1 * var(--px)) 0 0 var(--outline),
+                0 var(--px) 0 0 var(--outline),
+                calc(-1 * var(--px)) 0 0 0 var(--outline),
+                var(--px) 0 0 0 var(--outline);
+        }
+
+        .pull:focus-visible {
+            outline: none;
+        }
+
+        .pull:focus-visible .handle {
+            background: var(--accent);
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .screen,
+            .cord {
+                transition: none;
+            }
+
+            .arrow {
+                animation: none !important;
+            }
+        }
+
+        /* ---------- Phones ---------- */
+        @media (max-width: 768px) {
+            .panel-content {
+                padding: var(--clear) 14px 22px;
+            }
+
+            .sheet {
+                padding: 1.75rem 1.25rem 1.5rem;
+            }
+
+            .masthead {
+                padding: 1.6rem 1.2rem 1.4rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .schools {
+                flex-direction: column;
+                gap: 0.1rem;
+            }
+
+            .ledger.two {
+                grid-template-columns: 1fr;
+                row-gap: 0.1rem;
+            }
+
+            .ledger.two .label {
+                margin-top: 0.7rem;
+            }
+
+            .ledger.two .row:first-child .label {
+                margin-top: 0;
+            }
+
+            h2.group {
+                font-size: 1.08rem;
+                margin-bottom: 0.6rem;
+            }
+
+            h2.group:not(:first-child) {
+                margin-top: 1.1rem;
+            }
+
+            .roster {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.6rem 0.8rem;
+            }
+
+            .member {
+                padding-left: 0.55rem;
+                column-gap: 0.3rem;
+                line-height: 1.3;
+            }
+
+            .member .name {
+                font-size: 0.86rem;
+            }
+
+            .member .cred {
+                font-size: 0.72rem;
+            }
+
+            .member .aff {
+                font-size: 0.76rem;
+            }
+
+            .projector .rig {
+                padding: 0 12px;
+            }
+
+            .screen ul {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.55rem;
+                padding: 1.1rem 1rem 1rem;
+            }
+
+            .screen li {
+                margin: 0;
+            }
+
+            .screen a {
+                font-size: 1rem;
+            }
+        }
+
+        /* ---------- Short screens: keep the People board on one board ---------- */
+        @media (min-width: 769px) and (max-height: 760px) {
+            h2.group {
+                font-size: 1.15rem;
+                margin-bottom: 0.6rem;
+            }
+
+            h2.group:not(:first-child) {
+                margin-top: 1.2rem;
+            }
+
+            .roster {
+                gap: 0.55rem 1.5rem;
+            }
+
+            .member .aff {
+                font-size: 0.84rem;
+            }
+        }
+
+        @media (max-width: 768px) and (max-height: 700px) {
+            .sheet {
+                padding: 1.1rem 0.9rem 0.95rem;
+            }
+
+            h2.group {
+                font-size: 0.94rem;
+                line-height: 1.25;
+                margin-bottom: 0.4rem;
+            }
+
+            h2.group:not(:first-child) {
+                margin-top: 0.7rem;
+            }
+
+            .roster {
+                gap: 0.4rem 0.7rem;
+            }
+
+            .member {
+                line-height: 1.18;
+            }
+
+            .member .name {
+                font-size: 0.8rem;
+            }
+
+            .member .aff {
+                font-size: 0.72rem;
+            }
+        }
+    </style>
+    <noscript>
+        <style>
+            html, body { overflow: auto; height: auto; }
+            .board-wrap, .projector, .tool, .arrow, .dots { display: none !important; }
+            #source { display: block !important; max-width: 900px; margin: 0 auto; padding: 24px; }
+            #source section { background: #fff; padding: 2rem; margin-bottom: 2rem; }
+        </style>
+    </noscript>
+</head>
+<body>
+    <div class="board-wrap" aria-hidden="true"><canvas id="board"></canvas></div>
+
+    <main id="stage"></main>
+    <div class="dots" id="dots" aria-label="Boards on this page"></div>
+    <button class="arrow" id="arrow-up" type="button" aria-label="Previous board" hidden>
+        <svg viewBox="0 0 5 3" aria-hidden="true"><path d="M2 0h1v1h1v1h1v1H0V2h1V1h1z"/></svg>
+    </button>
+    <button class="arrow" id="arrow-down" type="button" aria-label="Next board" hidden>
+        <svg viewBox="0 0 5 3" aria-hidden="true"><path d="M0 0h5v1H4v1H3v1H2V2H1V1H0z"/></svg>
+    </button>
+    <button class="tool" type="button" data-tool="white" aria-pressed="false" title="Pick up the white chalk"><span class="sr-only">White chalk</span></button>
+    <button class="tool" type="button" data-tool="yellow" aria-pressed="false" title="Pick up the yellow chalk"><span class="sr-only">Yellow chalk</span></button>
+    <button class="tool" type="button" data-tool="pink" aria-pressed="false" title="Pick up the pink chalk"><span class="sr-only">Pink chalk</span></button>
+    <button class="tool" type="button" data-tool="eraser" aria-pressed="false" title="Pick up the eraser (double-click to wipe this board)"><span class="sr-only">Eraser</span></button>
+
+    <nav class="projector no-anim" id="projector" aria-label="Site">
+        <div class="rig">
+            <div class="casing" aria-hidden="true"></div>
+            <div class="screen" id="nav-screen">
+                <div class="screen-inner">
+                    <ul>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#people">People</a></li>
+                        <li><a href="#2026-27">2026–2027</a></li>
+                        <li><a href="#2024-25">2024–2025</a></li>
+                        <li><a href="#reading">Reading List</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="weight" aria-hidden="true"></div>
+            <button class="pull" type="button" aria-controls="nav-screen" aria-expanded="false">
+                <span class="cord" aria-hidden="true"></span>
+                <span class="handle" aria-hidden="true"></span>
+                <span class="sr-only">Show or hide navigation</span>
+            </button>
+        </div>
+    </nav>
+    <script>
+        // Starting position before first paint: screen down on desktop, rolled up on phones.
+        (function () {
+            const nav = document.getElementById('projector');
+            const open = window.innerWidth > 768;
+            nav.classList.toggle('open', open);
+            nav.querySelector('.pull').setAttribute('aria-expanded', String(open));
+            requestAnimationFrame(() => requestAnimationFrame(() => nav.classList.remove('no-anim')));
+        })();
+    </script>
+
+    <!--
+        Everything below is the source text. It is never shown directly: the script copies it,
+        block by block, onto as many board-sized panels as each page needs.
+        Blocks marked data-split may be divided between boards at their child elements;
+        data-no-sheet blocks go straight onto the board instead of onto a sheet of paper.
+
+        To edit the site, only this block needs to change. See README.md.
+    -->
+    <div id="source" hidden>
+
+        <!-- ===================== About ===================== -->
+        <section data-tab="about">
+            <div class="card masthead" data-no-sheet>
+                <span class="kicker">Joint Risk Seminar</span>
+                <h1>Blessing of Dimensionality</h1>
+                <span class="year">2026–2027</span>
+                <ul class="schools">
+                    <li><a href="https://cdar.econ.berkeley.edu/">University of California, Berkeley CDAR</a></li>
+                    <li>University of Illinois Urbana-Champaign</li>
+                    <li>University of Washington</li>
+                    <li>Florida State University</li>
+                </ul>
+                <a class="cta" href="#2026-27">2026–2027 Projects &amp; Papers <span aria-hidden="true">→</span></a>
+            </div>
+            <span class="eyebrow">About the Seminar</span>
+            <p>We focus on problems related to, but not limited to, portfolio optimization, autoformalization of statistics, high-dimensional data, and financial risk theory.</p>
+            <p>We hold a weekly online seminar across multiple universities, with informal lectures, and conduct collaborative research among faculty, industry researchers, and students.</p>
+        </section>
+
+        <!-- ===================== People ===================== -->
+        <section data-tab="people">
+            <h2 class="group">Faculty, Industry &amp; Independent Researchers</h2>
+            <div class="roster" data-split>
+                <div class="member"><a class="name" href="https://math.berkeley.edu/people/lisa-goldberg">Lisa R. Goldberg</a><span class="cred">Ph.D.</span><span class="aff">University of California, Berkeley<br>BlackRock</span></div>
+                <div class="member"><a class="name" href="https://www.math.fsu.edu/~kercheva/">Alec Kercheval</a><span class="cred">Ph.D.</span><span class="aff">Florida State University</span></div>
+                <div class="member"><a class="name" href="https://cdar.econ.berkeley.edu/people/nick-gunther.html">Nicholas Gunther</a><span class="cred">Ph.D., J.D.</span><span class="aff">University of California, Berkeley</span></div>
+                <div class="member"><a class="name" href="https://alexbstl.github.io/">Alex Bernstein</a><span class="cred">Ph.D.</span><span class="aff">University of California, Santa Barbara</span></div>
+                <div class="member"><a class="name" href="https://www.linkedin.com/in/tian-jacob-lan-fintechrocks/">Tian (Jacob) Lan</a><span class="cred">M.F.E.</span><span class="aff">Barclays</span></div>
+            </div>
+            <h2 class="group">Ph.D. Student Researchers</h2>
+            <div class="roster" data-split>
+                <div class="member"><a class="name" href="https://foster.uw.edu/academics/degree-programs/phd-program/directory/darwin-yao/">Dayi (Darwin) Yao</a><span class="aff">University of Washington</span></div>
+                <div class="member"><a class="name" href="https://jingyuanchenxyz.github.io/">Jingyuan Chen</a><span class="aff">University of Illinois Urbana-Champaign</span></div>
+                <div class="member"><a class="name" href="https://www.linkedin.com/in/navid-bahadoran/">Navid Bahadoran</a><span class="aff">Florida State University</span></div>
+            </div>
+            <h2 class="group">Undergraduate Researchers</h2>
+            <div class="roster" data-split>
+                <div class="member"><a class="name" href="https://www.linkedin.com/in/kristenannieho/">Kristen A. Ho</a><span class="aff">University of California, Berkeley</span></div>
+                <div class="member"><a class="name" href="https://www.linkedin.com/in/yian-lin-a155a2297/">Yian (Ethan) Lin</a><span class="aff">University of California, Berkeley</span></div>
+            </div>
+        </section>
+
+        <!-- ===================== 2026–2027 ===================== -->
+        <section data-tab="2026-27">
+            <h2>Ongoing Projects</h2>
+            <div class="entry" data-split>
+                <div class="item">
+                    <h3>Efficient Exact Methods for Finding Long-Only Minimum Variance Portfolios</h3>
+                    <p class="meta"><span class="k">Private link</span><a href="https://www.overleaf.com/project/6ac70c39baf2e793d35835a7">Overleaf project</a></p>
+                    <p class="meta"><span class="k">Contact</span><a href="mailto:alexbstl@gmail.com">alexbstl@gmail.com</a></p>
+                </div>
+                <div class="item">
+                    <h3>Estimation of Specific Covariance</h3>
+                    <p class="meta"><span class="k">Contact</span><a href="mailto:nb22m@fsu.edu">nb22m@fsu.edu</a></p>
+                </div>
+                <div class="item">
+                    <h3>Empirical principal component error in high-dimensional factor models</h3>
+                    <p class="meta"><span class="k">Contact</span><a href="mailto:ydy@uw.edu">ydy@uw.edu</a></p>
+                </div>
+                <div class="item">
+                    <h3>Autoformalization of Mathematical Statistics</h3>
+                </div>
+            </div>
+
+            <h2>Papers</h2>
+            <div class="entry" data-split>
+                <div class="item">
+                    <h3><a href="https://arxiv.org/abs/2609.20550">Principal component error in high-dimensional factor models</a></h3>
+                    <p class="who">Alex Bernstein, Lisa R. Goldberg, Nicholas Gunther, Alec Kercheval, Tian Lan, Yian Lin and Dayi Yao</p>
+                    <p class="src">arXiv:2609.20550</p>
+                    <p class="meta"><span class="k">Private link</span><a href="https://www.overleaf.com/project/69965c491ac536df6086490f">Overleaf project</a></p>
+                    <p class="meta"><span class="k">Contact</span><a href="mailto:lrg@berkeley.edu">lrg@berkeley.edu</a></p>
+                </div>
+            </div>
+
+            <!--
+                To post this year's schedule, uncomment the block below and add one row per meeting.
+                Each .talk is one talk; the Slides link is optional.
+
+            <h2>Schedule</h2>
+            <div class="ledger two" data-split>
+                <div class="row"><span class="label">Jan 15</span><div class="text">
+                    <div class="talk">Talk title <span class="who">(Speaker)</span> <a class="slides" href="files/slides.pdf">Slides</a></div>
+                </div></div>
+            </div>
+            -->
+        </section>
+
+        <!-- ===================== 2024–2025 archive ===================== -->
+        <section data-tab="2024-25">
+            <h2>Fall 2024</h2>
+            <p class="legend keep">From the <a href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/fall2024seminar.html">Fall 2024 and Spring 2025 Joint Seminar</a> page.</p>
+            <div class="ledger two" data-split>
+                <div class="row"><span class="label">Aug 30</span><div class="text">
+                    <div class="talk">Organizational meeting and introduction. <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/sem217.pptx">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Sep 6</span><div class="text">
+                    <div class="talk">Improving quadratic optimization inputs with techniques with concentration of measure <span class="who">(Lisa)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/improving-optimization-6sep2024.pdf">Slides</a></div>
+                    <div class="talk">Variance concentration and average pairwise correlation in index covariance matrices <span class="who">(Jacob L)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/Spectral%20Property%20Variance%20Concentration%20and%20Average%20Correlation.pdf">Slides</a></div>
+                    <div class="talk">Project groups (sign up by Friday 13 September, <a href="https://docs.google.com/spreadsheets/d/1g59g6xkyet0Q75qjmQwaAs4VlU1EpDfeQcuA2LTbdWQ/edit?usp=sharing">link</a>)</div>
+                    <div class="talk">Optimization and long-only constraints <span class="who">(Alex B – if there’s time. If not, first thing next time)</span></div>
+                </div></div>
+                <div class="row"><span class="label">Sep 13</span><div class="text">
+                    <div class="talk">Empirical properties of index covariance matrices <span class="who">(Jacob L)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/Spectral%20Property%20Variance%20Concentration%20and%20Average%20Correlation-2.pdf">Slides</a></div>
+                    <div class="talk">JSE with long-only constraints <span class="who">(Alex B)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/Sample_Covariance_Eigenvectors-shrinkage.pdf">Slides</a></div>
+                    <div class="talk">Empirical JSE <span class="who">(Zhouli – if there’s time. If not, first thing next time)</span></div>
+                </div></div>
+                <div class="row"><span class="label">Sep 20</span><div class="text">
+                    <div class="talk">JSE with long-only constraints <span class="who">(Alex B continuing)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/Sample_Covariance_Eigenvectors-shrinkage-2.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Sep 27</span><div class="text">
+                    <div class="talk">Empirical JSE <span class="who">(Zhouli)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/PCA_JSE.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Oct 4</span><div class="text">
+                    <div class="talk">Duality, factor models and regimes of random matrix theory <span class="who">(Darwin, Harrison and Rahul)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/Duality.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Oct 11</span><div class="text">
+                    <div class="talk">Recursive methods in long-only minimum variance portfolio weight computations <span class="who">(Nick)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/recursievemethods.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Oct 18</span><div class="text">
+                    <div class="talk">Empirical JSE <span class="who">(Jake)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/JSEmpirical24.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Oct 25</span><div class="text">
+                    <div class="talk">Measuring the misplacement of data from multi-dimensional scaling <span class="who">(Lucy)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/BetaMix_Presentation.pdf">Slides</a></div>
+                    <div class="talk">Weisfeiler and Leman consider sampling <span class="who">(Abdullah)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/WL_Consider_Sampling.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Nov 1</span><div class="text">
+                    <div class="talk">JS Corrections of Neural Networks <span class="who">(Enoch)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/Correction_of_NN.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Nov 8</span><div class="text">
+                    <div class="talk">Regimes of Random Matrix Theory <span class="who">(Rahul)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/CDARSlides.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Nov 15</span><div class="text">
+                    <div class="talk">Analyzing factor-based data in different statistical regimes <span class="who">(Rahul)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/CDARSlides.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Nov 22</span><div class="text">
+                    <div class="talk">Explicit solution of the long-only minimum variance problem <span class="who">(Ololade)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/ololade_sowunmi_longonly.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Dec 6</span><div class="text">
+                    <div class="talk">Empirical Findings on Spectral Properties of Return Covariance Matrices <span class="who">(Darwin and Jingyuan)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/P2_Emperical_JSE.pdf">Slides</a></div>
+                </div></div>
+            </div>
+
+            <h2>Spring 2025</h2>
+            <div class="ledger two" data-split>
+                <div class="row"><span class="label">Jan 31</span><div class="text">
+                    <div class="talk">The JSE Backstory <span class="who">(Lisa)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/sem217-31jan2025-goldberg.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Feb 7</span><div class="text">
+                    <div class="talk">The JSE Backstory <span class="who">(Lisa continuing)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/sem217-31jan2025-goldberg.pdf">Slides</a></div>
+                    <div class="talk">Borel's 1994 geometric law of large numbers and Stein's paradox <span class="who">(Alex)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/lec02.pdf">Slides (first half not covered)</a></div>
+                </div></div>
+                <div class="row"><span class="label">Feb 14</span><div class="text">
+                    <div class="talk">Eigenvector Self Regularization of Neural Networks <span class="who">(Enoch)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/Eigenvector_Self_Regularization_3.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Feb 21</span><div class="text">
+                    <div class="talk">Eigenvector Self Regularization of Neural Networks <span class="who">(Enoch continuing)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/Eigenvector_Self_Regularization_3.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Feb 28</span><div class="text">
+                    <div class="talk">Empirical Findings on Spectral Properties of Return Covariance Matrices <span class="who">(Darwin and Jingyuan)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/P2_Emperical_JSE%20(4).pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Mar 7</span><div class="text">
+                    <div class="talk">Empirical Findings on Spectral Properties of Return Covariance Matrices <span class="who">(Darwin and Jingyuan continuing)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/P2_Emperical_JSE%20(4).pdf">Slides</a></div>
+                    <div class="talk">Empirical James-Stein-Markowitz portfolios 1970 to present <span class="who">(Alex)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/JSEmpirical25.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Mar 14</span><div class="text">
+                    <div class="talk">Empirical James-Stein-Markowitz portfolios 1970 to present <span class="who">(Alex continuing)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/JSEmpirical25.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Mar 21</span><div class="text">
+                    <div class="talk">Optimization Bias in Covariance Estimation: Effect of Model Misspecification <span class="who">(Zhuoli)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/Apr4th.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Apr 4</span><div class="text">
+                    <div class="talk">Optimization Bias in Covariance Estimation: Effect of Model Misspecification <span class="who">(Zhuoli continuing)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/Apr4th.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Apr 11</span><div class="text">
+                    <div class="talk">Explicit Solution of the Long-Only Minimum Variance Portfolio: The General 1-Factor Model <span class="who">(Mats, Ololade and Nicholas)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/ECON217_mvp_construction.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">Apr 25</span><div class="text">
+                    <div class="talk">Explicit Solution of the Long-Only Minimum Variance Portfolio: The General 1-Factor Model <span class="who">(Mats, Ololade and Nicholas continuing)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/ECON217_mvp_construction.pdf">Slides</a></div>
+                </div></div>
+                <div class="row"><span class="label">May 2</span><div class="text">
+                    <div class="talk">Studying Weight Matrix Evolution during MiniAlexNet training <span class="who">(Doyoon, Enoch)</span> <a class="slides" href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/Weight_evolution.pdf">Slides</a></div>
+                </div></div>
+            </div>
+        </section>
+
+        <!-- ===================== Reading list ===================== -->
+        <section data-tab="reading">
+            <h2>Reading List</h2>
+            <div class="entry" data-split>
+                <div class="item">
+                    <h3>Concentration of measure: background for graphical models, James Stein for Eigenvectors and everything else</h3>
+                    <ul class="links">
+                        <li><a href="https://home.ttic.edu/~avrim/book.pdf">Foundations of Data Science</a></li>
+                        <li><a href="https://www.amazon.com/Geometric-Analysis-Mathematical-Institute-Publications/dp/0521642590">Convex Geometric Analysis</a></li>
+                        <li><a href="https://terrytao.wordpress.com/2015/10/23/275a-notes-3-the-weak-and-strong-law-of-large-numbers/">The weak and strong law of large numbers</a></li>
+                        <li><a href="https://terrytao.wordpress.com/2010/01/03/254a-notes-1-concentration-of-measure/">Concentration of measure</a></li>
+                        <li><a href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/talagrand1966.pdf">A New Look at Independence</a></li>
+                    </ul>
+                </div>
+                <div class="item">
+                    <h3>Machine learning and high dimensional statistics</h3>
+                    <ul class="links">
+                        <li><a href="https://www.pnas.org/doi/full/10.1073/pnas.1903070116">Reconciling modern machine-learning practice and the classical bias–variance trade-off</a></li>
+                    </ul>
+                </div>
+                <div class="item">
+                    <h3>James Stein for Eigenvectors / Optimization</h3>
+                    <ul class="links">
+                        <li><a href="https://epubs.siam.org/doi/10.1137/21M144058X">The Dispersion Bias</a></li>
+                        <li><a href="https://www.pm-research.com/content/iijpormgmt/47/1/119">Better Betas</a></li>
+                        <li><a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/sta4.419">James–Stein estimation of the first principal component</a></li>
+                        <li><a href="https://www.pnas.org/doi/abs/10.1073/pnas.2207046120">James–Stein for the leading eigenvector</a></li>
+                        <li><a href="https://cdar.berkeley.edu/publications/portfolio-optimization-strategy-specific-eigenvector-shrinkage">Portfolio optimization via strategy-specific eigenvector shrinkage</a></li>
+                        <li><a href="https://cdar.berkeley.edu/sites/default/files/publications/portfolio_selection_revisited.pdf">Portfolio Selection Revisited in memory of Harry Markowitz</a></li>
+                    </ul>
+                </div>
+                <div class="item">
+                    <h3>Beamforming</h3>
+                    <ul class="links">
+                        <li><a href="https://web.stanford.edu/~boyd/papers/pdf/rmvb.pdf">Robust Minimum Variance Beamforming</a></li>
+                    </ul>
+                </div>
+                <div class="item">
+                    <h3>Graphical models</h3>
+                    <ul class="links">
+                        <li><a href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/MahoneyMartin.pdf">Implicit Self-Regularization in Deep Neural Networks: Evidence from Random Matrix Theory and Implications for Learning</a></li>
+                        <li><a href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/abraham1994.pdf">The Application of Improved Covariance Estimation to Adaptive Beamforming and Detection</a></li>
+                        <li><a href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/bar2023.pdf">On graphical models and convex geometry</a></li>
+                        <li><a href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/cox1973.pdf">Resolving power and sensitivity to mismatch of optimum array processors</a></li>
+                        <li><a href="https://haimbar.github.io/BlessingOfDimensionalityWorkshop/files/gurdogan2022.pdf">Multiple Anchor Point Shrinkage for the Sample Covariance Matrix</a></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <p class="sign" id="sign-src" data-no-sheet>UC Berkeley · UIUC · UW · FSU</p>
+    </div>
+
+    <script>
+        /*
+         * A lecture-hall chalkboard, in pixel art.
+         *
+         * The wooden frame, chalk tray and the wall behind the boards are painted once into a
+         * low-resolution canvas (one art pixel = PX screen pixels) and scaled up with
+         * nearest-neighbour sampling. The boards themselves are separate panels that slide in
+         * a track inside the frame. Each page's text is laid out across as many boards as it
+         * needs; scrolling, swiping, the arrow keys or the tabs swap boards the way
+         * counterweighted lecture-hall boards do: one rises while the next comes down past it.
+         */
+        (function () {
+            const canvas = document.getElementById('board');
+            const ctx = canvas.getContext('2d');
+            const stage = document.getElementById('stage');
+            const dotsEl = document.getElementById('dots');
+            const upEl = document.getElementById('arrow-up');
+            const downEl = document.getElementById('arrow-down');
+            const nav = document.getElementById('projector');
+            const pull = nav.querySelector('.pull');
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            const TABS = ['about', 'people', '2026-27', '2024-25', 'reading'];
+            const TITLES = { about: 'About', people: 'People', '2026-27': '2026–2027', '2024-25': '2024–2025', reading: 'Reading List' };
+            const sources = {};
+            TABS.forEach(t => { sources[t] = document.querySelector('#source [data-tab="' + t + '"]'); });
+            const SIGN = document.getElementById('sign-src');
+
+            const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+            const C = {
+                board: hex('#2f4a3c'), boardLight: hex('#355342'), boardDark: hex('#2a4336'),
+                smudge: hex('#3b5948'), smudgeHi: hex('#42614f'), dust: hex('#56725f'), speck: hex('#8fa596'),
+                wall: hex('#141d18'),
+                woodHi: hex('#b8834b'), wood: hex('#8f5c30'), woodMid: hex('#7d4e28'), woodDark: hex('#6b411f'),
+                woodShadow: hex('#3d2410'),
+                chalk: hex('#f2f1ea'), chalkEnd: hex('#d6d5cc'), chalkShade: hex('#bdbcb3'),
+                chalkYellow: hex('#f1e6a6'), chalkYellowShade: hex('#cfc386'),
+                chalkPink: hex('#f2c4c8'), chalkPinkShade: hex('#d1a2a6'),
+                felt: hex('#4a4a4a'), feltDark: hex('#3a3a3a'), eraserWood: hex('#c9a46c'), eraserWoodDark: hex('#a6824f')
+            };
+
+            function mulberry32(seed) {
+                return function () {
+                    seed = (seed + 0x6D2B79F5) | 0;
+                    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+                    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+                };
+            }
+
+            function pixelBuffer(w, h) {
+                const img = new ImageData(w, h);
+                const d = img.data;
+                const put = (x, y, c) => {
+                    if (x < 0 || y < 0 || x >= w || y >= h) return;
+                    const i = (y * w + x) * 4;
+                    d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 255;
+                };
+                const rect = (x0, y0, x1, y1, c) => {
+                    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) put(x, y, c);
+                };
+                return { img, put, rect };
+            }
+
+            let PX = 4;
+            let slateSize = [0, 0];
+            let held = null;            // 'white' | 'yellow' | 'pink' | 'eraser' | null
+            let toolRects = {};
+
+            // ---------- the frame, tray and wall ----------
+            function drawFrame() {
+                PX = window.innerWidth < 700 ? 3 : 4;
+                const w = Math.ceil(window.innerWidth / PX);
+                const h = Math.ceil(window.innerHeight / PX);
+                canvas.width = w;
+                canvas.height = h;
+                canvas.style.width = (w * PX) + 'px';
+                canvas.style.height = (h * PX) + 'px';
+                document.documentElement.style.setProperty('--px', PX + 'px');
+
+                const { img, put, rect } = pixelBuffer(w, h);
+                const R = mulberry32(20261110);
+                const F = 8, LEDGE = 4;
+                const bx0 = F, by0 = F, bx1 = w - F, by1 = h - F;
+                const trayTop = by1 - LEDGE;
+
+                rect(bx0, by0, bx1, trayTop, C.wall);
+
+                const woodPick = v => (v < 0.15 ? C.woodDark : v < 0.45 ? C.woodMid : v < 0.92 ? C.wood : C.woodHi);
+                const rowGrain = [], colGrain = [];
+                for (let y = 0; y < h; y++) rowGrain.push(R());
+                for (let x = 0; x < w; x++) colGrain.push(R());
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const inTopBottom = y < by0 || y >= by1;
+                        const inSides = x < bx0 || x >= bx1;
+                        if (!inTopBottom && !inSides) continue;
+                        const useRow = inTopBottom && !(inSides && Math.min(x, w - 1 - x) < Math.min(y, h - 1 - y));
+                        let v = useRow ? rowGrain[y] : colGrain[x];
+                        if (R() < 0.05) v = R();
+                        put(x, y, woodPick(v));
+                    }
+                }
+                for (let x = 0; x < w; x++) { put(x, 0, C.woodHi); put(x, by0 - 1, C.woodShadow); put(x, h - 1, C.woodShadow); }
+                for (let y = 0; y < h; y++) { put(0, y, C.woodHi); put(w - 1, y, C.woodShadow); }
+                for (let y = by0 - 1; y < by1; y++) { put(bx0 - 1, y, C.woodShadow); put(bx1, y, C.woodHi); }
+
+                // chalk tray
+                rect(bx0, trayTop, bx1, trayTop + 1, C.woodHi);
+                rect(bx0, trayTop + 1, bx1, trayTop + 3, C.wood);
+                rect(bx0, trayTop + 3, bx1, by1, C.woodDark);
+                for (let x = bx0; x < bx1; x++) if (R() < 0.08) put(x, trayTop + 1, C.chalkEnd);
+
+                // chalk and eraser resting on the tray (drawn on the tray's top edge, in front of the boards)
+                const sitY = trayTop + 1;
+                toolRects = {};
+                const stick = (x, len, body, shade) => {
+                    rect(x, sitY - 2, x + len, sitY, body);
+                    rect(x, sitY, x + len, sitY + 1, shade);
+                    put(x, sitY - 2, C.chalkEnd);
+                    rect(x + len - 1, sitY - 2, x + len, sitY + 1, C.chalkEnd);
+                };
+                const wx = Math.round(bx0 + (bx1 - bx0) * 0.035);
+                const px = Math.round(bx0 + (bx1 - bx0) * 0.55);
+                toolRects.white = [wx, sitY - 2, 13, 3];
+                toolRects.yellow = [wx + 17, sitY - 2, 6, 3];
+                toolRects.pink = [px, sitY - 2, 9, 3];
+                if (held !== 'white') stick(wx, 13, C.chalk, C.chalkShade);
+                if (held !== 'yellow') stick(wx + 17, 6, C.chalkYellow, C.chalkYellowShade);
+                if (held !== 'pink') stick(px, 9, C.chalkPink, C.chalkPinkShade);
+                const ex = Math.round(bx0 + (bx1 - bx0) * 0.865);
+                const ew = 20;
+                toolRects.eraser = [ex, sitY - 6, ew, 7];
+                if (held !== 'eraser') {
+                    rect(ex, sitY - 6, ex + ew, sitY - 2, C.eraserWood);
+                    rect(ex, sitY - 6, ex + ew, sitY - 5, C.chalkEnd);
+                    rect(ex, sitY - 5, ex + 1, sitY - 2, C.eraserWoodDark);
+                    rect(ex + ew - 1, sitY - 5, ex + ew, sitY - 2, C.eraserWoodDark);
+                    rect(ex, sitY - 2, ex + ew, sitY, C.felt);
+                    rect(ex, sitY, ex + ew, sitY + 1, C.feltDark);
+                    for (let x = ex + 1; x < ex + ew - 1; x++) if (R() < 0.35) put(x, sitY - 1, C.chalkShade);
+                }
+
+                ctx.putImageData(img, 0, 0);
+
+                // hit areas for picking things up, a little larger than the pixels themselves
+                document.querySelectorAll('.tool').forEach(b => {
+                    const [x, y, tw, th] = toolRects[b.dataset.tool];
+                    const hgt = Math.max(th * PX + 12, 30);
+                    Object.assign(b.style, {
+                        left: (x * PX - 6) + 'px',
+                        top: ((y + th) * PX + 4 - hgt) + 'px',
+                        width: (tw * PX + 12) + 'px',
+                        height: hgt + 'px'
+                    });
+                });
+
+                // the track the boards slide in: everything above the tray and inside the frame
+                const top = by0 * PX, left = bx0 * PX;
+                const width = (bx1 - bx0) * PX, height = (trayTop - 2 - by0) * PX;
+                Object.assign(stage.style, { left: left + 'px', top: top + 'px', width: width + 'px', height: height + 'px' });
+                slateSize = [bx1 - bx0, trayTop - 2 - by0];
+                document.documentElement.style.setProperty('--slate-size', width + 'px ' + height + 'px');
+
+                // board markers sit in the middle of the right-hand frame
+                dotsEl.style.left = (left + width + (window.innerWidth - left - width) / 2) + 'px';
+                dotsEl.style.top = (top + height / 2) + 'px';
+            }
+
+            // ---------- slate textures, one per board so they look like separate boards ----------
+            function makeSlates(count) {
+                const [w, h] = slateSize;
+                const off = document.createElement('canvas');
+                off.width = w;
+                off.height = h;
+                const octx = off.getContext('2d');
+                const urls = [];
+                for (let k = 0; k < count; k++) {
+                    const { img, put } = pixelBuffer(w, h);
+                    const R = mulberry32(7919 * (k + 1));
+                    for (let y = 0; y < h; y++) {
+                        for (let x = 0; x < w; x++) {
+                            const r = R();
+                            put(x, y, r < 0.06 ? C.boardLight : r < 0.11 ? C.boardDark : C.board);
+                        }
+                    }
+                    // eraser swipes
+                    for (let s = 0; s < 4; s++) {
+                        const cx = (0.1 + 0.8 * R()) * w, cy = (0.12 + 0.76 * R()) * h;
+                        const rx = (0.12 + 0.14 * R()) * w, ry = 3 + R() * 5;
+                        const bend = (R() - 0.5) * 0.06, strength = 0.3 + 0.3 * R();
+                        for (let y = Math.floor(cy - ry - rx * 0.1); y <= cy + ry + rx * 0.1; y++) {
+                            for (let x = Math.floor(cx - rx); x <= cx + rx; x++) {
+                                const dx = (x - cx) / rx;
+                                const yy = y - (cy + bend * (x - cx) * (x - cx) / rx);
+                                const q = dx * dx + (yy / ry) * (yy / ry);
+                                if (q >= 1) continue;
+                                const p = strength * (1 - q), r = R();
+                                if (r < p * 0.25) put(x, y, C.smudgeHi);
+                                else if (r < p) put(x, y, C.smudge);
+                            }
+                        }
+                    }
+                    // chalk dust, gathering at the bottom edge
+                    for (let y = 0; y < h; y++) {
+                        const near = Math.max(0, 1 - (h - y) / 7);
+                        for (let x = 0; x < w; x++) {
+                            if (R() < 0.003 + 0.1 * near * near) put(x, y, R() < 0.2 ? C.speck : C.dust);
+                        }
+                    }
+                    octx.putImageData(img, 0, 0);
+                    urls.push(off.toDataURL('image/png'));
+                }
+                return urls;
+            }
+
+            // ---------- laying text out onto boards ----------
+            const keepWithNext = el => el && el.matches && el.matches('h2, h3, h4, .eyebrow, .keep');
+
+            function newPanel() {
+                const p = document.createElement('section');
+                p.className = 'panel measuring';
+                const c = document.createElement('div');
+                c.className = 'panel-content';
+                p.appendChild(c);
+                stage.appendChild(p);
+                return p;
+            }
+
+            const fits = p => p.firstChild.offsetHeight <= p.clientHeight + 1;
+
+            // Blocks go onto white sheets of paper taped to the board. A block marked
+            // data-no-sheet (the title card, the chalk signature) goes straight on the board.
+            function paginate(tab) {
+                const panels = [];
+                let p = newPanel();
+                const pc = () => p.firstChild;
+                const lastSheet = () => {
+                    const last = pc().lastElementChild;
+                    return last && last.classList.contains('sheet') ? last : null;
+                };
+                const sheet = () => {
+                    let s = lastSheet();
+                    if (!s) {
+                        s = document.createElement('div');
+                        s.className = 'sheet';
+                        pc().appendChild(s);
+                    }
+                    return s;
+                };
+                const host = noSheet => (noSheet ? pc() : sheet());
+                const dropEmptySheet = () => {
+                    const s = lastSheet();
+                    if (s && !s.children.length) s.remove();
+                };
+                const onlyThing = node => {
+                    const kids = pc().children;
+                    if (kids.length !== 1) return false;
+                    const k = kids[0];
+                    return k === node || (k.classList.contains('sheet') && k.children.length === 1);
+                };
+
+                // start a new board, taking any trailing headings along so they stay with their text
+                const nextPanel = () => {
+                    const moved = [];
+                    const s = lastSheet();
+                    if (s) {
+                        while (keepWithNext(s.lastElementChild)) {
+                            const el = s.lastElementChild;
+                            el.remove();
+                            moved.unshift(el);
+                        }
+                        if (!s.children.length) s.remove();
+                    }
+                    const old = p;
+                    p = newPanel();
+                    if (moved.length) moved.forEach(el => sheet().appendChild(el));
+                    if (old.firstChild.children.length) panels.push(old); else old.remove();
+                };
+
+                const placeWhole = (node, noSheet) => {
+                    host(noSheet).appendChild(node);
+                    if (!fits(p) && !onlyThing(node)) {
+                        node.remove();
+                        dropEmptySheet();
+                        nextPanel();
+                        host(noSheet).appendChild(node);
+                    }
+                    return fits(p);
+                };
+
+                const pruneEmpty = el => {
+                    while (el && el !== pc() && !el.children.length && !el.textContent.trim()) {
+                        const up = el.parentElement;
+                        el.remove();
+                        el = up;
+                    }
+                };
+
+                // Copy src's children one at a time into a shell of src, starting a new board
+                // whenever the next one does not fit.
+                const placeSplit = (src, hostFn) => {
+                    const shell = () => {
+                        const w = src.cloneNode(false);
+                        ['data-no-sheet', 'data-split'].forEach(a => w.removeAttribute(a));
+                        return w;
+                    };
+                    let wrap = null;
+                    const wrapHost = () => {
+                        if (!wrap || !p.contains(wrap)) {
+                            wrap = shell();
+                            hostFn().appendChild(wrap);
+                        }
+                        return wrap;
+                    };
+                    for (const unit of src.children) {
+                        const node = unit.cloneNode(true);
+                        wrapHost().appendChild(node);
+                        if (fits(p)) continue;
+                        node.remove();
+                        const carried = [];
+                        while (keepWithNext(wrap.lastElementChild)) {
+                            const el = wrap.lastElementChild;
+                            el.remove();
+                            carried.unshift(el);
+                        }
+                        pruneEmpty(wrap);
+                        if (pc().children.length) nextPanel();
+                        carried.forEach(el => wrapHost().appendChild(el));
+                        wrapHost().appendChild(node);
+                        if (!fits(p)) p.classList.add('scrolls');
+                    }
+                };
+
+                const blocks = [...sources[tab].children, SIGN];
+                for (const src of blocks) {
+                    const noSheet = src.hasAttribute('data-no-sheet');
+                    if (src.hasAttribute('data-split')) {
+                        placeSplit(src, () => host(noSheet));
+                    } else if (src === SIGN) {
+                        // the signature only goes on if there is room; it never gets a board of its own
+                        const node = src.cloneNode(true);
+                        node.removeAttribute('id');
+                        pc().appendChild(node);
+                        if (!fits(p)) node.remove();
+                    } else {
+                        const node = src.cloneNode(true);
+                        node.removeAttribute('id');
+                        if (!placeWhole(node, noSheet)) p.classList.add('scrolls');
+                    }
+                }
+                if (pc().children.length) panels.push(p); else p.remove();
+                panels.forEach(panel => { panel.remove(); panel.classList.remove('measuring'); });
+                return panels;
+            }
+
+            function computeClear() {
+                const mobile = window.innerWidth <= 768;
+                const casing = nav.querySelector('.casing').getBoundingClientRect();
+                const screenH = mobile ? 0 : nav.querySelector('.screen-inner').scrollHeight;
+                const bottom = casing.bottom + screenH + nav.querySelector('.weight').offsetHeight + pull.offsetHeight;
+                const clear = Math.max(16, Math.round(bottom - stage.getBoundingClientRect().top + 10));
+                document.documentElement.style.setProperty('--clear', clear + 'px');
+            }
+
+            // ---------- state ----------
+            let decks = {};
+            let tab = 'about';
+            let index = 0;
+            let current = null;
+            let busy = false;
+            let cooldownUntil = 0;
+
+            function rebuild() {
+                drawFrame();
+                computeClear();
+                stage.querySelectorAll('.panel').forEach(n => n.remove());
+                const slates = makeSlates(4);
+                decks = {};
+                let k = 0;
+                for (const t of TABS) {
+                    decks[t] = paginate(t);
+                    decks[t].forEach((panel, i) => {
+                        panel.style.backgroundImage = 'url(' + slates[k++ % slates.length] + ')';
+                        panel.setAttribute('aria-label', TITLES[t] + ', board ' + (i + 1) + ' of ' + decks[t].length);
+                        attachChalk(panel, t, i);
+                    });
+                }
+                index = Math.min(index, decks[tab].length - 1);
+                current = decks[tab][index];
+                current.scrollTop = 0;
+                stage.appendChild(current);
+                updateUI();
+            }
+
+            function updateUI() {
+                nav.querySelectorAll('.screen a[href^="#"]').forEach(a => {
+                    a.classList.toggle('active', a.getAttribute('href') === '#' + tab);
+                });
+                document.title = (tab === 'about' ? '' : TITLES[tab] + ' · ') + 'Blessing of Dimensionality Joint Risk Seminar 2026–2027';
+                const n = decks[tab].length;
+                dotsEl.innerHTML = '';
+                if (n > 1) {
+                    for (let i = 0; i < n; i++) {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.setAttribute('aria-label', 'Board ' + (i + 1) + ' of ' + n);
+                        if (i === index) b.setAttribute('aria-current', 'true');
+                        b.addEventListener('click', () => go(tab, i));
+                        dotsEl.appendChild(b);
+                    }
+                }
+                upEl.hidden = index <= 0;
+                downEl.hidden = index >= n - 1;
+                // the arrows sit in the right-hand frame, just above and below the board markers
+                const r = dotsEl.getBoundingClientRect();
+                const cx = r.left + r.width / 2;
+                const gap = 3 * PX;
+                upEl.style.left = downEl.style.left = cx + 'px';
+                upEl.style.top = (r.top - gap - 3 * PX - 12) + 'px';
+                downEl.style.top = (r.bottom + gap) + 'px';
+            }
+
+            // Swap boards like a lecture-hall stack. Going forward, the front board is raised
+            // out of the way, revealing the next board already hanging behind it. Going back,
+            // the previous board is pulled down in front, landing with a small bounce.
+            let queued = null;
+            function go(t, i) {
+                if (busy) {
+                    queued = [t, i];
+                    return;
+                }
+                const deck = decks[t];
+                i = Math.max(0, Math.min(i, deck.length - 1));
+                if (t === tab && i === index) return;
+                const forward = t === tab ? i > index : TABS.indexOf(t) > TABS.indexOf(tab);
+                const prev = current;
+                const next = deck[i];
+                tab = t;
+                index = i;
+                current = next;
+                next.scrollTop = 0;
+                stage.appendChild(next);
+                updateUI();
+
+                if (reduceMotion) {
+                    prev.remove();
+                    return;
+                }
+                busy = true;
+                const mover = forward ? prev : next;
+                const still = forward ? next : prev;
+                mover.classList.add('front');
+                still.classList.add('back');
+                const anim = forward
+                    ? mover.animate(
+                        [{ transform: 'translateY(0)' }, { transform: 'translateY(-100%)' }],
+                        { duration: 560, easing: 'cubic-bezier(.55, 0, .3, 1)', fill: 'forwards' })
+                    : mover.animate(
+                        [
+                            { transform: 'translateY(-100%)', easing: 'cubic-bezier(.45, 0, .7, .9)' },
+                            { transform: 'translateY(0)', offset: 0.78, easing: 'ease-out' },
+                            { transform: 'translateY(-1.6%)', offset: 0.89, easing: 'ease-in' },
+                            { transform: 'translateY(0)' }
+                        ],
+                        { duration: 650, fill: 'forwards' });
+                anim.finished.then(() => {
+                    prev.remove();
+                    anim.cancel();
+                    prev.classList.remove('front', 'back');
+                    next.classList.remove('front', 'back');
+                    busy = false;
+                    if (queued) {
+                        const q = queued;
+                        queued = null;
+                        go(q[0], q[1]);
+                    }
+                });
+            }
+
+            // At the first or last board the board just knocks against its stop.
+            function bump(dir) {
+                if (busy || reduceMotion) return;
+                busy = true;
+                const shift = (dir > 0 ? -3 : 3) * PX;
+                current.animate(
+                    [{ transform: 'translateY(0)' }, { transform: 'translateY(' + shift + 'px)' }, { transform: 'translateY(0)' }],
+                    { duration: 280, easing: 'ease-out' }
+                ).finished.then(() => {
+                    busy = false;
+                    cooldownUntil = performance.now() + 200;
+                });
+            }
+
+            function step(dir) {
+                if (busy) {
+                    const base = queued && queued[0] === tab ? queued[1] : index;
+                    const qi = base + dir;
+                    if (qi >= 0 && qi < decks[tab].length) queued = [tab, qi];
+                    return;
+                }
+                const ni = index + dir;
+                if (ni < 0 || ni >= decks[tab].length) bump(dir);
+                else go(tab, ni);
+            }
+
+            // ---------- input ----------
+            const canScrollInside = (dir) => {
+                if (!current || !current.classList.contains('scrolls')) return false;
+                const atTop = current.scrollTop <= 0;
+                const atBottom = current.scrollTop + current.clientHeight >= current.scrollHeight - 1;
+                return dir > 0 ? !atBottom : !atTop;
+            };
+
+            // One board per scroll gesture. A gesture starts when the wheel changes direction,
+            // after a short pause, or when the deltas jump up again (a fresh flick rather than a
+            // trackpad's inertia tail). A gesture made while a board is moving is queued, so
+            // scrolling quickly never gets swallowed.
+            let gest = { dir: 0, last: 0, lastAbs: 0, acc: 0, fired: false };
+            window.addEventListener('wheel', e => {
+                if (e.ctrlKey || nav.contains(e.target)) return;
+                const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
+                const dir = Math.sign(dy);
+                if (!dir) return;
+                if (canScrollInside(dir)) return;
+                e.preventDefault();
+                const now = performance.now();
+                const abs = Math.abs(dy);
+                const fresh = dir !== gest.dir
+                    || now - gest.last > 140
+                    || (abs >= 12 && abs > gest.lastAbs * 1.6 + 6);
+                if (fresh) gest = { dir, last: now, lastAbs: abs, acc: 0, fired: false };
+                gest.last = now;
+                gest.lastAbs = abs;
+                gest.acc += abs;
+                if (!gest.fired && gest.acc >= 20) {
+                    gest.fired = true;
+                    step(dir);
+                }
+            }, { passive: false });
+
+            let touchY = null, touchInside = { up: false, down: false };
+            window.addEventListener('touchstart', e => {
+                if (e.touches.length !== 1 || nav.contains(e.target)) { touchY = null; return; }
+                if (held && stage.contains(e.target) && !e.target.closest('.sheet, .card, a, button')) { touchY = null; return; }
+                touchY = e.touches[0].clientY;
+                touchInside = { up: canScrollInside(-1), down: canScrollInside(1) };
+            }, { passive: true });
+            window.addEventListener('touchmove', e => {
+                if (touchY !== null && !current.classList.contains('scrolls')) e.preventDefault();
+            }, { passive: false });
+            window.addEventListener('touchend', e => {
+                if (touchY === null) return;
+                const dy = touchY - e.changedTouches[0].clientY;
+                touchY = null;
+                if (Math.abs(dy) < 50) return;
+                const dir = dy > 0 ? 1 : -1;
+                if (dir > 0 ? touchInside.down : touchInside.up) return;
+                step(dir);
+            });
+
+            document.addEventListener('keydown', e => {
+                if (e.altKey || e.ctrlKey || e.metaKey) return;
+                const k = e.key;
+                if (k === 'ArrowDown' || k === 'PageDown' || (k === ' ' && !e.shiftKey && e.target === document.body)) {
+                    if (canScrollInside(1)) return;
+                    e.preventDefault(); step(1);
+                } else if (k === 'ArrowUp' || k === 'PageUp' || (k === ' ' && e.shiftKey && e.target === document.body)) {
+                    if (canScrollInside(-1)) return;
+                    e.preventDefault(); step(-1);
+                } else if (k === 'Home') {
+                    e.preventDefault(); go(tab, 0);
+                } else if (k === 'End') {
+                    e.preventDefault(); go(tab, decks[tab].length - 1);
+                } else if (k === 'Escape') {
+                    if (held) setHeld(null);
+                    else if (window.innerWidth <= 768) setOpen(false);
+                }
+            });
+
+            upEl.addEventListener('click', () => step(-1));
+            downEl.addEventListener('click', () => step(1));
+
+            // ---------- writing on the boards ----------
+            // Each board has a transparent canvas at art-pixel resolution, sitting under the paper,
+            // so chalk only ever shows on the green. What you draw is kept in this browser.
+            const STORE_KEY = 'bod-seminar-doodles-v1';
+            let doodles = {};
+            try { doodles = JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (err) { doodles = {}; }
+            const saveDoodles = () => {
+                try { localStorage.setItem(STORE_KEY, JSON.stringify(doodles)); } catch (err) { /* storage unavailable */ }
+            };
+            const boardKey = (t, i) => (window.innerWidth <= 768 ? 'm' : 'd') + ':' + t + ':' + i;
+
+            function attachChalk(panel, t, i) {
+                const [w, h] = slateSize;
+                const c = document.createElement('canvas');
+                c.className = 'chalk-layer';
+                c.width = w;
+                c.height = h;
+                c.style.width = (w * PX) + 'px';
+                c.style.height = (h * PX) + 'px';
+                c.dataset.key = boardKey(t, i);
+                panel.insertBefore(c, panel.firstChild);
+                const saved = doodles[c.dataset.key];
+                if (saved) {
+                    const img = new Image();
+                    img.onload = () => c.getContext('2d').drawImage(img, 0, 0);
+                    img.src = saved;
+                }
+            }
+
+            const CHALK = {
+                white: [[242, 241, 234], [214, 213, 204]],
+                yellow: [[241, 230, 166], [207, 195, 134]],
+                pink: [[242, 196, 200], [209, 162, 166]]
+            };
+            const rgba = (c, a) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
+
+            function chalkDot(g, x, y, tool) {
+                const [main, shade] = CHALK[tool];
+                if (Math.random() < 0.9) {
+                    g.fillStyle = rgba(Math.random() < 0.75 ? main : shade, (0.78 + Math.random() * 0.22).toFixed(2));
+                    g.fillRect(x, y, 1, 1);
+                }
+                if (Math.random() < 0.3) {   // a stray grain beside the line
+                    const d = [[1, 0], [-1, 0], [0, 1], [0, -1]][Math.floor(Math.random() * 4)];
+                    g.fillStyle = rgba(main, 0.45);
+                    g.fillRect(x + d[0], y + d[1], 1, 1);
+                }
+            }
+
+            function eraseAt(g, x, y) {
+                g.clearRect(x - 3, y - 2, 7, 4);
+                for (let yy = y - 2; yy < y + 2; yy++) {
+                    for (let xx = x - 3; xx < x + 4; xx++) {
+                        if (Math.random() < 0.05) {     // erasing leaves a faint haze, as on a real board
+                            g.fillStyle = 'rgba(205, 220, 210, 0.12)';
+                            g.fillRect(xx, yy, 1, 1);
+                        }
+                    }
+                }
+            }
+
+            function stroke(g, x0, y0, x1, y1) {
+                // Bresenham, so the line stays on the pixel grid
+                const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0);
+                const sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+                let err = dx + dy;
+                for (;;) {
+                    if (held === 'eraser') eraseAt(g, x0, y0); else chalkDot(g, x0, y0, held);
+                    if (x0 === x1 && y0 === y1) break;
+                    const e2 = 2 * err;
+                    if (e2 >= dy) { err += dy; x0 += sx; }
+                    if (e2 <= dx) { err += dx; y0 += sy; }
+                }
+            }
+
+            // cursors: a pixel stick of chalk (tip at the hotspot) and the felt eraser
+            function makeCursor(tool) {
+                const cv = document.createElement('canvas');
+                const g = cv.getContext('2d');
+                if (tool === 'eraser') {
+                    cv.width = 30; cv.height = 18;
+                    g.fillStyle = '#3d2410'; g.fillRect(0, 0, 30, 18);
+                    g.fillStyle = '#c9a46c'; g.fillRect(2, 2, 26, 8);
+                    g.fillStyle = '#e2c592'; g.fillRect(2, 2, 26, 2);
+                    g.fillStyle = '#4a4a4a'; g.fillRect(2, 10, 26, 6);
+                    return 'url(' + cv.toDataURL() + ') 15 16, crosshair';
+                }
+                cv.width = 32; cv.height = 32;
+                const body = 'rgb(' + CHALK[tool][0].join(',') + ')';
+                const shade = 'rgb(' + CHALK[tool][1].join(',') + ')';
+                for (let i = 0; i < 7; i++) {
+                    const x = 1 + 3 * i, y = 25 - 3 * i;
+                    g.fillStyle = '#25292c'; g.fillRect(x - 1, y - 1, 8, 8);
+                }
+                for (let i = 0; i < 7; i++) {
+                    const x = 1 + 3 * i, y = 25 - 3 * i;
+                    g.fillStyle = i === 0 ? shade : body; g.fillRect(x, y, 6, 6);
+                }
+                return 'url(' + cv.toDataURL() + ') 1 30, crosshair';
+            }
+
+            function setHeld(tool) {
+                held = tool;
+                document.body.classList.toggle('holding', !!tool);
+                document.querySelectorAll('.tool').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tool === tool)));
+                if (tool) document.documentElement.style.setProperty('--tool-cursor', makeCursor(tool));
+                drawFrame();    // repaint the tray without (or with) the piece in hand
+            }
+
+            document.querySelectorAll('.tool').forEach(b => {
+                b.addEventListener('click', () => setHeld(held === b.dataset.tool ? null : b.dataset.tool));
+            });
+            document.querySelector('.tool[data-tool="eraser"]').addEventListener('dblclick', () => {
+                const layer = current && current.querySelector('.chalk-layer');
+                if (!layer) return;
+                layer.getContext('2d').clearRect(0, 0, layer.width, layer.height);
+                delete doodles[layer.dataset.key];
+                saveDoodles();
+            });
+
+            const onPaper = target => target.closest('.sheet, .card, a, button, input');
+            let drawing = null;
+            stage.addEventListener('pointerdown', e => {
+                if (!held || busy || e.button !== 0 || onPaper(e.target)) return;
+                const panel = e.target.closest('.panel');
+                const layer = panel && panel.querySelector('.chalk-layer');
+                if (!layer) return;
+                e.preventDefault();
+                const r = panel.getBoundingClientRect();
+                const at = ev => [
+                    Math.floor((ev.clientX - r.left) / PX),
+                    Math.floor((ev.clientY - r.top + panel.scrollTop) / PX)
+                ];
+                const [x, y] = at(e);
+                drawing = { layer, g: layer.getContext('2d'), at, x, y, id: e.pointerId };
+                stroke(drawing.g, x, y, x, y);
+                stage.setPointerCapture(e.pointerId);
+            });
+            stage.addEventListener('pointermove', e => {
+                if (!drawing || e.pointerId !== drawing.id) return;
+                const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+                for (const ev of (events.length ? events : [e])) {
+                    const [x, y] = drawing.at(ev);
+                    stroke(drawing.g, drawing.x, drawing.y, x, y);
+                    drawing.x = x;
+                    drawing.y = y;
+                }
+            });
+            const endStroke = e => {
+                if (!drawing || e.pointerId !== drawing.id) return;
+                doodles[drawing.layer.dataset.key] = drawing.layer.toDataURL('image/png');
+                saveDoodles();
+                drawing = null;
+            };
+            stage.addEventListener('pointerup', endStroke);
+            stage.addEventListener('pointercancel', endStroke);
+
+            // ---------- projector screen ----------
+            const setOpen = open => {
+                nav.classList.toggle('open', open);
+                pull.setAttribute('aria-expanded', String(open));
+            };
+            pull.addEventListener('click', () => {
+                setOpen(!nav.classList.contains('open'));
+                pull.classList.add('tug');
+                setTimeout(() => pull.classList.remove('tug'), 200);
+            });
+
+            // ---------- tabs ----------
+            const tabFromHash = () => {
+                const h = window.location.hash.substring(1);
+                return TABS.includes(h) ? h : 'about';
+            };
+            nav.querySelectorAll('.screen a[href^="#"]').forEach(a => {
+                a.addEventListener('click', e => {
+                    e.preventDefault();
+                    const t = a.getAttribute('href').substring(1);
+                    if (window.innerWidth <= 768) setOpen(false);
+                    const changed = t !== tab;
+                    go(t, 0);
+                    if (changed) {
+                        try { history.pushState(null, '', '#' + t); } catch (err) { /* sandboxed preview: no history */ }
+                    }
+                });
+            });
+            window.addEventListener('popstate', () => go(tabFromHash(), 0));
+            window.addEventListener('hashchange', () => { if (tabFromHash() !== tab) go(tabFromHash(), 0); });
+
+            // ---------- start ----------
+            tab = tabFromHash();
+            rebuild();
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (!busy) rebuild(); });
+
+            let wasMobile = window.innerWidth <= 768;
+            let pending = null;
+            window.addEventListener('resize', () => {
+                clearTimeout(pending);
+                pending = setTimeout(() => {
+                    const m = window.innerWidth <= 768;
+                    if (m !== wasMobile) {
+                        wasMobile = m;
+                        nav.classList.add('no-anim');
+                        setOpen(!m);
+                        requestAnimationFrame(() => nav.classList.remove('no-anim'));
+                    }
+                    if (!busy) rebuild();
+                }, 150);
+            });
+        })();
+    </script>
+</body>
+</html>
